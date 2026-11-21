@@ -2,6 +2,25 @@
 
 Ngày 21/11/2026 · Căn cứ: Thư mời số 24/2026/TM-TH (Phụ lục 01–03), tài liệu API HEMIS v1.0 (mục 12 — dữ liệu NCKH), hiện trạng AI-SRM sau Giai đoạn 0–2.
 
+> **Cập nhật tiến độ (đêm 21/11/2026, đã chạy trên staging https://aisrm32.web.app):**
+> - ✅ **Sprint 0 xong** — xem [BAO_CAO_SPRINT_0.md](BAO_CAO_SPRINT_0.md):
+>   - AI Center: khóa OpenAI / Claude / Gemini, giá, chi phí, hạn mức;
+>   - AI tóm tắt / kiểm tra thuyết minh, AI dự thảo báo cáo;
+>   - kiểm chứng DOI qua Crossref;
+>   - UNI-DATA360 giả lập, xem trước chuẩn HEMIS;
+>   - dữ liệu mẫu NCKH sinh viên.
+> - ✅ **Từ Sprint 1, xong M07 Hội đồng và phản biện** (đáp ứng Buổi 2):
+>   - gợi ý phản biện theo chuyên môn, cờ xung đột lợi ích;
+>   - khai báo xung đột trước khi xem hồ sơ;
+>   - chấm độc lập theo phiếu có phiên bản, khóa phiếu, tổng hợp;
+>   - AI dự thảo biên bản, chủ tịch xác nhận, thu hồi quyền xem hồ sơ.
+> - ⏳ **Còn lại của Sprint 1–2:**
+>   - trợ lý hỏi đáp quy chế (RAG) — cần văn bản quy chế thật của trường;
+>   - nhắc hạn tự động + email — cần chọn dịch vụ gửi email;
+>   - xuất Word / Excel / PDF theo mẫu — cần mẫu của trường;
+>   - màn hình phân quyền / ủy quyền;
+>   - trường dữ liệu HEMIS cho đề tài.
+
 Ký hiệu: ✅ đã có · 🟡 có một phần · ❌ chưa có
 
 ## 1. Đối chiếu 6 phần mềm cam kết chuyển giao
@@ -17,7 +36,7 @@ Ký hiệu: ✅ đã có · 🟡 có một phần · ❌ chưa có
 | Sản phẩm, công bố | ✅ |
 | Sở hữu trí tuệ, hội thảo | ❌ |
 | Kho minh chứng có phiên bản | 🟡 (có tài liệu, chưa quản lý phiên bản tệp) |
-| AI kiểm tra hồ sơ, tóm tắt thuyết minh | ❌ (có kiểm tra theo quy tắc, chưa có AI) |
+| AI kiểm tra hồ sơ, tóm tắt thuyết minh | ✅ |
 | Cảnh báo chậm tiến độ | 🟡 (cảnh báo theo quy tắc trên dashboard, chưa nhắc tự động) |
 | Xuất báo cáo Word, Excel, PDF | 🟡 (CSV, in PDF lý lịch) |
 | **Cài trên máy chủ của trường, dữ liệu lưu tại trường** | ❌ **Kiến trúc hiện tại phụ thuộc Firebase/GCP** |
@@ -28,9 +47,9 @@ Ký hiệu: ✅ đã có · 🟡 có một phần · ❌ chưa có
 |---|---|
 | Chạy trên Google Cloud, truy cập qua trình duyệt | ✅ (staging aisrm32) |
 | Phê duyệt nhiều cấp, nhật ký xử lý | ✅ |
-| Hội đồng chấm điểm trực tuyến, biên bản | ❌ |
+| Hội đồng chấm điểm trực tuyến, biên bản | ✅ (M07) |
 | Nhắc hạn tự động | ❌ |
-| AI gợi ý phản biện theo chuyên môn, kiểm soát xung đột lợi ích | ❌ |
+| AI gợi ý phản biện theo chuyên môn, kiểm soát xung đột lợi ích | ✅ gợi ý theo chuyên môn + cờ / khai báo xung đột |
 | Trợ lý hỏi đáp quy chế | ❌ |
 | Phản biện ngoài trường | ❌ |
 
@@ -41,8 +60,8 @@ Ký hiệu: ✅ đã có · 🟡 có một phần · ❌ chưa có
 | Mở đợt, sinh viên đăng ký đề tài | 🟡 (dùng chung đợt/đề xuất, chưa có luồng riêng cho sinh viên) |
 | Phân công giảng viên hướng dẫn | ❌ (mới là trường nhập tự do) |
 | Theo dõi tiến độ, nộp sản phẩm | 🟡 (dùng chung mốc đề tài) |
-| Hội đồng đánh giá theo tiêu chí | ❌ |
-| AI kiểm tra thuyết minh, gợi ý nhận xét sơ bộ | ❌ |
+| Hội đồng đánh giá theo tiêu chí | ✅ (dùng M07, phiếu NCKH sinh viên) |
+| AI kiểm tra thuyết minh, gợi ý nhận xét sơ bộ | 🟡 kiểm tra thuyết minh xong; nhận xét theo tiêu chí chưa có |
 | Tổng hợp, xếp giải, lưu trữ, thống kê theo khoa/ngành/khóa | ❌ |
 
 ### 04. AI Publication Verification — kiểm chứng công bố (Buổi 3)
@@ -51,7 +70,7 @@ Ký hiệu: ✅ đã có · 🟡 có một phần · ❌ chưa có
 |---|---|
 | Chuẩn hóa DOI, phát hiện bản ghi trùng | ✅ |
 | Quy trình xác minh – phê duyệt (tách người) | ✅ |
-| Kiểm chứng DOI, tên bài, tác giả, tạp chí, năm với Crossref, ORCID | ❌ |
+| Kiểm chứng DOI, tên bài, tác giả, tạp chí, năm với Crossref, ORCID | 🟡 Crossref xong; ORCID chưa |
 | Phát hiện sai lệch so với nguồn mở | ❌ |
 | AI trích xuất từ PDF, giải thích kết quả kiểm chứng | ❌ |
 | AI không tự kết luận Scopus/WoS/Q1 | Nguyên tắc thiết kế: hiển thị nguồn, cán bộ xác nhận |
@@ -78,7 +97,7 @@ Ký hiệu: ✅ đã có · 🟡 có một phần · ❌ chưa có
 | Chỉ số NCKH sinh viên | ❌ |
 | Phân quyền theo vai trò | ✅ |
 | Hỏi đáp số liệu bằng tiếng Việt | ❌ |
-| AI tạo biểu đồ, dự thảo báo cáo có dẫn nguồn số liệu | ❌ |
+| AI tạo biểu đồ, dự thảo báo cáo có dẫn nguồn số liệu | 🟡 dự thảo báo cáo có mã chỉ số xong; biểu đồ do AI chưa có |
 | Xuất báo cáo điều hành, báo cáo cấp trên | 🟡 (CSV) |
 
 ### Nền tảng dùng chung (Buổi 4)
