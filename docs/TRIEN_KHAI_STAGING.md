@@ -16,6 +16,21 @@ Triển khai lần đầu: 21/11/2026. Môi trường **staging, dữ liệu gi�
 
 Firestore Security Rules chặn toàn bộ truy cập trực tiếp từ client; mọi dữ liệu đi qua API.
 
+### Khóa API AI (Secret Manager)
+
+Mỗi trường × nhà cung cấp có một secret tạo sẵn: `aisrm-{tenant}-{openai|anthropic|gemini}-api-key` (vùng `asia-southeast1`). Service account API chỉ có quyền thêm/vô hiệu phiên bản và đọc **trên từng secret này** (không có quyền cấp project). Khi thêm trường mới:
+
+```powershell
+gcloud secrets create aisrm-<tenant>-<provider>-api-key --replication-policy=user-managed --locations=asia-southeast1
+gcloud secrets add-iam-policy-binding aisrm-<tenant>-<provider>-api-key --member=serviceAccount:aisrm-api@aisrm32.iam.gserviceaccount.com --role=roles/secretmanager.secretVersionAdder
+```
+
+(lặp lại với `secretAccessor`, `secretVersionManager`, `viewer`). Quản trị nhập khóa tại AI Center; khóa không hiển thị lại.
+
+### Nâng cấp dữ liệu staging
+
+Sau mỗi lần thêm cấu hình mặc định/dữ liệu mẫu: `npx tsx apps/api/scripts/migrate-staging.ts --project aisrm32 --confirm` (idempotent, không xóa dữ liệu).
+
 ## Triển khai lại
 
 Tài khoản gcloud/Firebase có quyền Owner trên `aisrm32` (hiện là tài khoản quản trị project).
