@@ -2,10 +2,12 @@ import { MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AuthGuard, RequestIdMiddleware } from './common/auth';
 import { AllExceptionsFilter } from './common/errors';
+import { AiController } from './modules/ai.controller';
 import { CallsController } from './modules/calls.controller';
 import { AuditController, DashboardController } from './modules/dashboard.controller';
 import { DocumentsController } from './modules/documents.controller';
 import { HealthController } from './modules/health.controller';
+import { IntegrationsController } from './modules/integrations.controller';
 import { MeController } from './modules/me.controller';
 import { OrgController } from './modules/org.controller';
 import { ProjectsController } from './modules/projects.controller';
@@ -24,6 +26,8 @@ import { PublicationsController } from './modules/publications.controller';
     DocumentsController,
     DashboardController,
     AuditController,
+    AiController,
+    IntegrationsController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthGuard },

@@ -66,6 +66,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         requestId,
       });
     }
+    // Firestore hủy transaction do tranh chấp ghi (ABORTED = 10) sau khi đã thử lại: không có thay đổi nào được ghi.
+    if ((exception as { code?: unknown })?.code === 10) {
+      return res.status(409).json({
+        code: 'CONCURRENT_MODIFICATION',
+        message: 'Hồ sơ đang được người khác cập nhật cùng lúc. Vui lòng tải lại và thử lại.',
+        requestId,
+      });
+    }
     this.logger.error(`[${requestId}] ${(exception as Error)?.message}`, (exception as Error)?.stack);
     return res.status(500).json({ code: 'INTERNAL', message: 'Lỗi hệ thống. Vui lòng thử lại.', requestId });
   }

@@ -30,6 +30,8 @@ const ROLE_PRIORITY: Role[] = [
   'UNIT_HEAD',
   'UNIT_FOCAL',
   'SYS_ADMIN',
+  'AI_ADMIN',
+  'INTEGRATION_ADMIN',
   'BOARD',
   'REVIEWER',
   'SUPERVISOR',

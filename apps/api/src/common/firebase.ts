@@ -14,7 +14,9 @@ export const config = {
   uniMode: (process.env.UNI_DATA360_MODE ?? 'mock') as 'mock' | 'live' | 'disabled',
   timezone: process.env.DEFAULT_TIMEZONE ?? 'Asia/Ho_Chi_Minh',
   maxUploadBytes: Number(process.env.MAX_UPLOAD_BYTES ?? 15 * 1024 * 1024),
-  usingEmulators: !!process.env.FIRESTORE_EMULATOR_HOST,
+  get usingEmulators() {
+    return !!process.env.FIRESTORE_EMULATOR_HOST;
+  },
 };
 
 export function firebaseApp(): App {

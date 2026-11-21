@@ -273,6 +273,47 @@ export async function seedBusiness(tenantId: string, users: Record<string, { uid
     });
   }
   await t.collection('counters').doc(`CB-${year}`).set({ value: pubs.length });
+
+  await seedAiDefaults(tenantId);
+}
+
+/** Cấu hình AI Center + UNI-DATA360 mặc định (dùng cho seed emulator và nâng cấp staging). */
+export async function seedAiDefaults(tenantId: string, opts: { onlyIfMissing?: boolean } = {}) {
+  const t = firestore().collection('tenants').doc(tenantId);
+  if (opts.onlyIfMissing && (await t.collection('aiConfig').doc('settings').get()).exists) return false;
+  // AI Center: cấu hình mẫu — chế độ giả lập, chưa có khóa API. Giá Claude theo bảng giá công bố của Anthropic
+  // (tham khảo 03/11/2026); quản trị phải kiểm tra lại giá trước khi chạy thật. OpenAI/Gemini: quản trị tự thêm.
+  const priceSource = 'Bảng giá Anthropic (tham khảo 03/11/2026) — kiểm tra lại trước khi dùng';
+  const models = [
+    { modelId: 'claude-opus-5-5', label: 'Claude Opus 5.5', input: 4_000_000, output: 20_000_000 },
+    { modelId: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5', input: 2_000_000, output: 10_000_000 },
+    { modelId: 'claude-haiku-5-5', label: 'Claude Haiku 5.5', input: 100_000, output: 500_000 },
+  ];
+  for (const m of models) {
+    await t.collection('aiModels').doc(`anthropic__${m.modelId}`).set({
+      provider: 'anthropic',
+      modelId: m.modelId,
+      label: m.label,
+      inputPriceMicrosPerMTok: m.input,
+      outputPriceMicrosPerMTok: m.output,
+      priceEffectiveDate: '2026-11-03',
+      priceSource,
+      enabled: true,
+      seed: true,
+    });
+  }
+  await t.collection('aiConfig').doc('settings').set({
+    mode: 'mock',
+    usdToVnd: 26000,
+    usdToVndDate: null,
+    monthlyBudgetVnd: 500000,
+    hardStop: true,
+    killSwitch: false,
+    defaultModelId: 'anthropic__claude-opus-5-5',
+    maxOutputTokens: 2000,
+  });
+  await t.collection('integrations').doc('uniData360').set({ mode: 'mock', failureRatePct: 0 });
+  return true;
 }
 
 export async function seed(options: { business?: boolean; log?: boolean } = {}): Promise<SeedResult> {

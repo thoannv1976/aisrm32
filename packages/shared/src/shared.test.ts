@@ -115,3 +115,28 @@ describe('kiểm tra hồ sơ xác định', () => {
     expect(validateSubmission(form, { objective: 'abc', field: 'Luật' }, ['proposal_doc'], { title: 'X', budgetVnd: 100000000, durationMonths: 12 })).toEqual([]);
   });
 });
+
+import { computeCost, maskKey, microsToUsd, parseUsdToMicros } from './ai';
+
+describe('AI — tính chi phí', () => {
+  it('đổi giá USD sang micro-USD và ngược lại', () => {
+    expect(parseUsdToMicros('4')).toBe(4_000_000);
+    expect(parseUsdToMicros('0,15')).toBe(150_000);
+    expect(parseUsdToMicros('')).toBeNull();
+    expect(() => parseUsdToMicros('abc')).toThrow();
+    expect(microsToUsd(2_500_000)).toBe('2.5');
+  });
+  it('tính chi phí đúng và làm tròn lên', () => {
+    // 1.000 token vào × $4/1M + 500 token ra × $20/1M = $0.004 + $0.01 = $0.014 = 14.000 micro-USD
+    const c = computeCost(1000, 500, { inputPriceMicrosPerMTok: 4_000_000, outputPriceMicrosPerMTok: 20_000_000 }, 26000);
+    expect(c).toEqual({ priceKnown: true, costUsdMicros: 14000, costVnd: 364 });
+    // 1 token × $0.10/1M = 0.1 micro → làm tròn lên 1 micro
+    expect(computeCost(1, 0, { inputPriceMicrosPerMTok: 100_000, outputPriceMicrosPerMTok: 0 }, 26000).costUsdMicros).toBe(1);
+  });
+  it('chưa có giá thì không trả chi phí 0', () => {
+    expect(computeCost(1000, 1000, { inputPriceMicrosPerMTok: null, outputPriceMicrosPerMTok: 1 }, 26000)).toEqual({ priceKnown: false, costUsdMicros: null, costVnd: null });
+  });
+  it('che khóa API', () => {
+    expect(maskKey('sk-abcdefghijklmnop1234')).toBe('••••1234');
+  });
+});

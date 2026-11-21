@@ -61,7 +61,7 @@ export const TENANTS: SeedTenant[] = [
       { key: 'head', email: 'tp.hung@demo.aisrm.test', displayName: 'TS. Lý Văn Hùng', title: 'Trưởng phòng QLKH', unitId: 'p-qlkh', roles: [{ role: 'SCIENCE_HEAD', scope: 'tenant' }] },
       { key: 'viceRector', email: 'pht.nam@demo.aisrm.test', displayName: 'PGS.TS. Trịnh Hoài Nam', title: 'Phó Hiệu trưởng', unitId: 'bgh', roles: [{ role: 'VICE_RECTOR', scope: 'tenant' }] },
       { key: 'rector', email: 'ht.quang@demo.aisrm.test', displayName: 'GS.TS. Mai Đình Quang', title: 'Hiệu trưởng', unitId: 'bgh', roles: [{ role: 'RECTOR', scope: 'tenant' }] },
-      { key: 'admin', email: 'admin@demo.aisrm.test', displayName: 'Quản trị hệ thống', title: 'Trung tâm CNTT', unitId: 'root', roles: [{ role: 'SYS_ADMIN', scope: 'tenant' }] },
+      { key: 'admin', email: 'admin@demo.aisrm.test', displayName: 'Quản trị hệ thống', title: 'Trung tâm CNTT', unitId: 'root', roles: [{ role: 'SYS_ADMIN', scope: 'tenant' }, { role: 'AI_ADMIN', scope: 'tenant' }, { role: 'INTEGRATION_ADMIN', scope: 'tenant' }] },
     ],
   },
   {

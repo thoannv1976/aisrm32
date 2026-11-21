@@ -14,8 +14,8 @@ export class HealthController {
       aiMode: config.aiMode,
       uniData360Mode: config.uniMode,
       modules: {
-        ai: 'Giai đoạn 3 — chưa triển khai',
-        uniData360: 'Giai đoạn 3 — chưa triển khai (sẽ dùng mock, chưa có hợp đồng API thật)',
+        ai: 'AI Gateway: quản lý khóa/model/giá/hạn mức; chưa có chức năng AI nghiệp vụ',
+        uniData360: 'Giả lập (mock) — chưa có hợp đồng API thật',
       },
       time: new Date().toISOString(),
     };
