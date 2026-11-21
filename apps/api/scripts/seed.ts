@@ -276,6 +276,7 @@ export async function seedBusiness(tenantId: string, users: Record<string, { uid
 
   await seedAiDefaults(tenantId);
   await seedStudentResearch(tenantId);
+  await seedProfiles(tenantId);
 }
 
 /**
@@ -335,6 +336,35 @@ export async function seedStudentResearch(tenantId: string): Promise<boolean> {
   }
   await dtCounter.set({ value: dtN }, { merge: true });
   return true;
+}
+
+/** Hồ sơ chuyên môn mẫu (để gợi ý phản biện). Idempotent: chỉ tạo khi người đó chưa có hồ sơ. */
+export async function seedProfiles(tenantId: string): Promise<number> {
+  const t = firestore().collection('tenants').doc(tenantId);
+  const tenant = TENANTS.find((x) => x.id === tenantId);
+  if (!tenant) return 0;
+  const data: Record<string, { degree: string; expertise: string[]; researchInterests: string }> = {
+    pi: { degree: 'TS', expertise: ['Kinh tế quốc tế', 'Chuỗi giá trị toàn cầu', 'Thương mại quốc tế', 'Doanh nghiệp xuất khẩu'], researchInterests: 'Chuỗi cung ứng toàn cầu, logistics, hiệp định thương mại tự do' },
+    researcher2: { degree: 'ThS', expertise: ['Marketing', 'Phân tích dữ liệu khách hàng', 'Bán lẻ'], researchInterests: 'Hành vi người tiêu dùng, thương mại điện tử' },
+    researcher3: { degree: 'TS', expertise: ['Hiệp định thương mại tự do', 'Xuất khẩu nông sản', 'Mô hình trọng lực'], researchInterests: 'EVFTA, CPTPP, thương mại nông sản' },
+    focal: { degree: 'ThS', expertise: ['Logistics', 'Kinh tế biển', 'Chuyển đổi xanh'], researchInterests: 'Cảng biển, logistics xanh' },
+    unitHead: { degree: 'PGS.TS', expertise: ['Kinh tế phát triển', 'Chính sách thương mại', 'Xuất khẩu nông sản'], researchInterests: 'Chính sách thương mại, hội nhập kinh tế quốc tế, EVFTA' },
+    focal2: { degree: 'ThS', expertise: ['Quản trị nhân sự', 'Văn hóa doanh nghiệp'], researchInterests: 'Gắn kết nhân viên, thế hệ Z' },
+    campusHead: { degree: 'PGS.TS', expertise: ['Kinh tế nông nghiệp', 'Xuất khẩu nông sản', 'Du lịch cộng đồng'], researchInterests: 'Phát triển nông thôn, du lịch bền vững' },
+    head: { degree: 'TS', expertise: ['Quản lý khoa học', 'Kinh tế số'], researchInterests: 'Chính sách khoa học công nghệ' },
+  };
+  let n = 0;
+  for (const [key, pr] of Object.entries(data)) {
+    const u = tenant.users.find((x) => x.key === key);
+    if (!u) continue;
+    const s = await t.collection('people').where('email', '==', u.email).limit(1).get();
+    if (s.empty) continue;
+    const ref = t.collection('researcherProfiles').doc(s.docs[0].id);
+    if ((await ref.get()).exists) continue;
+    await ref.set({ academicTitle: '', degree: pr.degree, orcid: '', googleScholar: '', expertise: pr.expertise, researchInterests: pr.researchInterests, bio: '', updatedAt: iso(0), seed: true });
+    n++;
+  }
+  return n;
 }
 
 /** Cấu hình AI Center + UNI-DATA360 mặc định (dùng cho seed emulator và nâng cấp staging). */

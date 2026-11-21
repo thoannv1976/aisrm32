@@ -4,6 +4,7 @@ import { AuthGuard, RequestIdMiddleware } from './common/auth';
 import { AllExceptionsFilter } from './common/errors';
 import { AiController } from './modules/ai.controller';
 import { CallsController } from './modules/calls.controller';
+import { CouncilsController } from './modules/councils.controller';
 import { AuditController, DashboardController } from './modules/dashboard.controller';
 import { DocumentsController } from './modules/documents.controller';
 import { HealthController } from './modules/health.controller';
@@ -28,6 +29,7 @@ import { PublicationsController } from './modules/publications.controller';
     AuditController,
     AiController,
     IntegrationsController,
+    CouncilsController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthGuard },

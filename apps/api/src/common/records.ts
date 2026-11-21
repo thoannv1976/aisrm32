@@ -152,3 +152,14 @@ export async function holdersOf(tenantId: string, roles: Role[], unitPath: strin
 }
 
 export type Ref = DocumentReference;
+
+/**
+ * Quyền xem hồ sơ của thành viên hội đồng: chỉ cấp sau khi khai báo không xung đột lợi ích với đúng hồ sơ đó,
+ * hết hiệu lực khi hội đồng xác nhận biên bản hoặc quá hạn.
+ */
+export async function hasReviewAccess(p: Principal, targetId: string): Promise<boolean> {
+  const s = await tcol(p.tenantId, 'reviewAccess').doc(`${p.uid}__${targetId}`).get();
+  if (!s.exists || s.get('active') !== true) return false;
+  const until = s.get('until') as string | null;
+  return !until || new Date(until) > new Date();
+}

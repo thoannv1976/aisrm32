@@ -17,6 +17,7 @@ const KIND_LABEL: Record<WorkItem['kind'], string> = {
   publication: 'Công bố',
   milestone: 'Mốc',
   change_request: 'Yêu cầu thay đổi',
+  council: 'Hội đồng',
 };
 
 export function WorkspacePage() {

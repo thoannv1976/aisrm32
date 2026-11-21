@@ -17,7 +17,7 @@ import { z } from 'zod';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { badRequest, forbidden, notFound, unprocessable } from '../common/errors';
 import { bucket, config, nowIso, tcol } from '../common/firebase';
-import { audit, canRead } from '../common/records';
+import { audit, canRead, hasReviewAccess } from '../common/records';
 import { docData, parse } from '../common/util';
 
 const ALLOWED: Record<string, string[]> = {
@@ -58,7 +58,7 @@ async function loadParent(p: Principal, type: string, id: string): Promise<Paren
   const snap = await tcol(p.tenantId, col).doc(id).get();
   if (!snap.exists) throw notFound();
   const rec = docData<Parent>(snap);
-  if (!canRead(p, rec)) throw notFound();
+  if (!canRead(p, rec) && !(type !== 'publication' && (await hasReviewAccess(p, rec.id)))) throw notFound();
   return rec;
 }
 

@@ -11,6 +11,7 @@ import { AdminPage } from './pages/AdminPage';
 import { AiCenterPage } from './pages/AiCenterPage';
 import { IntegrationCenterPage } from './pages/IntegrationCenterPage';
 import { CallDetailPage, CallNewPage, CallsPage } from './pages/CallsPages';
+import { CouncilDetailPage, CouncilsPage } from './pages/CouncilsPages';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { ProjectDetailPage, ProjectsPage } from './pages/ProjectsPages';
@@ -54,6 +55,8 @@ function Gate() {
         <Route path="proposals/:id" element={<ProposalDetailPage />} />
         <Route path="projects" element={<ProjectsPage />} />
         <Route path="projects/:id" element={<ProjectDetailPage />} />
+        <Route path="councils" element={<CouncilsPage />} />
+        <Route path="councils/:id" element={<CouncilDetailPage />} />
         <Route path="publications" element={<PublicationsPage />} />
         <Route path="publications/new" element={<PublicationFormPage />} />
         <Route path="publications/:id" element={<PublicationDetailPage />} />

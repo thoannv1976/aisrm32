@@ -155,6 +155,23 @@ export class MeController {
       }
     }
 
+    // Hội đồng: lời mời, hồ sơ cần chấm, biên bản chờ xác nhận
+    const councils = await tcol(p.tenantId, 'councils').where('memberUids', 'array-contains', p.uid).get();
+    for (const d of councils.docs) {
+      const c = d.data();
+      const m = (c.members as { uid: string; role: string; status: string; coi: Record<string, { hasConflict: boolean }> }[]).find((x) => x.uid === p.uid);
+      if (!m) continue;
+      const base = { kind: 'council' as const, id: d.id, code: c.code as string, title: c.title as string, status: c.status as string, statusLabel: '', dueDate: (c.scoringDeadline as string | null) ?? null, link: `/councils/${d.id}` };
+      if (m.status === 'INVITED' && c.status !== 'MINUTES_CONFIRMED') tasks.push({ ...base, statusLabel: 'Chờ xác nhận', actionHint: 'Xác nhận tham gia hội đồng' });
+      else if (m.status === 'ACCEPTED' && c.status === 'SCORING') {
+        const sheets = await d.ref.collection('sheets').where('memberUid', '==', p.uid).where('status', '==', 'SUBMITTED').get();
+        const todo = (c.targets as { id: string }[]).filter((t) => !m.coi[t.id]?.hasConflict && !sheets.docs.some((s) => s.get('targetId') === t.id)).length;
+        if (todo) tasks.push({ ...base, statusLabel: 'Đang chấm', actionHint: `Khai báo xung đột lợi ích và chấm ${todo} hồ sơ` });
+      } else if (m.status === 'ACCEPTED' && c.status === 'SCORING_CLOSED' && (m.role === 'CHAIR' || m.role === 'SECRETARY')) {
+        tasks.push({ ...base, statusLabel: 'Đã khóa phiếu', actionHint: m.role === 'CHAIR' ? 'Xác nhận biên bản' : 'Dự thảo biên bản' });
+      }
+    }
+
     const unread = await tcol(p.tenantId, 'notifications').where('uid', '==', p.uid).where('read', '==', false).count().get();
     return {
       tasks,

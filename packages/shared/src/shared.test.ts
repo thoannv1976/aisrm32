@@ -140,3 +140,29 @@ describe('AI — tính chi phí', () => {
     expect(maskKey('sk-abcdefghijklmnop1234')).toBe('••••1234');
   });
 });
+
+import { aggregate, RUBRIC_TEMPLATES, sheetTotal, validateScores, type ReviewSheet } from './council';
+
+describe('Hội đồng — phiếu chấm và tổng hợp', () => {
+  const r = RUBRIC_TEMPLATES[0];
+  const full = { urgency: 18, objective: 16, method: 20, output: 15, capacity: 12 };
+  it('kiểm tra phiếu: đủ tiêu chí, trong khoảng, bước 0,5', () => {
+    expect(validateScores(r, full)).toEqual([]);
+    expect(validateScores(r, { ...full, method: 26 }).length).toBe(1);
+    expect(validateScores(r, { ...full, method: 20.3 }).length).toBe(1);
+    expect(validateScores(r, { urgency: 10 }).length).toBe(4);
+    expect(sheetTotal(r, full)).toBe(81);
+  });
+  it('tổng hợp: trung bình phiếu đã nộp; thiếu phiếu thì chưa đề nghị', () => {
+    const mk = (uid: string, total: number, status: 'SUBMITTED' | 'DRAFT' = 'SUBMITTED'): ReviewSheet => ({
+      memberUid: uid, memberName: uid, targetId: 't1', scores: { ...full }, comment: '', total, status, submittedAt: null, updatedAt: '',
+    });
+    const t = { id: 't1', code: 'DX', title: 'X' };
+    expect(aggregate(r, t, [mk('a', 80)], 3).suggestion).toBe('INSUFFICIENT');
+    const res = aggregate(r, t, [mk('a', 80), mk('b', 65), mk('c', 10, 'DRAFT')], 3);
+    expect(res.average).toBe(72.5);
+    expect(res.submitted).toBe(2);
+    expect(res.suggestion).toBe('PASS');
+    expect(aggregate(r, t, [mk('a', 60), mk('b', 65)], 2).suggestion).toBe('FAIL');
+  });
+});

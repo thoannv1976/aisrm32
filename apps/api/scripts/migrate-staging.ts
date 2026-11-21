@@ -13,7 +13,7 @@ Object.assign(process.env, { APP_ENV: 'staging', FIREBASE_PROJECT_ID: project, G
 
 async function main() {
   const { firestore } = await import('../src/common/firebase');
-  const { seedAiDefaults, seedStudentResearch } = await import('./seed');
+  const { seedAiDefaults, seedStudentResearch, seedProfiles } = await import('./seed');
   const { TENANTS } = await import('./seed-data');
   for (const t of TENANTS) {
     const tdoc = firestore().collection('tenants').doc(t.id);
@@ -21,6 +21,7 @@ async function main() {
     if (t.id === 'ftu') {
       console.log(`[${t.id}] cấu hình AI mặc định: ${(await seedAiDefaults(t.id, { onlyIfMissing: true })) ? 'đã tạo' : 'đã có, giữ nguyên'}`);
       console.log(`[${t.id}] dữ liệu mẫu NCKH sinh viên: ${(await seedStudentResearch(t.id)) ? 'đã tạo' : 'đã có, giữ nguyên'}`);
+      console.log(`[${t.id}] hồ sơ chuyên môn mẫu: thêm ${await seedProfiles(t.id)}`);
     }
     // Bổ sung vai trò còn thiếu theo seed-data (vd: AI_ADMIN, INTEGRATION_ADMIN cho quản trị)
     for (const u of t.users) {

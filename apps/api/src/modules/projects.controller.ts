@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../common/errors';
 import { firestore, nowIso, tcol } from '../common/firebase';
-import { audit, canRead, listVisible, notify } from '../common/records';
+import { audit, canRead, hasReviewAccess, listVisible, notify } from '../common/records';
 import { parseIdempotencyKey, runTransition, transitionBody } from '../common/transition';
 import { docData, parse, todayIso, withActions } from '../common/util';
 
@@ -26,7 +26,7 @@ async function loadReadable(p: Principal, id: string) {
   const snap = await tcol(p.tenantId, 'projects').doc(id).get();
   if (!snap.exists) throw notFound();
   const rec = docData<Project>(snap);
-  if (!canRead(p, rec)) throw notFound();
+  if (!canRead(p, rec) && !(await hasReviewAccess(p, rec.id))) throw notFound();
   return rec;
 }
 

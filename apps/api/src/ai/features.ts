@@ -187,3 +187,57 @@ ${overdue}
 Số liệu tính trực tiếp tại thời điểm xem, chưa chốt kỳ; chưa bao gồm dữ liệu giải ngân từ hệ thống tài chính.`;
   return draftFrom('report', r, text);
 }
+
+export interface MinutesInput {
+  councilCode: string;
+  councilTitle: string;
+  typeLabel: string;
+  rubricName: string;
+  passThreshold: number;
+  maxTotal: number;
+  members: { name: string; roleLabel: string; status: string }[];
+  results: { code: string; title: string; submitted: number; eligible: number; average: number | null; min: number | null; max: number | null; suggestion: string }[];
+  comments: { targetCode: string; comment: string }[];
+}
+
+/** Dự thảo biên bản hội đồng từ kết quả tổng hợp và nhận xét đã nộp. Kết luận do hội đồng quyết định. */
+export async function draftMinutes(principal: Principal, m: MinutesInput): Promise<AiDraft> {
+  const r = await runAi(principal, {
+    feature: 'meeting_minutes',
+    system:
+      'Bạn là thư ký hội đồng khoa học. Soạn dự thảo biên bản họp bằng tiếng Việt, văn phong hành chính. ' +
+      'Chỉ dùng điểm và nhận xét trong <so_lieu>. Không tự đưa ra kết luận thông qua/không thông qua — để trống mục "Kết luận của hội đồng" cho chủ tịch điền. ' +
+      GUARD,
+    prompt:
+      'Soạn dự thảo biên bản gồm: thành phần, nội dung đánh giá từng hồ sơ (điểm trung bình, cao nhất, thấp nhất, số phiếu), tổng hợp nhận xét chính (không nêu tên người nhận xét), các yêu cầu chỉnh sửa, mục "Kết luận của hội đồng" để trống.\n\n' +
+      `<so_lieu>\n${JSON.stringify(m, null, 1)}\n</so_lieu>`,
+    maxOutputTokens: 2500,
+  });
+  if (!r.usage.mock) return draftFrom('minutes', r, r.text);
+  const fmt = (n: number | null) => (n === null ? '—' : n.toLocaleString('vi-VN'));
+  const sugg = (s: string) => (s === 'PASS' ? 'đạt ngưỡng đề nghị' : s === 'FAIL' ? 'dưới ngưỡng đề nghị' : 'chưa đủ phiếu để tổng hợp');
+  const text = `[GIẢ LẬP — dựng theo mẫu từ kết quả chấm, chưa dùng mô hình AI thật]
+
+BIÊN BẢN HỌP HỘI ĐỒNG ${m.councilCode}
+${m.councilTitle} — ${m.typeLabel}
+
+I. THÀNH PHẦN
+${m.members.map((x) => `- ${x.name} — ${x.roleLabel}${x.status !== 'ACCEPTED' ? ` (${x.status === 'DECLINED' ? 'từ chối tham gia' : 'chưa xác nhận'})` : ''}`).join('\n')}
+
+II. KẾT QUẢ ĐÁNH GIÁ (phiếu "${m.rubricName}", thang ${m.maxTotal} điểm, ngưỡng đề nghị ${m.passThreshold})
+${m.results
+  .map((x) => `- ${x.code} — ${x.title}: ${x.submitted}/${x.eligible} phiếu; điểm trung bình ${fmt(x.average)} (thấp nhất ${fmt(x.min)}, cao nhất ${fmt(x.max)}); ${sugg(x.suggestion)}.`)
+  .join('\n')}
+
+III. TỔNG HỢP NHẬN XÉT
+${m.results
+  .map((x) => {
+    const cs = m.comments.filter((c) => c.targetCode === x.code && c.comment.trim());
+    return `${x.code}:\n${cs.length ? cs.map((c) => `  • ${c.comment.trim()}`).join('\n') : '  • (không có nhận xét bằng văn bản)'}`;
+  })
+  .join('\n')}
+
+IV. KẾT LUẬN CỦA HỘI ĐỒNG
+(Chủ tịch hội đồng điền kết luận cho từng hồ sơ.)`;
+  return draftFrom('minutes', r, text);
+}

@@ -279,7 +279,7 @@ export interface AuditEvent {
 }
 
 export interface WorkItem {
-  kind: 'proposal' | 'project' | 'publication' | 'milestone' | 'change_request';
+  kind: 'proposal' | 'project' | 'publication' | 'milestone' | 'change_request' | 'council';
   id: string;
   code: string;
   title: string;

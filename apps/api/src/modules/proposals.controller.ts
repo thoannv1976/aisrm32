@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { CurrentPrincipal, RequestId, unitPathOf } from '../common/auth';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../common/errors';
 import { firestore, nowIso, tcol } from '../common/firebase';
-import { audit, canRead, listVisible, reserveCode } from '../common/records';
+import { audit, canRead, hasReviewAccess, listVisible, reserveCode } from '../common/records';
 import { parseIdempotencyKey, runTransition, transitionBody } from '../common/transition';
 import { docData, parse, withActions } from '../common/util';
 import { callIsOpen } from './calls.controller';
@@ -42,7 +42,7 @@ async function loadReadable(p: Principal, id: string) {
   const snap = await tcol(p.tenantId, 'proposals').doc(id).get();
   if (!snap.exists) throw notFound();
   const rec = docData<Proposal>(snap);
-  if (!canRead(p, rec)) throw notFound();
+  if (!canRead(p, rec) && !(await hasReviewAccess(p, rec.id))) throw notFound();
   return rec;
 }
 
