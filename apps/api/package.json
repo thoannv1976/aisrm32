@@ -1,0 +1,37 @@
+{
+  "name": "@aisrm/api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "nest start --watch",
+    "start": "node dist/main.js",
+    "seed": "tsx scripts/seed.ts",
+    "test": "echo \"(API integration tests run via: pnpm test:integration at repo root)\"",
+    "test:integration": "vitest run --config vitest.config.ts"
+  },
+  "dependencies": {
+    "@aisrm/shared": "workspace:*",
+    "@nestjs/common": "^11.2.11",
+    "@nestjs/core": "^11.2.11",
+    "@nestjs/platform-express": "^11.2.11",
+    "@nestjs/swagger": "^11.4.8",
+    "firebase-admin": "^14.5.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.24",
+    "@swc/core": "^1.16.22",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.3.0",
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "5.9.3",
+    "unplugin-swc": "^2.0.0",
+    "vitest": "3.2.7"
+  }
+}

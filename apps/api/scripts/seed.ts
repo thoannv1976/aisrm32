@@ -1,0 +1,303 @@
+/**
+ * Nạp dữ liệu giả lập vào Firebase Emulator Suite.
+ * CHỈ chạy khi có FIRESTORE_EMULATOR_HOST và FIREBASE_AUTH_EMULATOR_HOST — từ chối chạy với project thật.
+ *
+ *   pnpm emulators:fresh   (terminal 1)
+ *   pnpm seed              (terminal 2)
+ */
+import { PROJECT_WORKFLOW, PROPOSAL_WORKFLOW, PUBLICATION_WORKFLOW, normalizeDoi, normalizeTitle } from '@aisrm/shared';
+import { auth, config, firestore } from '../src/common/firebase';
+import { CALL_FORM, DEMO_PASSWORD, STUDENT_CALL_FORM, TENANTS, type SeedTenant } from './seed-data';
+
+export type SeedResult = Record<string, Record<string, { uid: string; email: string }>>;
+
+function assertEmulator() {
+  if (!process.env.FIRESTORE_EMULATOR_HOST || !process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+    throw new Error('Từ chối seed: chưa đặt FIRESTORE_EMULATOR_HOST / FIREBASE_AUTH_EMULATOR_HOST (chỉ seed vào emulator).');
+  }
+  if (!config.projectId.startsWith('demo-')) {
+    throw new Error(`Từ chối seed: projectId "${config.projectId}" không phải project demo-*.`);
+  }
+}
+
+async function clearEmulators() {
+  const fsHost = process.env.FIRESTORE_EMULATOR_HOST;
+  const authHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
+  await fetch(`http://${fsHost}/emulator/v1/projects/${config.projectId}/databases/(default)/documents`, { method: 'DELETE' });
+  await fetch(`http://${authHost}/emulator/v1/projects/${config.projectId}/accounts`, { method: 'DELETE' });
+}
+
+const day = 86400000;
+const iso = (offsetDays: number) => new Date(Date.now() + offsetDays * day).toISOString();
+const date = (offsetDays: number) => iso(offsetDays).slice(0, 10);
+
+async function seedTenant(t: SeedTenant): Promise<Record<string, { uid: string; email: string }>> {
+  const db = firestore();
+  const tdoc = db.collection('tenants').doc(t.id);
+  const now = iso(0);
+  await tdoc.set({ name: t.name, createdAt: now, seed: true });
+
+  const byId = new Map(t.units.map((u) => [u.id, u]));
+  const ancestors = (id: string): string[] => {
+    const out: string[] = [];
+    let cur = byId.get(id)?.parentId ?? null;
+    while (cur) {
+      out.push(cur);
+      cur = byId.get(cur)?.parentId ?? null;
+    }
+    return out;
+  };
+  const batch = db.batch();
+  for (const u of t.units) {
+    batch.set(tdoc.collection('units').doc(u.id), { code: u.code, name: u.name, type: u.type, parentId: u.parentId, ancestorIds: ancestors(u.id), seed: true });
+  }
+  await batch.commit();
+
+  const users: Record<string, { uid: string; email: string }> = {};
+  for (const u of t.users) {
+    const rec = await auth().createUser({ email: u.email, password: DEMO_PASSWORD, displayName: u.displayName, emailVerified: true });
+    users[u.key] = { uid: rec.uid, email: u.email };
+    const b = db.batch();
+    b.set(db.collection('userTenants').doc(rec.uid), { tenantIds: [t.id] });
+    b.set(tdoc.collection('people').doc(rec.uid), {
+      displayName: u.displayName,
+      email: u.email,
+      title: u.title,
+      unitId: u.unitId,
+      status: 'ACTIVE',
+      externalIds: { uniData360: `MOCK-${t.id}-${u.key}` },
+      seed: true,
+    });
+    for (const r of u.roles) {
+      b.set(tdoc.collection('roleBindings').doc(), {
+        uid: rec.uid,
+        role: r.role,
+        scopeType: r.scope === 'tenant' ? 'tenant' : 'unit',
+        scopeId: r.scope === 'tenant' ? null : r.scope,
+        validFrom: null,
+        validUntil: null,
+        delegatedBy: null,
+        createdAt: now,
+      });
+    }
+    await b.commit();
+  }
+  return users;
+}
+
+/** Hồ sơ nghiệp vụ mẫu để có dữ liệu trên dashboard và trang làm việc. */
+async function seedBusiness(tenantId: string, users: Record<string, { uid: string }>) {
+  const db = firestore();
+  const t = db.collection('tenants').doc(tenantId);
+  const tenant = TENANTS.find((x) => x.id === tenantId)!;
+  const person = (key: string) => tenant.users.find((u) => u.key === key)!;
+  const unitInfo = (unitId: string) => {
+    const units = new Map(tenant.units.map((u) => [u.id, u]));
+    const path = [unitId];
+    let cur = units.get(unitId)?.parentId ?? null;
+    while (cur) {
+      path.push(cur);
+      cur = units.get(cur)?.parentId ?? null;
+    }
+    return { unitId, unitPath: path, unitName: units.get(unitId)!.name };
+  };
+  const year = new Date().getFullYear();
+  const officer = users.officer.uid;
+  const now = iso(0);
+  const meta = (by: string, version = 1) => ({ tenantId, createdAt: now, createdBy: by, updatedAt: now, updatedBy: by, version, seed: true });
+
+  const calls = [
+    { id: 'call-truong', code: `DOT-${year}-0001`, title: `Đợt đăng ký đề tài KH&CN cấp trường năm ${year + 1}`, level: 'UNIVERSITY', openAt: iso(-10), closeAt: iso(60), expertReview: false, form: CALL_FORM, status: 'OPEN', description: 'Đăng ký đề tài cấp trường; kinh phí tối đa 150 triệu đồng; thời gian 12–18 tháng.', eligibility: 'Giảng viên cơ hữu; không đang chủ nhiệm quá 2 đề tài cấp trường.' },
+    { id: 'call-sv', code: `DOT-${year}-0002`, title: `Đợt đăng ký đề tài sinh viên NCKH năm học ${year}–${year + 1}`, level: 'STUDENT', openAt: iso(-5), closeAt: iso(45), expertReview: true, form: STUDENT_CALL_FORM, status: 'OPEN', description: 'Đề tài nghiên cứu khoa học sinh viên, có giảng viên hướng dẫn.', eligibility: 'Sinh viên chính quy năm 2 trở lên.' },
+    { id: 'call-cu', code: `DOT-${year}-0003`, title: `Đợt đăng ký đề tài cấp trường năm ${year} (đã đóng)`, level: 'UNIVERSITY', openAt: iso(-300), closeAt: iso(-240), expertReview: false, form: CALL_FORM, status: 'CLOSED', description: 'Đợt đã kết thúc.', eligibility: '' },
+  ];
+  for (const c of calls) {
+    const { id, ...rest } = c;
+    await t.collection('calls').doc(id).set({ ...rest, year: year + 1, ...meta(officer) });
+  }
+  await t.collection('counters').doc(`DOT-${year}`).set({ value: 3 });
+
+  const fullFields = {
+    field: 'Kinh tế',
+    urgency: 'Chuỗi cung ứng toàn cầu đang dịch chuyển, đặt ra yêu cầu đánh giá tác động đến doanh nghiệp xuất khẩu Việt Nam.',
+    objective: 'Đánh giá mức độ tham gia chuỗi giá trị toàn cầu của doanh nghiệp xuất khẩu và đề xuất giải pháp.',
+    methods: 'Khảo sát 300 doanh nghiệp; mô hình hồi quy dữ liệu bảng; phỏng vấn sâu 20 chuyên gia.',
+    expectedOutputs: '01 bài báo tạp chí trong nước; 01 bài hội thảo quốc tế; 01 báo cáo chính sách.',
+    applicationValue: 'Tài liệu tham khảo cho cơ quan quản lý và giảng dạy học phần Kinh tế quốc tế.',
+  };
+  const proposals = [
+    { id: 'dx1', code: `DX-${year}-0001`, owner: 'researcher2', title: 'Ứng dụng phân tích dữ liệu khách hàng trong doanh nghiệp bán lẻ vừa và nhỏ', status: 'UNIT_REVIEW', budget: 90_000_000, months: 12 },
+    { id: 'dx2', code: `DX-${year}-0002`, owner: 'researcher3', title: 'Tác động của hiệp định EVFTA đến xuất khẩu nông sản khu vực phía Nam', status: 'SCIENCE_REVIEW', budget: 120_000_000, months: 18 },
+    { id: 'dx3', code: `DX-${year}-0003`, owner: 'pi', title: 'Chuyển đổi xanh trong logistics cảng biển Việt Nam', status: 'DRAFT', budget: null, months: null },
+    { id: 'dx4', code: `DX-${year}-0004`, owner: 'focal2', title: 'Văn hóa doanh nghiệp và gắn kết nhân viên thế hệ Z', status: 'APPROVAL_PENDING', budget: 80_000_000, months: 12 },
+    { id: 'dx5', code: `DX-${year}-0005`, owner: 'pi', title: 'Mức độ tham gia chuỗi giá trị toàn cầu của doanh nghiệp xuất khẩu Việt Nam', status: 'APPROVED', budget: 140_000_000, months: 12 },
+    { id: 'dx6', code: `DX-${year}-0006`, owner: 'researcher3', title: 'Phát triển du lịch cộng đồng gắn với kinh tế số', status: 'APPROVED', budget: 100_000_000, months: 12 },
+  ];
+  for (const p of proposals) {
+    const u = person(p.owner);
+    const ui = unitInfo(u.unitId);
+    const submitted = p.status !== 'DRAFT';
+    await t.collection('proposals').doc(p.id).set({
+      code: p.code,
+      callId: p.id === 'dx5' || p.id === 'dx6' ? 'call-cu' : 'call-truong',
+      callCode: p.id === 'dx5' || p.id === 'dx6' ? calls[2].code : calls[0].code,
+      callTitle: p.id === 'dx5' || p.id === 'dx6' ? calls[2].title : calls[0].title,
+      formVersion: 1,
+      workflowKey: 'proposal',
+      workflowVersion: PROPOSAL_WORKFLOW.version,
+      title: p.title,
+      ownerUid: users[p.owner].uid,
+      ownerName: u.displayName,
+      ...ui,
+      members: [{ uid: users[p.owner].uid, name: u.displayName, role: 'PI', unitName: ui.unitName }],
+      memberUids: [users[p.owner].uid],
+      fields: submitted ? fullFields : { field: 'Kinh tế', objective: 'Đánh giá thực trạng và đề xuất lộ trình chuyển đổi xanh.' },
+      budgetVnd: p.budget,
+      durationMonths: p.months,
+      status: p.status,
+      returnTo: null,
+      actorsByAction: p.status === 'APPROVAL_PENDING' ? { science_forward: officer } : {},
+      currentRevisionNo: submitted ? 1 : 0,
+      submittedAt: submitted ? iso(-20) : null,
+      decidedAt: p.status === 'APPROVED' ? iso(-250) : null,
+      projectId: p.id === 'dx5' ? 'dt1' : p.id === 'dx6' ? 'dt2' : null,
+      expertReview: false,
+      classification: 'INTERNAL',
+      ...meta(users[p.owner].uid, submitted ? 2 : 1),
+    });
+    if (submitted) {
+      await t.collection('proposals').doc(p.id).collection('revisions').doc('1').set({
+        revisionNo: 1,
+        submittedAt: iso(-20),
+        submittedBy: users[p.owner].uid,
+        snapshot: { title: p.title, members: [], fields: fullFields, budgetVnd: p.budget, durationMonths: p.months, documentIds: [] },
+      });
+      await t.collection('proposals').doc(p.id).collection('history').add({
+        action: 'submit', actionLabel: 'Nộp hồ sơ', from: 'DRAFT', to: 'UNIT_REVIEW', actorUid: users[p.owner].uid, actorName: u.displayName, comment: '(dữ liệu mẫu)', at: iso(-20), version: 2, revisionNo: 1,
+      });
+    }
+  }
+  await t.collection('counters').doc(`DX-${year}`).set({ value: proposals.length });
+
+  const projects = [
+    { id: 'dt1', code: `DT-${year}-0001`, proposalId: 'dx5', owner: 'pi', title: proposals[4].title, budget: 140_000_000, start: date(-260), end: date(105),
+      milestones: [
+        { title: 'Tổng quan tài liệu và khung phân tích', due: date(-170), status: 'ACCEPTED', deliverable: 'Báo cáo tổng quan' },
+        { title: 'Khảo sát doanh nghiệp', due: date(-11), status: 'OPEN', deliverable: 'Bộ dữ liệu khảo sát 300 doanh nghiệp' },
+        { title: 'Bài báo tạp chí trong nước', due: date(70), status: 'OPEN', deliverable: '01 bài báo được chấp nhận đăng' },
+      ] },
+    { id: 'dt2', code: `DT-${year}-0002`, proposalId: 'dx6', owner: 'researcher3', title: proposals[5].title, budget: 100_000_000, start: date(-200), end: date(165),
+      milestones: [
+        { title: 'Khảo sát điểm du lịch cộng đồng', due: date(20), status: 'OPEN', deliverable: 'Báo cáo khảo sát' },
+        { title: 'Báo cáo tổng kết', due: date(150), status: 'OPEN', deliverable: 'Báo cáo tổng kết đề tài' },
+      ] },
+  ];
+  for (const pj of projects) {
+    const u = person(pj.owner);
+    const ui = unitInfo(u.unitId);
+    const open = pj.milestones.filter((m) => m.status !== 'ACCEPTED').map((m) => m.due).sort();
+    await t.collection('projects').doc(pj.id).set({
+      code: pj.code,
+      proposalId: pj.proposalId,
+      title: pj.title,
+      ownerUid: users[pj.owner].uid,
+      ownerName: u.displayName,
+      memberUids: [users[pj.owner].uid],
+      members: [{ uid: users[pj.owner].uid, name: u.displayName, role: 'PI', unitName: ui.unitName }],
+      ...ui,
+      budgetVnd: pj.budget,
+      startDate: pj.start,
+      endDate: pj.end,
+      status: 'ACTIVE',
+      workflowKey: 'project',
+      workflowVersion: PROJECT_WORKFLOW.version,
+      actorsByAction: { activate: officer },
+      returnTo: null,
+      milestoneStats: {
+        total: pj.milestones.length,
+        accepted: pj.milestones.filter((m) => m.status === 'ACCEPTED').length,
+        open: pj.milestones.filter((m) => m.status === 'OPEN').length,
+        nextDue: open[0] ?? null,
+      },
+      ...meta(officer, 3),
+    });
+    for (const m of pj.milestones) {
+      await t.collection('projects').doc(pj.id).collection('milestones').add({
+        title: m.title,
+        dueDate: m.due,
+        deliverable: m.deliverable,
+        status: m.status,
+        submittedAt: m.status === 'ACCEPTED' ? iso(-175) : null,
+        submittedNote: m.status === 'ACCEPTED' ? '(dữ liệu mẫu)' : null,
+        documentIds: [],
+        acceptedBy: m.status === 'ACCEPTED' ? officer : null,
+        acceptedAt: m.status === 'ACCEPTED' ? iso(-168) : null,
+        createdAt: iso(-255),
+      });
+    }
+  }
+  await t.collection('counters').doc(`DT-${year}`).set({ value: projects.length });
+
+  const pubs = [
+    { id: 'cb1', code: `CB-${year}-0001`, owner: 'pi', title: 'Global value chain participation of Vietnamese exporting firms: evidence from panel data', type: 'JOURNAL', venue: 'Tạp chí Kinh tế đối ngoại (mẫu)', doi: '10.5555/ftu.demo.2026.001', status: 'CONFIRMED', indexing: ['HĐGSNN'], acts: { verify: officer, confirm: users.head.uid } },
+    { id: 'cb2', code: `CB-${year}-0002`, owner: 'researcher2', title: 'Customer analytics adoption in Vietnamese SMEs', type: 'CONFERENCE', venue: 'Hội thảo quốc tế mẫu về Kinh doanh 2026', doi: null, status: 'SUBMITTED', indexing: [], acts: {} },
+    { id: 'cb3', code: `CB-${year}-0003`, owner: 'researcher3', title: 'EVFTA và xuất khẩu nông sản: phân tích mô hình trọng lực', type: 'JOURNAL', venue: 'Tạp chí Nghiên cứu kinh tế (mẫu)', doi: '10.5555/ftu.demo.2026.003', status: 'VERIFIED', indexing: ['HĐGSNN'], acts: { verify: officer } },
+    { id: 'cb4', code: `CB-${year}-0004`, owner: 'pi', title: 'Logistics xanh tại cảng biển: kinh nghiệm quốc tế', type: 'BOOK_CHAPTER', venue: 'Sách chuyên khảo mẫu', doi: null, status: 'DRAFT', indexing: [], acts: {} },
+  ];
+  for (const pb of pubs) {
+    const u = person(pb.owner);
+    const ui = unitInfo(u.unitId);
+    await t.collection('publications').doc(pb.id).set({
+      code: pb.code,
+      title: pb.title,
+      titleNormalized: normalizeTitle(pb.title),
+      type: pb.type,
+      venue: pb.venue,
+      year,
+      doi: pb.doi,
+      doiNormalized: normalizeDoi(pb.doi),
+      url: null,
+      indexing: pb.indexing,
+      authors: [{ name: u.displayName, uid: users[pb.owner].uid, isInternal: true, order: 1 }],
+      authorUids: [users[pb.owner].uid],
+      ownerUid: users[pb.owner].uid,
+      ownerName: u.displayName,
+      ...ui,
+      projectId: pb.id === 'cb1' ? 'dt1' : null,
+      status: pb.status,
+      workflowKey: 'publication',
+      workflowVersion: PUBLICATION_WORKFLOW.version,
+      actorsByAction: pb.acts,
+      returnTo: null,
+      ...meta(users[pb.owner].uid, 2),
+    });
+  }
+  await t.collection('counters').doc(`CB-${year}`).set({ value: pubs.length });
+}
+
+export async function seed(options: { business?: boolean; log?: boolean } = {}): Promise<SeedResult> {
+  assertEmulator();
+  await clearEmulators();
+  const result: SeedResult = {};
+  for (const t of TENANTS) {
+    result[t.id] = await seedTenant(t);
+    if (options.business !== false && t.id === 'ftu') await seedBusiness(t.id, result[t.id]);
+  }
+  if (options.log !== false) {
+    console.log('Đã seed dữ liệu giả lập vào emulator. Tài khoản (mật khẩu chung: %s):', DEMO_PASSWORD);
+    for (const t of TENANTS) for (const u of t.users) console.log(`  [${t.id}] ${u.email.padEnd(28)} ${u.displayName} — ${u.roles.map((r) => r.role).join(', ')}`);
+  }
+  return result;
+}
+
+if (require.main === module) {
+  process.env.FIRESTORE_EMULATOR_HOST ??= '127.0.0.1:8180';
+  process.env.FIREBASE_AUTH_EMULATOR_HOST ??= '127.0.0.1:9099';
+  process.env.FIREBASE_STORAGE_EMULATOR_HOST ??= '127.0.0.1:9199';
+  seed()
+    .then(() => process.exit(0))
+    .catch((e) => {
+      console.error(e.message ?? e);
+      process.exit(1);
+    });
+}

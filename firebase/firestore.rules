@@ -1,0 +1,10 @@
+rules_version = '2';
+// Mọi dữ liệu nghiệp vụ đi qua API backend (Admin SDK + kiểm tra quyền tại server).
+// Client SDK bị chặn hoàn toàn.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

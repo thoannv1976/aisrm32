@@ -1,0 +1,26 @@
+{
+  "name": "aisrm32",
+  "private": true,
+  "description": "AI-SRM — Hệ thống quản lý khoa học và đổi mới sáng tạo tích hợp AI",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build:shared": "pnpm --filter @aisrm/shared build",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "emulators": "firebase emulators:start --project demo-aisrm --import ./.emulator-data --export-on-exit ./.emulator-data",
+    "emulators:fresh": "firebase emulators:start --project demo-aisrm",
+    "seed": "pnpm --filter @aisrm/api seed",
+    "dev:api": "pnpm --filter @aisrm/api dev",
+    "dev:web": "pnpm --filter @aisrm/web dev",
+    "test:integration": "firebase emulators:exec --project demo-aisrm --only auth,firestore,storage \"pnpm --filter @aisrm/api test:integration\"",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "typescript": "5.9.3"
+  }
+}

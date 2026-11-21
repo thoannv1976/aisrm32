@@ -1,0 +1,9 @@
+rules_version = '2';
+// Tệp chỉ được tải lên/tải xuống qua API sau khi kiểm tra quyền.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
