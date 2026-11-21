@@ -31,7 +31,7 @@ const day = 86400000;
 const iso = (offsetDays: number) => new Date(Date.now() + offsetDays * day).toISOString();
 const date = (offsetDays: number) => iso(offsetDays).slice(0, 10);
 
-async function seedTenant(t: SeedTenant): Promise<Record<string, { uid: string; email: string }>> {
+export async function seedTenant(t: SeedTenant, passwordFor: (email: string) => string = () => DEMO_PASSWORD): Promise<Record<string, { uid: string; email: string }>> {
   const db = firestore();
   const tdoc = db.collection('tenants').doc(t.id);
   const now = iso(0);
@@ -55,7 +55,7 @@ async function seedTenant(t: SeedTenant): Promise<Record<string, { uid: string; 
 
   const users: Record<string, { uid: string; email: string }> = {};
   for (const u of t.users) {
-    const rec = await auth().createUser({ email: u.email, password: DEMO_PASSWORD, displayName: u.displayName, emailVerified: true });
+    const rec = await auth().createUser({ email: u.email, password: passwordFor(u.email), displayName: u.displayName, emailVerified: true });
     users[u.key] = { uid: rec.uid, email: u.email };
     const b = db.batch();
     b.set(db.collection('userTenants').doc(rec.uid), { tenantIds: [t.id] });
@@ -86,7 +86,7 @@ async function seedTenant(t: SeedTenant): Promise<Record<string, { uid: string; 
 }
 
 /** Hồ sơ nghiệp vụ mẫu để có dữ liệu trên dashboard và trang làm việc. */
-async function seedBusiness(tenantId: string, users: Record<string, { uid: string }>) {
+export async function seedBusiness(tenantId: string, users: Record<string, { uid: string }>) {
   const db = firestore();
   const t = db.collection('tenants').doc(tenantId);
   const tenant = TENANTS.find((x) => x.id === tenantId)!;

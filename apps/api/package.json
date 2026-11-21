@@ -9,6 +9,7 @@
     "dev": "nest start --watch",
     "start": "node dist/main.js",
     "seed": "tsx scripts/seed.ts",
+    "bootstrap:staging": "tsx scripts/bootstrap-staging.ts",
     "test": "echo \"(API integration tests run via: pnpm test:integration at repo root)\"",
     "test:integration": "vitest run --config vitest.config.ts"
   },

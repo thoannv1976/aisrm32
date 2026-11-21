@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:staging": "tsc -b && vite build --mode staging",
     "typecheck": "tsc -b --noEmit",
     "preview": "vite preview",
     "test": "echo \"(web: kiểm thử E2E bằng Playwright ở thư mục gốc)\""

@@ -11,7 +11,7 @@ export async function createApp(): Promise<INestApplication> {
     logger: process.env.APP_ENV === 'test' ? ['error', 'warn'] : ['error', 'warn', 'log'],
   });
   app.setGlobalPrefix('api/v1');
-  const origins = (process.env.CORS_ORIGINS ?? 'http://localhost:5173,http://127.0.0.1:5173').split(',');
+  const origins = (process.env.CORS_ORIGINS ?? 'http://localhost:5173,http://127.0.0.1:5173').split(/[,;]/);
   app.enableCors({
     origin: origins,
     allowedHeaders: ['Authorization', 'Content-Type', 'X-Tenant-Id', 'Idempotency-Key', 'X-Request-Id'],

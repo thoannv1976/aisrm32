@@ -2,7 +2,7 @@
 
 AI-powered Scientific Research Management System. Monorepo TypeScript: React + NestJS + Firebase (Auth, Firestore, Storage), triển khai mục tiêu trên GCP project `aisrm32`.
 
-> **Trạng thái:** Đã xong Giai đoạn 0–2 (nền tảng + nghiệp vụ tối thiểu), chạy local trên Firebase Emulator với **dữ liệu giả lập**. Chưa triển khai lên cloud, chưa có AI và kết nối UNI-DATA360 (Giai đoạn 3). Chi tiết: [docs/BAO_CAO_GIAI_DOAN_0-2.md](docs/BAO_CAO_GIAI_DOAN_0-2.md).
+> **Trạng thái:** Đã xong Giai đoạn 0–2 (nền tảng + nghiệp vụ tối thiểu). **Staging đang chạy tại https://aisrm32.web.app** (dữ liệu giả lập; xem [docs/TRIEN_KHAI_STAGING.md](docs/TRIEN_KHAI_STAGING.md)). Chưa có AI và kết nối UNI-DATA360 (Giai đoạn 3). Chi tiết: [docs/BAO_CAO_GIAI_DOAN_0-2.md](docs/BAO_CAO_GIAI_DOAN_0-2.md).
 
 ## Chạy thử trên máy
 
