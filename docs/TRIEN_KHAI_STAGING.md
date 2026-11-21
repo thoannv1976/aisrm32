@@ -38,13 +38,14 @@ firebase --project aisrm32 deploy --only hosting,firestore:rules,firestore:index
 
 ## Chi phí và giới hạn
 
-- Cloud Run scale về 0 khi không dùng; Firestore/Storage/Hosting tính theo dung lượng và lượt dùng. Nên đặt **budget alert** trên billing account (Billing → Budgets & alerts).
+- Cloud Run scale về 0 khi không dùng; Firestore/Storage/Hosting tính theo dung lượng và lượt dùng.
+- **Budget alert đã đặt (21/11/2026):** "AI-SRM aisrm32 - 500k VND/thang" — 500.000 ₫/tháng, chỉ tính project `aisrm32`, cảnh báo email tới quản trị billing ở 50%, 90%, 100% chi tiêu thực tế và khi dự báo vượt 100%. Budget chỉ **cảnh báo**, không tự dừng dịch vụ.
 - Identity Platform miễn phí dưới 50.000 người dùng hoạt động/tháng với đăng nhập email.
 
 ## Việc nên làm trước khi dùng dữ liệu thật
 
 - Tách project production riêng; chỉ dùng `aisrm32` cho staging.
-- Đặt budget alert; bật sao lưu Firestore (PITR / scheduled backup) và diễn tập phục hồi.
+- Bật sao lưu Firestore (PITR / scheduled backup) và diễn tập phục hồi.
 - Kết nối SSO của trường; tắt tài khoản giả lập.
 - Giới hạn `/api/docs` (Swagger) chỉ cho quản trị; rate limit dùng chung; App Check.
 - Quét malware tệp tải lên; tên miền riêng.
