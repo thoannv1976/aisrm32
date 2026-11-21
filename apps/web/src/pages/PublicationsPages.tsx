@@ -331,8 +331,98 @@ function swap<T>(arr: T[], i: number, j: number): T[] {
   return a;
 }
 
+interface Verification {
+  doi: string;
+  found: boolean;
+  checkedAt: string;
+  message: string;
+  overall: 'MATCH' | 'REVIEW' | 'NOT_FOUND' | 'ERROR';
+  crossref: { title: string | null; venue: string | null; year: number | null; authors: string[]; type: string | null; publisher: string | null; url: string | null } | null;
+  checks: { field: string; label: string; status: 'MATCH' | 'PARTIAL' | 'MISMATCH' | 'NO_DATA'; ours: string; theirs: string; note?: string }[];
+  checkedByName?: string;
+}
+
+const CHECK_LABEL = {
+  MATCH: ['APPROVED', 'Khớp'],
+  PARTIAL: ['NEEDS_REVISION', 'Khớp một phần'],
+  MISMATCH: ['REJECTED', 'Lệch'],
+  NO_DATA: ['DRAFT', 'Không có dữ liệu'],
+} as const;
+
+function VerifyCard({ id, initial, canVerify, hasDoi }: { id: string; initial: Verification | null; canVerify: boolean; hasDoi: boolean }) {
+  const qc = useQueryClient();
+  const m = useMutation({
+    mutationFn: () => api<Verification>(`/publications/${id}/verify-doi`, { method: 'POST' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['publications', id] }),
+  });
+  const v = m.data ?? initial;
+  return (
+    <Card
+      title="Kiểm chứng với Crossref"
+      actions={
+        canVerify && (
+          <button className="btn text-xs" disabled={!hasDoi || m.isPending} onClick={() => m.mutate()}>
+            {m.isPending ? 'Đang kiểm chứng…' : 'Kiểm chứng DOI'}
+          </button>
+        )
+      }
+    >
+      {!hasDoi && <p className="text-sm text-slate-500">Chưa có DOI — cần minh chứng tệp / đường dẫn để xác minh thủ công.</p>}
+      <ErrorBox error={m.error} />
+      {v ? (
+        <div>
+          <div className="mb-2 flex flex-wrap items-center gap-2 text-sm">
+            <StatusBadge
+              status={v.overall === 'MATCH' ? 'APPROVED' : v.overall === 'REVIEW' ? 'NEEDS_REVISION' : 'REJECTED'}
+              label={v.overall === 'MATCH' ? 'Khớp Crossref' : v.overall === 'REVIEW' ? 'Cần đối chiếu' : v.overall === 'NOT_FOUND' ? 'Không tìm thấy' : 'Lỗi kết nối'}
+            />
+            <span className="text-slate-700">{v.message}</span>
+          </div>
+          {v.checks.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Trường</th>
+                    <th>Khai báo</th>
+                    <th>Crossref</th>
+                    <th>Kết quả</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {v.checks.map((c) => (
+                    <tr key={c.field}>
+                      <td className="whitespace-nowrap">{c.label}</td>
+                      <td className="text-xs">{c.ours}</td>
+                      <td className="text-xs">{c.theirs}</td>
+                      <td>
+                        <StatusBadge status={CHECK_LABEL[c.status][0]} label={CHECK_LABEL[c.status][1]} />
+                        {c.note && <div className="text-[11px] text-slate-500">{c.note}</div>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {v.crossref?.publisher && (
+            <p className="mt-1 text-xs text-slate-500">
+              Nhà xuất bản (Crossref): {v.crossref.publisher} · loại: {v.crossref.type}
+            </p>
+          )}
+          <p className="mt-2 text-[11px] text-slate-500">
+            Kiểm lúc {new Date(v.checkedAt).toLocaleString('vi-VN')} {v.checkedByName ? `· ${v.checkedByName}` : ''}. Crossref chỉ xác nhận metadata; không xác nhận chỉ mục Scopus/WoS hay xếp hạng Q — cán bộ Phòng KH quyết định.
+          </p>
+        </div>
+      ) : (
+        hasDoi && <p className="text-sm text-slate-500">Chưa kiểm chứng.</p>
+      )}
+    </Card>
+  );
+}
+
 interface PubDetail {
-  item: Publication;
+  item: Publication & { verification?: Verification | null };
   actions: ActionInfo[];
   canEdit: boolean;
   documents: DocumentMeta[];
@@ -341,7 +431,7 @@ interface PubDetail {
 
 export function PublicationDetailPage() {
   const { id } = useParams() as { id: string };
-  const { me } = useSession();
+  const { me, hasRole } = useSession();
   const [tab, setTab] = useState<'info' | 'history'>('info');
   const q = useQuery({ queryKey: ['publications', id], queryFn: () => api<PubDetail>(`/publications/${id}`) });
   if (q.isLoading) return <Loading />;
@@ -399,6 +489,9 @@ export function PublicationDetailPage() {
             />
             <p className="mt-3 text-xs text-slate-500">* tác giả trong trường. Đề nghị hỗ trợ tài chính cho công bố là hồ sơ riêng (phân hệ Kinh phí — P1).</p>
           </Card>
+          <div className="lg:col-span-2">
+            <VerifyCard id={id} initial={p.verification ?? null} canVerify={p.ownerUid === me?.uid || hasRole('SCIENCE_OFFICER', 'SCIENCE_HEAD')} hasDoi={!!p.doiNormalized} />
+          </div>
           <Card title="Minh chứng" actions={d.canEdit && <Uploader parentType="publication" parentId={id} label="Tải minh chứng" />}>
             {d.documents.length === 0 ? (
               <Empty>Chưa có tệp minh chứng. Cần có DOI, đường dẫn hoặc tệp trước khi nộp xác nhận.</Empty>

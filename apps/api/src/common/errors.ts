@@ -67,7 +67,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       });
     }
     // Firestore hủy transaction do tranh chấp ghi (ABORTED = 10) sau khi đã thử lại: không có thay đổi nào được ghi.
-    if ((exception as { code?: unknown })?.code === 10) {
+    const fsCode = (exception as { code?: unknown })?.code;
+    const fsMsg = String((exception as { message?: unknown })?.message ?? '');
+    if (fsCode === 10 || (fsCode === 3 && /transaction is invalid or closed/i.test(fsMsg))) {
       return res.status(409).json({
         code: 'CONCURRENT_MODIFICATION',
         message: 'Hồ sơ đang được người khác cập nhật cùng lúc. Vui lòng tải lại và thử lại.',

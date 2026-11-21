@@ -275,6 +275,66 @@ export async function seedBusiness(tenantId: string, users: Record<string, { uid
   await t.collection('counters').doc(`CB-${year}`).set({ value: pubs.length });
 
   await seedAiDefaults(tenantId);
+  await seedStudentResearch(tenantId);
+}
+
+/**
+ * Dữ liệu mẫu NCKH sinh viên (đợt call-sv có bước thẩm định). Idempotent: bỏ qua nếu đã có.
+ * Tra uid theo email trong seed-data nên dùng được cho cả emulator và staging.
+ */
+export async function seedStudentResearch(tenantId: string): Promise<boolean> {
+  const db = firestore();
+  const t = db.collection('tenants').doc(tenantId);
+  if ((await t.collection('proposals').doc('sv1').get()).exists) return false;
+  const tenant = TENANTS.find((x) => x.id === tenantId)!;
+  const uidOf = async (key: string) => {
+    const u = tenant.users.find((x) => x.key === key)!;
+    const s = await t.collection('people').where('email', '==', u.email).limit(1).get();
+    return { uid: s.docs[0].id, name: u.displayName, unitId: u.unitId };
+  };
+  const [student, officer] = await Promise.all([uidOf('student'), uidOf('officer')]);
+  const units = new Map(tenant.units.map((u) => [u.id, u]));
+  const path: string[] = [student.unitId];
+  for (let cur = units.get(student.unitId)?.parentId ?? null; cur; cur = units.get(cur)?.parentId ?? null) path.push(cur);
+  const unit = { unitId: student.unitId, unitPath: path, unitName: units.get(student.unitId)!.name };
+  const call = (await t.collection('calls').doc('call-sv').get()).data()!;
+  const year = new Date().getFullYear();
+  const now = iso(0);
+  const counter = t.collection('counters').doc(`DX-${year}`);
+  const base = (await counter.get()).get('value') ?? 0;
+  const items = [
+    { id: 'sv1', title: 'Hành vi mua sắm trực tuyến của sinh viên Hà Nội sau đại dịch', status: 'UNIT_REVIEW', fields: { field: 'Kinh doanh – Quản lý', objective: 'Xác định các yếu tố ảnh hưởng đến ý định mua sắm trực tuyến của sinh viên.', supervisor: 'TS. Trần Thị Bình' } },
+    { id: 'sv2', title: 'Ứng dụng mô hình học máy dự báo giá nông sản xuất khẩu', status: 'APPROVED', fields: { field: 'Kinh tế', objective: 'Xây dựng mô hình dự báo giá cà phê xuất khẩu theo tháng bằng học máy.', supervisor: 'ThS. Hoàng Thu Hà' } },
+  ];
+  let n = base;
+  for (const it of items) {
+    n++;
+    await t.collection('proposals').doc(it.id).set({
+      tenantId, code: `DX-${year}-${String(n).padStart(4, '0')}`, callId: 'call-sv', callCode: call.code, callTitle: call.title, formVersion: 1,
+      workflowKey: 'proposal', workflowVersion: PROPOSAL_WORKFLOW.version, title: it.title, ownerUid: student.uid, ownerName: student.name, ...unit,
+      members: [{ uid: student.uid, name: student.name, role: 'PI', unitName: unit.unitName }], memberUids: [student.uid], fields: it.fields,
+      budgetVnd: 10_000_000, durationMonths: 6, status: it.status, returnTo: null,
+      actorsByAction: it.status === 'APPROVED' ? { science_forward: officer.uid, expert_complete: officer.uid } : {},
+      currentRevisionNo: 1, submittedAt: iso(-15), decidedAt: it.status === 'APPROVED' ? iso(-60) : null, projectId: it.status === 'APPROVED' ? 'dtsv1' : null,
+      expertReview: true, classification: 'INTERNAL', createdAt: now, createdBy: student.uid, updatedAt: now, updatedBy: student.uid, version: 2, seed: true,
+    });
+    await t.collection('proposals').doc(it.id).collection('revisions').doc('1').set({ revisionNo: 1, submittedAt: iso(-15), submittedBy: student.uid, snapshot: { title: it.title, members: [], fields: it.fields, budgetVnd: 10_000_000, durationMonths: 6, documentIds: [] } });
+  }
+  await counter.set({ value: n }, { merge: true });
+  const dtCounter = t.collection('counters').doc(`DT-${year}`);
+  const dtN = ((await dtCounter.get()).get('value') ?? 0) + 1;
+  await t.collection('projects').doc('dtsv1').set({
+    tenantId, code: `DT-${year}-${String(dtN).padStart(4, '0')}`, proposalId: 'sv2', title: items[1].title, ownerUid: student.uid, ownerName: student.name,
+    memberUids: [student.uid], members: [{ uid: student.uid, name: student.name, role: 'PI', unitName: unit.unitName }], ...unit,
+    budgetVnd: 10_000_000, startDate: date(-50), endDate: date(130), status: 'ACTIVE', workflowKey: 'project', workflowVersion: PROJECT_WORKFLOW.version,
+    actorsByAction: { activate: officer.uid }, returnTo: null, milestoneStats: { total: 2, accepted: 0, open: 2, nextDue: date(10) },
+    createdAt: now, createdBy: officer.uid, updatedAt: now, updatedBy: officer.uid, version: 3, seed: true, studentResearch: true,
+  });
+  for (const m of [{ title: 'Thu thập và làm sạch dữ liệu giá', due: date(10), deliverable: 'Bộ dữ liệu 2015–2026' }, { title: 'Báo cáo tổng kết và bài dự thi', due: date(120), deliverable: 'Báo cáo, bài dự thi cấp trường' }]) {
+    await t.collection('projects').doc('dtsv1').collection('milestones').add({ title: m.title, dueDate: m.due, deliverable: m.deliverable, status: 'OPEN', submittedAt: null, submittedNote: null, documentIds: [], acceptedBy: null, acceptedAt: null, createdAt: iso(-50) });
+  }
+  await dtCounter.set({ value: dtN }, { merge: true });
+  return true;
 }
 
 /** Cấu hình AI Center + UNI-DATA360 mặc định (dùng cho seed emulator và nâng cấp staging). */

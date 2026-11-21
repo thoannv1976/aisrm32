@@ -16,6 +16,7 @@ import { audit, canRead, listVisible, reserveCode } from '../common/records';
 import { parseIdempotencyKey, runTransition, transitionBody } from '../common/transition';
 import { docData, parse, withActions } from '../common/util';
 import { callIsOpen } from './calls.controller';
+import { checkProposal, summarizeProposal } from '../ai/features';
 
 const memberSchema = z.object({
   uid: z.string().max(128).nullable(),
@@ -284,6 +285,33 @@ export class ProposalsController {
         if (to === 'REJECTED' || to === 'WITHDRAWN') return { patch: { decidedAt: nowIso() } };
       },
     });
+  }
+
+  /** Trợ lý AI cho hồ sơ: tóm tắt thuyết minh / kiểm tra thuyết minh. Kết quả là dự thảo, lưu kèm người tạo. */
+  @Post(':id/ai')
+  async ai(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Param('id') id: string, @Body() body: unknown) {
+    const { task } = parse(z.object({ task: z.enum(['summary', 'check']) }), body);
+    const rec = await loadReadable(p, id);
+    const call = docData<Call>(await tcol(p.tenantId, 'calls').doc(rec.callId).get());
+    let draft;
+    if (task === 'summary') {
+      draft = await summarizeProposal(p, rec, call.form);
+    } else {
+      const docs = await tcol(p.tenantId, 'documents').where('parentId', '==', id).where('status', '==', 'ACTIVE').get();
+      const keys = docs.docs.filter((d) => d.get('parentType') === 'proposal').map((d) => (d.get('checklistKey') as string) ?? '');
+      draft = await checkProposal(p, rec, call.form, keys);
+    }
+    await tcol(p.tenantId, 'proposals').doc(id).collection('aiDrafts').add({ ...draft, proposalVersion: rec.version, createdBy: p.uid, createdByName: p.displayName });
+    await audit({ actor: p, action: `ai.proposal_${task}`, resourceType: 'proposal', resourceId: id, resourceVersion: rec.version, requestId: rid, detail: `${draft.model.provider}/${draft.model.modelId}${draft.mock ? ' (mock)' : ''}` });
+    return { ...draft, proposalVersion: rec.version };
+  }
+
+  @Get(':id/ai')
+  async aiDrafts(@CurrentPrincipal() p: Principal, @Param('id') id: string) {
+    await loadReadable(p, id);
+    const snap = await tcol(p.tenantId, 'proposals').doc(id).collection('aiDrafts').orderBy('generatedAt', 'desc').limit(20).get();
+    const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as { id: string; task: string });
+    return { latest: { summary: items.find((x) => x.task === 'summary') ?? null, check: items.find((x) => x.task === 'check') ?? null } };
   }
 
   @Get(':id/history')

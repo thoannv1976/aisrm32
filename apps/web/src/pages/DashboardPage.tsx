@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { AiMeta, useAiStatus, type AiDraft } from '../components/ai';
 import { Link } from 'react-router-dom';
 import { Card, Empty, ErrorBox, fmtDate, fmtDateTime, fmtVnd, Loading, PageHeader } from '../components/ui';
 import { api, download } from '../lib/api';
@@ -42,6 +43,47 @@ function Bars({ title, rows }: { title: string; rows: { label: string; count: nu
             ))}
           </tbody>
         </table>
+      )}
+    </Card>
+  );
+}
+
+function AiReport() {
+  const status = useAiStatus();
+  const m = useMutation({ mutationFn: () => api<AiDraft>('/dashboard/ai-report', { method: 'POST' }) });
+  const save = (text: string) => {
+    const blob = new Blob([String.fromCharCode(0xfeff) + text], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `du-thao-bao-cao-khoa-hoc-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  return (
+    <Card
+      title="Dự thảo báo cáo hoạt động khoa học (AI)"
+      actions={
+        <button className="btn btn-primary text-xs" disabled={!status.data?.enabled || m.isPending} onClick={() => m.mutate()}>
+          {m.isPending ? 'Đang tạo…' : '✨ Tạo dự thảo'}
+        </button>
+      }
+    >
+      {!status.data?.enabled && <p className="text-sm text-slate-500">AI chưa được bật cho trường.</p>}
+      <p className="text-xs text-slate-500">AI chỉ dùng số liệu trên dashboard này (công thức có phiên bản) và ghi mã chỉ số trong ngoặc vuông để đối chiếu.</p>
+      <ErrorBox error={m.error} />
+      {m.data && (
+        <div className="mt-3">
+          <textarea className="input font-mono text-xs" rows={18} defaultValue={m.data.text} aria-label="Dự thảo báo cáo" />
+          <div className="mt-2 flex gap-2">
+            <button className="btn text-xs" onClick={() => save(m.data!.text)}>
+              ⬇ Tải dự thảo (.txt)
+            </button>
+            <button className="btn text-xs" onClick={() => navigator.clipboard?.writeText(m.data!.text)}>
+              Sao chép
+            </button>
+          </div>
+          <AiMeta d={m.data} />
+        </div>
       )}
     </Card>
   );
@@ -91,6 +133,9 @@ export function DashboardPage() {
         <Bars title="Đề xuất theo trạng thái" rows={m.proposalsByStatus} />
         <Bars title="Đề tài theo trạng thái" rows={m.projectsByStatus} />
         <Bars title="Công bố theo trạng thái" rows={m.publicationsByStatus} />
+      </div>
+      <div className="mb-5">
+        <AiReport />
       </div>
       <div className="grid gap-5 xl:grid-cols-2">
         <Card title="Theo đơn vị">

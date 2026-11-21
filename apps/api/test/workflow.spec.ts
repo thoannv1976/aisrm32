@@ -322,7 +322,11 @@ describe('Phân quyền (§12.2)', () => {
 
   it('sinh viên không thấy hồ sơ của người khác; không mở được đợt', async () => {
     const list = await api(U.student, 'GET', '/proposals');
-    expect(list.body.items).toHaveLength(0);
+    // Chỉ thấy hồ sơ của chính mình (dữ liệu mẫu NCKH sinh viên sv1, sv2)
+    const me = await api(U.student, 'GET', '/me');
+    expect(list.body.items.length).toBeGreaterThan(0);
+    for (const x of list.body.items) expect((await api(U.student, 'GET', `/proposals/${x.id}`)).body.item.ownerUid).toBe(me.body.uid);
+    expect((await api(U.student, 'GET', '/proposals/dx1')).status).toBe(404);
     const r = await api(U.student, 'POST', '/calls', {});
     expect(r.status).toBe(403);
   });
@@ -347,7 +351,8 @@ describe('Dashboard và trang làm việc', () => {
     expect(all.body.scope).toBe('Toàn trường');
     const mine = await api(U.student, 'GET', '/dashboard/metrics');
     expect(mine.body.scope).not.toBe('Toàn trường');
-    expect(mine.body.tiles.find((t: { key: string }) => t.key === 'projects_active').value).toBe(0);
+    // Sinh viên chỉ thấy đề tài của mình (1 đề tài sinh viên mẫu), không thấy số toàn trường
+    expect(mine.body.tiles.find((t: { key: string }) => t.key === 'projects_active').value).toBe(1);
   });
 
   it('trang làm việc liệt kê việc cần xử lý và mốc quá hạn', async () => {

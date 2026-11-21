@@ -18,6 +18,7 @@ import { firestore, nowIso, tcol } from '../common/firebase';
 import { audit, canRead, listVisible, reserveCode } from '../common/records';
 import { parseIdempotencyKey, runTransition, transitionBody } from '../common/transition';
 import { docData, parse, toCsv, withActions } from '../common/util';
+import { verifyWithCrossref } from '../integrations/crossref';
 
 const authorSchema = z.object({
   name: z.string().min(1).max(200),
@@ -253,6 +254,17 @@ export class PublicationsController {
         }
       },
     });
+  }
+
+  /** Kiểm chứng DOI với Crossref: người khai báo hoặc Phòng KH. Lưu kết quả gần nhất vào bản ghi (không đổi trạng thái). */
+  @Post(':id/verify-doi')
+  async verifyDoi(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Param('id') id: string) {
+    const rec = await loadReadable(p, id);
+    if (rec.ownerUid !== p.uid && !hasRoleFor(p, SCIENCE_OFFICE, rec.unitPath)) throw forbidden();
+    const result = await verifyWithCrossref(rec);
+    await tcol(p.tenantId, 'publications').doc(id).update({ verification: { ...result, checkedBy: p.uid, checkedByName: p.displayName } });
+    await audit({ actor: p, action: 'publication.verify_doi', resourceType: 'publication', resourceId: id, resourceVersion: rec.version, requestId: rid, detail: `${result.overall} ${result.doi}` });
+    return { ...result, checkedByName: p.displayName };
   }
 
   @Get(':id/history')

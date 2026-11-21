@@ -1,4 +1,5 @@
-import { Controller, Get, Header, Query } from '@nestjs/common';
+import { Controller, Get, Header, Post, Query } from '@nestjs/common';
+import { draftReport } from '../ai/features';
 import {
   hasAnyRole,
   isBindingActive,
@@ -7,17 +8,19 @@ import {
   PUBLICATION_WORKFLOW,
   stateLabel,
   type Principal,
+  type Role,
   type Project,
   type Proposal,
   type Publication,
 } from '@aisrm/shared';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { badRequest, forbidden } from '../common/errors';
-import { nowIso, tcol } from '../common/firebase';
+import { firestore, nowIso, tcol } from '../common/firebase';
 import { audit, isTenantReader, listVisible } from '../common/records';
 import { toCsv, todayIso } from '../common/util';
 
 const METRICS_VERSION = 'metrics.v1';
+const REPORT_ROLES = ['UNIT_FOCAL', 'UNIT_HEAD', 'SCIENCE_OFFICER', 'SCIENCE_HEAD', 'VICE_RECTOR', 'RECTOR', 'BOARD'] as const;
 
 function countBy<T>(items: T[], key: (x: T) => string) {
   const m: Record<string, number> = {};
@@ -29,10 +32,7 @@ function countBy<T>(items: T[], key: (x: T) => string) {
  * Chỉ số xác định, tính trực tiếp từ dữ liệu trong phạm vi người dùng được xem (không dùng AI).
  * Công thức có phiên bản (METRICS_VERSION); mỗi chỉ số ghi rõ định nghĩa.
  */
-@Controller('dashboard')
-export class DashboardController {
-  @Get('metrics')
-  async metrics(@CurrentPrincipal() p: Principal) {
+export async function computeMetrics(p: Principal) {
     const [proposals, projects, publications] = await Promise.all([
       listVisible<Proposal>(p, 'proposals', { memberField: 'memberUids', limit: 1000 }),
       listVisible<Project>(p, 'projects', { memberField: 'memberUids', limit: 1000 }),
@@ -77,6 +77,24 @@ export class DashboardController {
       byUnit: [...units.values()].sort((a, b) => a.unitName.localeCompare(b.unitName, 'vi')),
       overdueProjects: overdueProjects.map((x) => ({ id: x.id, code: x.code, title: x.title, ownerName: x.ownerName, unitName: x.unitName, nextDue: x.milestoneStats.nextDue })),
     };
+}
+
+@Controller('dashboard')
+export class DashboardController {
+  @Get('metrics')
+  async metrics(@CurrentPrincipal() p: Principal) {
+    return computeMetrics(p);
+  }
+
+  /** Dự thảo báo cáo hoạt động khoa học do AI viết từ số liệu đã tính (dẫn mã chỉ số). */
+  @Post('ai-report')
+  async aiReport(@CurrentPrincipal() p: Principal, @RequestId() rid: string) {
+    if (!hasAnyRole(p, REPORT_ROLES as unknown as Role[])) throw forbidden('Chỉ cán bộ quản lý được tạo dự thảo báo cáo.');
+    const m = await computeMetrics(p);
+    const tenant = await firestore().collection('tenants').doc(p.tenantId).get();
+    const draft = await draftReport(p, m, tenant.get('name') ?? p.tenantId);
+    await audit({ actor: p, action: 'ai.report_draft', resourceType: 'report', resourceId: 'dashboard', requestId: rid, detail: `${draft.model.provider}/${draft.model.modelId}${draft.mock ? ' (mock)' : ''}` });
+    return { ...draft, metrics: m };
   }
 
   @Get('export.csv')

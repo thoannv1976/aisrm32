@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Card, Empty, ErrorBox, Field, fmtDate, fmtDateTime, fmtVnd, KeyValue, Loading, PageHeader, StatusBadge, Tabs } from '../components/ui';
 import { ActionBar, DocumentRow, HistoryList, Uploader, type ActionInfo } from '../components/workflow';
+import { ProposalAiPanel } from '../components/ai';
 import { api, download } from '../lib/api';
 import { useSession } from '../lib/session';
 
@@ -466,9 +467,12 @@ export function ProposalDetailPage() {
                   ))}
                 </ul>
               )}
-              <p className="mt-3 text-xs text-slate-500">Kiểm tra theo quy tắc của biểu mẫu (đã lưu). Trợ lý AI kiểm tra nội dung sẽ có ở Giai đoạn 3.</p>
+              <p className="mt-3 text-xs text-slate-500">Kiểm tra theo quy tắc của biểu mẫu (đã lưu). Dùng thêm “Kiểm tra thuyết minh” (AI) ở khung Trợ lý AI.</p>
             </Card>
           )}
+          <Card title="Trợ lý AI">
+            <ProposalAiPanel id={id} version={p.version} />
+          </Card>
           <Card title="Thông tin hồ sơ">
             <KeyValue
               items={[
