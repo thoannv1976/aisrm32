@@ -1,4 +1,5 @@
 import {
+  AI_FEATURE_LABELS,
   AI_PROVIDER_LABELS,
   microsToUsd,
   type AiModelConfig,
@@ -18,6 +19,7 @@ interface Overview {
   settings: AiSettings;
   spend: { month: string; costVnd: number; calls: number; unpricedCalls: number; inputTokens: number; outputTokens: number };
   storage: string;
+  localAi: { configured: boolean; host: string | null; concurrency: number; queueMax: number; timeoutSec: number; reasoning: boolean; queue: { active: number; waiting: number } };
 }
 
 const fmtInt = (n: number) => new Intl.NumberFormat('vi-VN').format(n);
@@ -27,7 +29,66 @@ function useOverview() {
   return useQuery({ queryKey: ['ai-overview'], queryFn: () => api<Overview>('/ai/admin/overview') });
 }
 
-function ProviderCard({ s }: { s: AiProviderStatus }) {
+function ProviderCard({ s, o }: { s: AiProviderStatus; o: Overview }) {
+  if (s.provider === 'local') return <LocalProviderCard s={s} o={o} />;
+  return <CloudProviderCard s={s} />;
+}
+
+/** Máy chủ AI nội bộ: địa chỉ do người cài đặt cấu hình (biến môi trường), không nhập từ giao diện. */
+function LocalProviderCard({ s, o }: { s: AiProviderStatus; o: Overview }) {
+  const qc = useQueryClient();
+  const refresh = () => qc.invalidateQueries({ queryKey: ['ai-overview'] });
+  const test = useMutation({ mutationFn: () => api(`/ai/admin/providers/local/test`, { method: 'POST' }), onSuccess: refresh });
+  const toggle = useMutation({ mutationFn: (enabled: boolean) => api(`/ai/admin/providers/local`, { method: 'PUT', body: { enabled } }), onSuccess: refresh });
+  const localModels = o.models.filter((m) => m.provider === 'local');
+  const [warmId, setWarmId] = useState('');
+  const warm = useMutation({ mutationFn: () => api<{ message: string }>(`/ai/admin/providers/local/warmup`, { method: 'POST', body: { modelConfigId: warmId || localModels[0]?.id } }) });
+  const l = o.localAi;
+  return (
+    <Card
+      title={AI_PROVIDER_LABELS.local}
+      actions={
+        <label className="flex items-center gap-1 text-xs">
+          <input type="checkbox" checked={s.enabled} onChange={(e) => toggle.mutate(e.target.checked)} /> Bật
+        </label>
+      }
+    >
+      <div className="mb-2 flex flex-wrap items-center gap-2 text-sm">
+        {l.configured ? <StatusBadge status="APPROVED" label={`Máy chủ: ${l.host}`} /> : <StatusBadge status="DRAFT" label="Chưa cấu hình" />}
+        {s.lastTest && <StatusBadge status={s.lastTest.ok ? 'ACTIVE' : 'REJECTED'} label={s.lastTest.ok ? 'Kết nối OK' : 'Kết nối lỗi'} />}
+      </div>
+      <p className="mb-2 text-xs text-slate-600">
+        {l.configured
+          ? `Xử lý đồng thời ${l.concurrency} · hàng chờ tối đa ${l.queueMax} · chờ tối đa ${l.timeoutSec} giây · suy luận ${l.reasoning ? 'bật' : 'tắt'} · đang xử lý ${l.queue.active}, đang chờ ${l.queue.waiting}. Chi phí 0 ₫ (vẫn ghi số lượt và token).`
+          : 'Người cài đặt đặt biến LOCAL_AI_BASE_URL (vd. http://ollama:11434 hoặc http://localai:8080) để dùng AI ngay trên máy chủ của trường — dữ liệu không ra ngoài.'}
+      </p>
+      {s.lastTest && <p className="mb-2 text-xs text-slate-600">{s.lastTest.message}</p>}
+      <div className="flex flex-wrap items-center gap-2">
+        <button className="btn text-xs" disabled={!l.configured || test.isPending} onClick={() => test.mutate()}>
+          {test.isPending ? 'Đang kiểm tra…' : 'Kiểm tra kết nối'}
+        </button>
+        {localModels.length > 0 && (
+          <>
+            <select className="input w-auto py-1 text-xs" aria-label="Model cần làm nóng" value={warmId} onChange={(e) => setWarmId(e.target.value)}>
+              {localModels.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+            <button className="btn text-xs" disabled={!l.configured || warm.isPending} onClick={() => warm.mutate()}>
+              {warm.isPending ? 'Đang nạp model vào GPU…' : 'Làm nóng'}
+            </button>
+          </>
+        )}
+      </div>
+      {warm.data && <p className="mt-2 text-xs text-emerald-700">{warm.data.message}</p>}
+      <ErrorBox error={test.error ?? warm.error ?? toggle.error} />
+    </Card>
+  );
+}
+
+function CloudProviderCard({ s }: { s: AiProviderStatus }) {
   const qc = useQueryClient();
   const [key, setKey] = useState('');
   const refresh = () => qc.invalidateQueries({ queryKey: ['ai-overview'] });
@@ -99,7 +160,7 @@ function ProvidersTab({ o }: { o: Overview }) {
       </p>
       <div className="grid gap-4 lg:grid-cols-3">
         {o.providers.map((s) => (
-          <ProviderCard key={s.provider} s={s} />
+          <ProviderCard o={o} key={s.provider} s={s} />
         ))}
       </div>
     </>
@@ -257,6 +318,38 @@ function SettingsTab({ o }: { o: Overview }) {
               ))}
           </select>
         </Field>
+        <div className="sm:col-span-2">
+          <div className="text-sm font-medium text-slate-700">Model theo chức năng</div>
+          <p className="text-xs text-slate-500">Ví dụ: hỏi đáp quy chế dùng máy chủ AI nội bộ (dữ liệu không ra ngoài), chức năng khác dùng model mặc định.</p>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            {Object.entries(AI_FEATURE_LABELS)
+              .filter(([k]) => k !== 'playground')
+              .map(([k, label]) => (
+                <label key={k} className="text-xs text-slate-600">
+                  {label}
+                  <select
+                    className="input mt-1"
+                    value={s.featureModels?.[k] ?? ''}
+                    onChange={(e) => {
+                      const fm = { ...(s.featureModels ?? {}) };
+                      if (e.target.value) fm[k] = e.target.value;
+                      else delete fm[k];
+                      setS({ ...s, featureModels: fm });
+                    }}
+                  >
+                    <option value="">Theo model mặc định</option>
+                    {o.models
+                      .filter((m) => m.enabled)
+                      .map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.label} ({AI_PROVIDER_LABELS[m.provider]})
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              ))}
+          </div>
+        </div>
         <Field label="Tỷ giá (VND / 1 USD)" required help="Dùng để quy đổi chi phí; cập nhật theo tỷ giá thanh toán thực tế của trường">
           <input className="input mt-1" type="number" min={1000} value={s.usdToVnd} onChange={(e) => setS({ ...s, usdToVnd: Number(e.target.value) })} />
         </Field>
@@ -310,13 +403,7 @@ interface UsageReport {
   recent: AiUsageRecord[];
 }
 
-const FEATURE_LABELS: Record<string, string> = {
-  playground: 'Chạy thử (quản trị)',
-  proposal_summary: 'Tóm tắt thuyết minh',
-  proposal_check: 'Kiểm tra thuyết minh',
-  report_draft: 'Dự thảo báo cáo',
-  publication_verify: 'Giải thích kiểm chứng công bố',
-};
+const FEATURE_LABELS = AI_FEATURE_LABELS;
 
 function GroupTable({ title, rows, labels }: { title: string; rows: Group[]; labels?: Record<string, string> }) {
   return (

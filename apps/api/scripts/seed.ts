@@ -1,6 +1,7 @@
 /**
- * Nạp dữ liệu giả lập vào Firebase Emulator Suite.
- * CHỈ chạy khi có FIRESTORE_EMULATOR_HOST và FIREBASE_AUTH_EMULATOR_HOST — từ chối chạy với project thật.
+ * Nạp dữ liệu giả lập — XÓA dữ liệu cũ trước khi nạp. Chỉ chạy ở nơi an toàn:
+ *  - bản Online: Firebase Emulator (FIRESTORE_EMULATOR_HOST + FIREBASE_AUTH_EMULATOR_HOST), project demo-*;
+ *  - bản Local (PostgreSQL + đăng nhập nội bộ): CSDL tên kết thúc _test / _dev (kiểm tra trong reset()).
  *
  *   pnpm emulators:fresh   (terminal 1)
  *   pnpm seed              (terminal 2)
@@ -11,7 +12,10 @@ import { CALL_FORM, DEMO_PASSWORD, STUDENT_CALL_FORM, TENANTS, type SeedTenant }
 
 export type SeedResult = Record<string, Record<string, { uid: string; email: string }>>;
 
+const fullyLocal = () => config.dataBackend === 'postgres' && config.identityBackend === 'local';
+
 function assertEmulator() {
+  if (fullyLocal()) return; // reset() của PostgreSQL từ chối CSDL không phải _test / _dev
   if (!process.env.FIRESTORE_EMULATOR_HOST || !process.env.FIREBASE_AUTH_EMULATOR_HOST) {
     throw new Error('Từ chối seed: chưa đặt FIRESTORE_EMULATOR_HOST / FIREBASE_AUTH_EMULATOR_HOST (chỉ seed vào emulator).');
   }
@@ -26,7 +30,8 @@ async function clearEmulators() {
   const store = db();
   if (store.kind === 'postgres') await store.reset!();
   else await fetch(`http://${fsHost}/emulator/v1/projects/${config.projectId}/databases/(default)/documents`, { method: 'DELETE' });
-  await fetch(`http://${authHost}/emulator/v1/projects/${config.projectId}/accounts`, { method: 'DELETE' });
+  // Đăng nhập nội bộ lưu tài khoản trong DataStore (đã xóa ở trên); chỉ Firebase Auth cần xóa riêng.
+  if (config.identityBackend !== 'local') await fetch(`http://${authHost}/emulator/v1/projects/${config.projectId}/accounts`, { method: 'DELETE' });
 }
 
 const day = 86400000;

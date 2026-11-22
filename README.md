@@ -51,20 +51,30 @@ pnpm test:e2e                      # E2E Playwright (cần emulator đang chạy
 pnpm typecheck
 ```
 
-### Chạy trên PostgreSQL (bản Local, ADR-0003)
+### Bản Local (PostgreSQL, đăng nhập nội bộ, tệp trên ổ đĩa — ADR-0003)
 
-Cùng bộ test tích hợp, kho dữ liệu là PostgreSQL. Thêm `IDENTITY_BACKEND=local` để dùng đăng nhập nội bộ (L3) thay Firebase Auth. Tệp vẫn dùng Storage emulator cho đến L4. CI chạy cả hai bản.
+`DEPLOY_TARGET=local` chọn toàn bộ hạ tầng Local, không cần Firebase hay Internet. CI chạy cả bản Online và bản Local.
 
 ```powershell
 docker run -d --name aisrm-pg -e POSTGRES_USER=aisrm -e POSTGRES_PASSWORD=aisrm_dev -e POSTGRES_DB=aisrm_test -p 127.0.0.1:5433:5432 postgres:17-alpine
 ```
 
 ```powershell
-$env:DATA_BACKEND='postgres'; $env:IDENTITY_BACKEND='local'; $env:DATABASE_URL='postgres://aisrm:aisrm_dev@127.0.0.1:5433/aisrm_test'; pnpm test:integration:pg
+$env:DEPLOY_TARGET='local'; $env:DATABASE_URL='postgres://aisrm:aisrm_dev@127.0.0.1:5433/aisrm_test'; pnpm test:integration:local
 ```
 
-- Lược đồ tự tạo khi API khởi động (bảng `schema_migrations`); view báo cáo nằm trong schema `report` (`v_proposals`, `v_projects`, `v_publications`, `v_audit_events`).
+| Biến | Ý nghĩa |
+|---|---|
+| `DATABASE_URL` | PostgreSQL. Lược đồ tự tạo khi API khởi động; view báo cáo ở schema `report` |
+| `FILE_STORAGE_DIR` | Thư mục lưu tệp tải lên (mặc định `./data/files`) |
+| `LOCAL_SECRET_KEY` | Khóa ≥ 32 ký tự mã hóa khóa API AI — **bắt buộc** khi cài thật |
+| `LOCAL_AI_BASE_URL` | Máy chủ AI nội bộ tương thích OpenAI (Ollama `http://…:11434`, LocalAI `http://…:8080`) |
+| `LOCAL_AI_API_KEY`, `LOCAL_AI_CONCURRENCY`, `LOCAL_AI_QUEUE_MAX`, `LOCAL_AI_TIMEOUT_MS`, `LOCAL_AI_REASONING` | Khóa, số yêu cầu xử lý đồng thời (mặc định 1 / GPU), hàng chờ (10), thời gian chờ (180 giây), bật suy luận (mặc định tắt) |
+| `SCHEDULER_ENABLED` | Bộ hẹn giờ (nhắc hạn 7:00 hằng ngày). Mặc định bật ở bản Local |
+| `AUTH_SESSION_MAX_HOURS`, `AUTH_SESSION_IDLE_MINUTES`, `AUTH_MAX_FAILURES`, `AUTH_LOCK_MINUTES` | Phiên đăng nhập 12 giờ / 2 giờ không hoạt động; khóa tạm 15 phút sau 5 lần sai |
+
 - `pnpm seed` chỉ xóa dữ liệu khi tên CSDL kết thúc bằng `_test` hoặc `_dev`.
+- Đánh giá hỏi đáp quy chế với từng mô hình: `pnpm --filter @aisrm/api exec tsx scripts/eval-regulation.ts --base http://127.0.0.1:8090 --models mock,local:<tên-model>` (bộ 52 câu ở `apps/api/scripts/eval/`).
 
 ## Cấu trúc
 

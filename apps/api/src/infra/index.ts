@@ -1,12 +1,13 @@
 /**
  * Điểm vào hạ tầng (ADR-0003). Chọn bản cài đặt theo DEPLOY_TARGET:
  *  - online (mặc định): Firestore + Cloud Storage + Firebase Auth;
- *  - local: PostgreSQL (L2 ✅) + tài khoản nội bộ (L3 ✅) + ổ đĩa (L4).
+ *  - local: PostgreSQL + tài khoản nội bộ + tệp trên ổ đĩa.
  */
 import type { CollectionRef, DataStore } from './datastore';
 import type { FileStore } from './filestore';
 import type { IdentityProvider } from './identity';
 import { firebaseIdentity, firestoreStore, gcsFileStore } from './firebase';
+import { diskFileStore } from './disk-filestore';
 import { LocalIdentity } from './local-identity';
 import { postgresStore } from './postgres';
 
@@ -28,6 +29,13 @@ export const config = {
   get identityBackend() {
     return (process.env.IDENTITY_BACKEND ?? (this.deployTarget === 'local' ? 'local' : 'firebase')) as 'firebase' | 'local';
   },
+  /** Lưu tệp: gcs (Online) hoặc disk (Local). */
+  get fileBackend() {
+    return (process.env.FILE_BACKEND ?? (this.deployTarget === 'local' ? 'disk' : 'gcs')) as 'gcs' | 'disk';
+  },
+  get fileStorageDir() {
+    return process.env.FILE_STORAGE_DIR ?? './data/files';
+  },
   get databaseUrl() {
     return process.env.DATABASE_URL ?? '';
   },
@@ -46,10 +54,6 @@ let _db: DataStore | undefined;
 let _files: FileStore | undefined;
 let _identity: IdentityProvider | undefined;
 
-function notYet(what: string): never {
-  throw new Error(`DEPLOY_TARGET=local: ${what} chưa được cài đặt (kế hoạch L2–L4).`);
-}
-
 export function db(): DataStore {
   if (!_db) {
     if (config.dataBackend === 'postgres') {
@@ -61,7 +65,7 @@ export function db(): DataStore {
 }
 
 export function files(): FileStore {
-  if (!_files) _files = config.deployTarget === 'local' ? notYet('FileStore ổ đĩa') : gcsFileStore(config);
+  if (!_files) _files = config.fileBackend === 'disk' ? diskFileStore(config.fileStorageDir) : gcsFileStore(config);
   return _files;
 }
 

@@ -17,3 +17,7 @@ test-results/
 !.env.staging
 .staging-accounts.local.txt
 .firebase/
+
+# Tệp tải lên của bản Local khi chạy dev / test
+data/
+apps/api/data/

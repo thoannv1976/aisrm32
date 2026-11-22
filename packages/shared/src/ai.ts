@@ -3,13 +3,14 @@
  * Tiền tệ lưu bằng số nguyên: giá USD theo micro-USD (1 USD = 1.000.000), chi phí VND làm tròn lên.
  */
 
-export const AI_PROVIDERS = ['openai', 'anthropic', 'gemini'] as const;
+export const AI_PROVIDERS = ['openai', 'anthropic', 'gemini', 'local'] as const;
 export type AiProvider = (typeof AI_PROVIDERS)[number];
 
 export const AI_PROVIDER_LABELS: Record<AiProvider, string> = {
   openai: 'OpenAI (ChatGPT)',
   anthropic: 'Anthropic (Claude)',
   gemini: 'Google (Gemini)',
+  local: 'Máy chủ AI nội bộ (Ollama / LocalAI)',
 };
 
 export interface AiProviderStatus {
@@ -49,6 +50,8 @@ export interface AiSettings {
   /** Tắt toàn bộ AI khẩn cấp. */
   killSwitch: boolean;
   defaultModelId: string | null;
+  /** Chọn model riêng cho từng chức năng (vd. hỏi đáp quy chế dùng AI nội bộ); thiếu thì dùng model mặc định. */
+  featureModels: Record<string, string>;
   maxOutputTokens: number;
 }
 
@@ -60,7 +63,19 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
   hardStop: true,
   killSwitch: false,
   defaultModelId: null,
+  featureModels: {},
   maxOutputTokens: 2000,
+};
+
+/** Các chức năng dùng AI — để chọn model theo chức năng và báo cáo sử dụng. */
+export const AI_FEATURE_LABELS: Record<string, string> = {
+  regulation_qa: 'Hỏi đáp quy chế',
+  proposal_summary: 'Tóm tắt thuyết minh',
+  proposal_check: 'Kiểm tra thuyết minh',
+  report_draft: 'Dự thảo báo cáo',
+  meeting_minutes: 'Dự thảo biên bản hội đồng',
+  publication_verify: 'Giải thích kiểm chứng công bố',
+  playground: 'Chạy thử (quản trị)',
 };
 
 export interface AiUsageRecord {

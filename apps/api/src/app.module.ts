@@ -10,6 +10,7 @@ import { AuditController, DashboardController } from './modules/dashboard.contro
 import { DocumentsController } from './modules/documents.controller';
 import { HealthController } from './modules/health.controller';
 import { IntegrationsController } from './modules/integrations.controller';
+import { JobsController } from './modules/jobs.controller';
 import { MeController } from './modules/me.controller';
 import { OrgController } from './modules/org.controller';
 import { ProjectsController } from './modules/projects.controller';
@@ -22,6 +23,7 @@ import { RegulationsController } from './modules/regulations.controller';
     HealthController,
     AuthController,
     AccountsAdminController,
+    JobsController,
     MeController,
     OrgController,
     CallsController,

@@ -143,6 +143,15 @@ const NOT_FOUND_TEXT =
 const DISCLAIMER =
   'Trợ lý trả lời dựa trên văn bản quy chế đã nạp vào hệ thống và có thể chưa đầy đủ. Khi có khác biệt, áp dụng theo văn bản quy chế (Điều 24 Quy chế mẫu).';
 
+/** Câu trả lời chỉ gồm căn cứ (vd "(khoản 2 Điều 15)") mà không có nội dung. */
+export function answerHasNoSubstance(text: string): boolean {
+  const rest = text
+    .replace(/khoản\s+\d+\s*,?\s*(của\s+)?Điều\s+\d+|Điều\s+\d+\s*,?\s*(khoản\s+\d+)?/gi, '')
+    .replace(/\([^)]{0,80}\)/g, '')
+    .replace(/[\s().,;:–\-]/g, '');
+  return rest.length < 15;
+}
+
 /** Hỏi đáp quy chế: truy xuất BM25 → (đủ căn cứ) mô hình trả lời có dẫn điều khoản → kiểm tra trích dẫn. */
 export async function askRegulation(p: Principal, question: string): Promise<RegAnswer> {
   const { idx, chunks } = await loadIndex(p.tenantId);
@@ -193,6 +202,11 @@ export async function askRegulation(p: Principal, question: string): Promise<Reg
     ].join('\n');
   } else {
     text = r.text.trim();
+    // Một số mô hình nhỏ chỉ trả căn cứ mà không diễn giải (đo thực tế: granite-4.2-8b) → bổ sung nguyên văn điều khoản.
+    if (answerHasNoSubstance(text)) {
+      const top = relevant.slice(0, 2);
+      text = [text, '', 'Nội dung điều khoản (trích nguyên văn):', ...top.map((s) => `• ${s.label} (${s.articleTitle}): ${s.text.replace(/\n/g, ' ')}`)].join('\n');
+    }
   }
   const known = new Set(relevant.flatMap((s) => [`${s.article}.${s.clause}`, `${s.article}.0`]));
   const allArticles = new Set([...chunks.values()].map((c) => `${c.article}.${c.clause}`));

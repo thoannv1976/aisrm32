@@ -235,4 +235,13 @@ describe('Hỏi đáp quy chế — tách điều khoản và tìm kiếm', () =
       { article: 25, clause: 0 },
     ]);
   });
+
+  it('trích căn cứ viết theo kiểu mô hình nhỏ hay dùng', () => {
+    expect(extractCitations('Căn cứ Điều 21, khoản 1 và Điều 15 khoản 3; khoản 2, Điều 27; khoản 4 của Điều 8.')).toEqual([
+      { article: 21, clause: 1 },
+      { article: 15, clause: 3 },
+      { article: 27, clause: 2 },
+      { article: 8, clause: 4 },
+    ]);
+  });
 });

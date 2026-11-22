@@ -1,6 +1,6 @@
 # Kế hoạch xây dựng AI-SRM Local (PostgreSQL) — trình duyệt
 
-Ngày lập: 22/11/2026 · Cập nhật: 22/11/2026 (xong L1, L2, L3) · Trạng thái: **đã duyệt 22/11/2026, đang triển khai**
+Ngày lập: 22/11/2026 · Cập nhật: 22/11/2026 (xong L1–L4) · Trạng thái: **đã duyệt 22/11/2026, đang triển khai**
 
 ## Tiến độ
 
@@ -23,7 +23,33 @@ Ngày lập: 22/11/2026 · Cập nhật: 22/11/2026 (xong L1, L2, L3) · Trạng
   - không có CSRF: token gửi qua header `Authorization`, không dùng cookie; có test chứng minh;
   - kết quả: 75/75 test tích hợp đạt ở bản Local (PostgreSQL + đăng nhập nội bộ); 67/67 đạt ở hai cấu hình Firebase (8 test chỉ dành cho bản Local được bỏ qua); 4/4 E2E bản Local, 3/3 E2E bản Online. CI chạy E2E cho cả hai bản;
   - **chưa làm OIDC / SSO của trường**: cần thông tin máy chủ định danh thật của trường thí điểm (câu Q7). Sẽ làm khi có, vì cấu trúc port đã sẵn sàng.
-- ⏳ **L4 — Lưu tệp trên ổ đĩa, hẹn giờ, AI nội bộ:** tiếp theo.
+- ✅ **L4 — Lưu tệp, hẹn giờ, AI nội bộ, chạy không cần Internet (22/11/2026):**
+  - **Tệp trên ổ đĩa** (`infra/disk-filestore.ts`): ghi nguyên tử, siêu dữ liệu `.meta.json` kèm theo, chặn đường dẫn thoát khỏi thư mục gốc;
+  - **Bộ hẹn giờ** (`jobs/scheduler.ts`): khóa chạy một bản. Tác vụ **nhắc hạn 7:00 hằng ngày**:
+    - mốc tiến độ còn ≤ 7 ngày, còn ≤ 1 ngày, đã quá hạn;
+    - hồ sơ còn nháp khi đợt đăng ký sắp đóng (≤ 3 ngày);
+    - mỗi mức chỉ nhắc một lần.
+
+    Có tab Quản trị → Tác vụ nền (xem trạng thái, "Chạy ngay");
+  - **Nhà cung cấp "Máy chủ AI nội bộ"** (`ai/local-provider.ts`, Ollama / LocalAI):
+    - tắt suy luận, bỏ thẻ `<think>`;
+    - hàng đợi một luồng mỗi GPU, báo "đang bận";
+    - chờ tối đa 180 giây, nút "Làm nóng";
+    - chi phí 0 ₫ nhưng vẫn ghi lượt và token;
+    - địa chỉ chỉ lấy từ biến môi trường (chống SSRF).
+  - **Chọn model theo chức năng**, ví dụ hỏi đáp quy chế dùng AI nội bộ, chức năng khác dùng model mặc định;
+  - trích căn cứ chấp nhận thêm kiểu viết "Điều 21, khoản 1". Câu trả lời chỉ có căn cứ thì tự bổ sung nguyên văn điều khoản;
+  - `LOCAL_SECRET_KEY` (≥ 32 ký tự) là **bắt buộc** khi cài bản Local thật;
+  - **Không cần Internet:** `test/offline.spec.ts` chạy bản Local đầy đủ (PostgreSQL + đăng nhập nội bộ + ổ đĩa + AI nội bộ), chặn mọi kết nối ra ngoài máy. Luồng chạy qua: đăng nhập → lập hồ sơ → tải tệp lên / xuống → hỏi đáp quy chế → nhắc hạn. Kết quả: **0 kết nối ra ngoài**. Job CI bản Local không còn dùng Firebase emulator;
+  - **Bộ đánh giá 52 câu** và kết quả 5 mô hình nội bộ: [báo cáo](danh-gia-ai-quy-che-2026-11-22/BAO_CAO.md):
+    - ornith-1.5-9b 52/52;
+    - granite-4.2-8b 52/52 (sau khi thêm cơ chế bổ sung nguyên văn);
+    - qwen3.8-4b 51/52;
+    - gemma3:4b 50/52;
+    - llama3.1:8b 45/52.
+
+    **Chưa so với Claude / ChatGPT / Gemini** (cần khóa API, có phí) — chờ duyệt.
+- ⏳ **L5 — Đóng gói, cài đặt, sao lưu:** tiếp theo.
 
 ## 0. Mục tiêu và căn cứ
 
@@ -156,7 +182,7 @@ Trên máy đã cài sẵn (theo bộ "LOCAL AI 1" tại `D:\LOCAL AI 1`):
 |---|---|---|
 | LocalAI | container `localai/localai:latest-gpu-nvidia-cuda-12`, cổng `127.0.0.1:8080` | `LOCALAI_AUTH=false`; chỉ nạp 1 mô hình một lúc; nhả VRAM sau 10 phút không dùng. Mô hình ở `D:\LocalAI\models` (19 GB) |
 | Open WebUI | container, cổng 3000 | Nối Ollama (`host.docker.internal:11434`) và LocalAI |
-| Ollama | 0.33.3, ứng dụng Windows, cổng 11434 | **Không tự chạy khi bật máy.** Mô hình ở `C:\Users\ADMIN\.ollama` (23 GB) |
+| Ollama | 0.33.3, ứng dụng Windows, cổng 11434 | **Không tự chạy khi bật máy.** Mô hình ở `D:\Ollama\models` (23 GB; *đính chính 22/11: không phải ổ C*). Khi chạy `ollama serve` thủ công phải đặt `OLLAMA_MODELS=D:\Ollama\models` |
 
 **Cách đo:**
 - Dùng **đúng quy trình hỏi đáp quy chế của AI-SRM**: tìm điều khoản bằng BM25 trên quy chế mẫu, cùng câu lệnh hệ thống, nội dung đặt trong thẻ dữ liệu.

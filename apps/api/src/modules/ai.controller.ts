@@ -15,10 +15,11 @@ import {
 import { z } from 'zod';
 import { loadSettings, monthSpend, runAi } from '../ai/gateway';
 import { looksLikeKey, PROVIDERS, ProviderError } from '../ai/providers';
+import { localAiConfig, localAiQueue, localProvider } from '../ai/local-provider';
 import { secretStore } from '../ai/secrets';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { AppError, badRequest, forbidden, notFound } from '../common/errors';
-import { nowIso, tcol } from '../infra';
+import { config, nowIso, tcol } from '../infra';
 import { audit } from '../common/records';
 import { parse } from '../common/util';
 
@@ -52,8 +53,21 @@ const settingsBody = z.object({
   hardStop: z.boolean(),
   killSwitch: z.boolean(),
   defaultModelId: z.string().max(200).nullable(),
+  featureModels: z.record(z.string().regex(/^[a-z_]{2,40}$/), z.string().max(200)).default({}),
   maxOutputTokens: z.number().int().min(64).max(16000),
 });
+
+/** Trạng thái máy chủ AI nội bộ: chỉ cho biết đã cấu hình chưa và tên máy (không lộ khóa). */
+function localAiStatus() {
+  const c = localAiConfig();
+  let host: string | null = null;
+  try {
+    host = c.baseUrl ? new URL(c.baseUrl).host : null;
+  } catch {
+    host = null;
+  }
+  return { configured: !!c.baseUrl, host, concurrency: c.concurrency, queueMax: c.queueMax, timeoutSec: Math.round(c.timeoutMs / 1000), reasoning: c.reasoning, queue: localAiQueue() };
+}
 
 async function providerStatuses(tenantId: string): Promise<AiProviderStatus[]> {
   const snaps = await Promise.all(AI_PROVIDERS.map((p) => tcol(tenantId, 'aiProviders').doc(p).get()));
@@ -95,7 +109,8 @@ export class AiController {
       models: models.docs.map((d) => ({ id: d.id, ...d.data() }) as AiModelConfig).sort((a, b) => a.provider.localeCompare(b.provider) || a.modelId.localeCompare(b.modelId)),
       settings,
       spend,
-      storage: process.env.FIRESTORE_EMULATOR_HOST ? 'Mã hóa cục bộ (chỉ môi trường thử)' : 'Google Secret Manager',
+      storage: process.env.FIRESTORE_EMULATOR_HOST ? 'Mã hóa cục bộ (chỉ môi trường thử)' : config.deployTarget === 'local' ? 'Mã hóa cục bộ (AES-GCM)' : 'Google Secret Manager',
+      localAi: localAiStatus(),
     };
   }
 
@@ -140,8 +155,8 @@ export class AiController {
   async test(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Param('provider') prov: string) {
     requireAdmin(p);
     const provider = providerParam(prov);
-    const key = await secretStore().get(p.tenantId, provider);
-    if (!key) throw new AppError(409, 'AI_KEY_MISSING', 'Chưa nạp khóa API cho nhà cung cấp này.');
+    const key = (await secretStore().get(p.tenantId, provider)) ?? (provider === 'local' ? '' : null);
+    if (key === null) throw new AppError(409, 'AI_KEY_MISSING', 'Chưa nạp khóa API cho nhà cung cấp này.');
     let lastTest: AiProviderStatus['lastTest'];
     let models: string[] = [];
     try {
@@ -153,6 +168,22 @@ export class AiController {
     await tcol(p.tenantId, 'aiProviders').doc(provider).set({ lastTest, ...(lastTest.ok ? { availableModels: models } : {}) }, { merge: true });
     await audit({ actor: p, action: 'ai.provider.test', resourceType: 'aiProvider', resourceId: provider, requestId: rid, result: lastTest.ok ? 'SUCCESS' : 'ERROR', detail: lastTest.message });
     return lastTest;
+  }
+
+  /** Nạp sẵn một model của máy chủ AI nội bộ vào GPU (lần đầu có thể mất 1–2 phút). */
+  @Post('admin/providers/local/warmup')
+  async warmUp(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Body() body: unknown) {
+    requireAdmin(p);
+    const { modelConfigId } = parse(z.object({ modelConfigId: z.string().max(200) }), body);
+    const m = await tcol(p.tenantId, 'aiModels').doc(modelConfigId).get();
+    if (!m.exists || m.get('provider') !== 'local') throw badRequest('Chỉ làm nóng được model của máy chủ AI nội bộ.');
+    try {
+      const r = await localProvider.warmUp(m.get('modelId'), await secretStore().get(p.tenantId, 'local'));
+      await audit({ actor: p, action: 'ai.local.warmup', resourceType: 'aiModel', resourceId: modelConfigId, requestId: rid, detail: `${r.ms} ms` });
+      return { ok: true, ms: r.ms, message: `Đã nạp sẵn ${m.get('modelId')} (${(r.ms / 1000).toFixed(1)} giây).` };
+    } catch (e) {
+      throw new AppError(502, 'AI_LOCAL_WARMUP_FAILED', e instanceof ProviderError ? e.message : 'Không làm nóng được model.');
+    }
   }
 
   @Post('admin/models')
@@ -209,6 +240,10 @@ export class AiController {
     const b = parse(settingsBody, body);
     if (b.defaultModelId && !(await tcol(p.tenantId, 'aiModels').doc(b.defaultModelId).get()).exists) {
       throw badRequest('Model mặc định không tồn tại.');
+    }
+    for (const [feature, id] of Object.entries(b.featureModels)) {
+      if (!id) delete b.featureModels[feature];
+      else if (!(await tcol(p.tenantId, 'aiModels').doc(id).get()).exists) throw badRequest(`Model chọn cho chức năng "${feature}" không tồn tại.`);
     }
     await tcol(p.tenantId, 'aiConfig').doc('settings').set({ ...b, usdToVndDate: b.usdToVndDate ?? null, updatedAt: nowIso(), updatedBy: p.uid });
     await audit({

@@ -218,11 +218,18 @@ export function isGrounded(r: { hits: SearchHit[]; coverage: number }, minScore 
   return !!top && top.score >= minScore && r.coverage >= minCoverage;
 }
 
-/** Trích các căn cứ "khoản X Điều Y" / "Điều Y" có trong câu trả lời của mô hình. */
+/**
+ * Trích các căn cứ trong câu trả lời của mô hình. Chấp nhận các cách viết mô hình nhỏ hay dùng:
+ * "khoản X Điều Y", "khoản X, Điều Y", "khoản X của Điều Y", "Điều Y, khoản X", "Điều Y khoản X", "Điều Y".
+ */
 export function extractCitations(answer: string): { article: number; clause: number }[] {
   const out: { article: number; clause: number }[] = [];
-  const re = /(?:khoản\s+(\d+)\s+)?Điều\s+(\d+)/gi;
+  const re = /khoản\s+(\d+)\s*,?\s*(?:của\s+)?Điều\s+(\d+)|Điều\s+(\d+)\s*,?\s*khoản\s+(\d+)|Điều\s+(\d+)/gi;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(answer))) out.push({ article: Number(m[2]), clause: m[1] ? Number(m[1]) : 0 });
+  while ((m = re.exec(answer))) {
+    if (m[2]) out.push({ article: Number(m[2]), clause: Number(m[1]) });
+    else if (m[3]) out.push({ article: Number(m[3]), clause: Number(m[4]) });
+    else out.push({ article: Number(m[5]), clause: 0 });
+  }
   return out.filter((c, i) => out.findIndex((x) => x.article === c.article && x.clause === c.clause) === i);
 }

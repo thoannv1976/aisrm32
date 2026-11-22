@@ -73,7 +73,7 @@ describe('AI Center — quản trị khóa API, model, giá', () => {
     expect((await api(OFFICER, 'GET', '/ai/admin/overview')).status).toBe(403);
     const r = await api(ADMIN, 'GET', '/ai/admin/overview');
     expect(r.status).toBe(200);
-    expect(r.body.providers.map((p: { provider: string }) => p.provider)).toEqual(['openai', 'anthropic', 'gemini']);
+    expect(r.body.providers.map((p: { provider: string }) => p.provider)).toEqual(['openai', 'anthropic', 'gemini', 'local']);
     expect(r.body.models.length).toBe(3);
   });
 

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, Empty, ErrorBox, fmtDate, fmtDateTime, Loading, PageHeader, StatusBadge, Tabs } from '../components/ui';
 import { api } from '../lib/api';
 import { AccountsTab } from './AccountsTab';
+import { JobsTab } from './JobsTab';
 
 const UNIT_TYPE: Record<string, string> = { UNIVERSITY: 'Trường', CAMPUS: 'Cơ sở', FACULTY: 'Khoa', INSTITUTE: 'Viện', OFFICE: 'Phòng/Ban', DEPARTMENT: 'Bộ môn' };
 
@@ -119,7 +120,7 @@ function AuditTab() {
 }
 
 export function AdminPage() {
-  const [tab, setTab] = useState<'units' | 'accounts' | 'roles' | 'audit'>('units');
+  const [tab, setTab] = useState<'units' | 'accounts' | 'roles' | 'jobs' | 'audit'>('units');
   return (
     <>
       <PageHeader title="Quản trị" subtitle="Tổ chức, tài khoản, phân quyền và nhật ký kiểm toán" />
@@ -130,12 +131,14 @@ export function AdminPage() {
           { key: 'units', label: 'Đơn vị' },
           { key: 'accounts', label: 'Tài khoản' },
           { key: 'roles', label: 'Phân quyền' },
+          { key: 'jobs', label: 'Tác vụ nền' },
           { key: 'audit', label: 'Nhật ký' },
         ]}
       />
       {tab === 'units' && <UnitsTab />}
       {tab === 'accounts' && <AccountsTab />}
       {tab === 'roles' && <RolesTab />}
+      {tab === 'jobs' && <JobsTab />}
       {tab === 'audit' && <AuditTab />}
     </>
   );

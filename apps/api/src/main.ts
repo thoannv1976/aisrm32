@@ -36,6 +36,12 @@ async function bootstrap() {
   const app = await createApp();
   const port = Number(process.env.PORT ?? 8080);
   await app.listen(port);
+  // Tác vụ nền: mặc định bật ở bản Local (máy chủ chạy liên tục), tắt ở Online (Cloud Run có thể ngủ khi rảnh).
+  process.env.SCHEDULER_ENABLED ??= config.deployTarget === 'local' ? 'true' : 'false';
+  if (process.env.SCHEDULER_ENABLED === 'true') {
+    await import('./jobs/reminders');
+    (await import('./jobs/scheduler')).startScheduler();
+  }
   Logger.log(
     `AI-SRM API chạy tại http://localhost:${port}/api/v1 (env=${config.appEnv}, emulators=${config.usingEmulators}, project=${config.projectId})`,
     'Bootstrap',

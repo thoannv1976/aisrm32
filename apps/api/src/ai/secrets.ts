@@ -71,7 +71,17 @@ class GcpSecretStore implements SecretStore {
 }
 
 class LocalEncryptedStore implements SecretStore {
-  private key = createHash('sha256').update(process.env.LOCAL_SECRET_KEY ?? 'aisrm-local-emulator-only').digest();
+  private key = LocalEncryptedStore.deriveKey();
+
+  /** Bản Local thật bắt buộc khóa riêng ≥ 32 ký tự; khóa mặc định chỉ dùng cho emulator / test. */
+  private static deriveKey() {
+    const k = process.env.LOCAL_SECRET_KEY;
+    if (!k && !process.env.FIRESTORE_EMULATOR_HOST && process.env.APP_ENV !== 'test') {
+      throw new AppError(500, 'LOCAL_SECRET_KEY_MISSING', 'Chưa cấu hình LOCAL_SECRET_KEY (≥ 32 ký tự ngẫu nhiên) để mã hóa khóa AI.');
+    }
+    if (k && k.length < 32) throw new AppError(500, 'LOCAL_SECRET_KEY_WEAK', 'LOCAL_SECRET_KEY phải có ít nhất 32 ký tự.');
+    return createHash('sha256').update(k ?? 'aisrm-local-emulator-only').digest();
+  }
   private ref = (t: string, p: AiProvider) => db().collection('_localSecrets').doc(secretId(t, p));
 
   async put(tenantId: string, provider: AiProvider, value: string) {

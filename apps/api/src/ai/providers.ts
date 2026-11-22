@@ -9,33 +9,10 @@ import { estimateTokens } from '@aisrm/shared';
  * Không ghi nội dung prompt/kết quả vào log.
  */
 
-export interface CompletionInput {
-  apiKey: string;
-  model: string;
-  system: string;
-  prompt: string;
-  maxOutputTokens: number;
-  timeoutMs?: number;
-}
+import { ProviderError, type CompletionInput, type CompletionResult } from './provider-types';
+import { localProvider } from './local-provider';
 
-export interface CompletionResult {
-  text: string;
-  inputTokens: number;
-  outputTokens: number;
-  stopReason: string | null;
-  /** Ghi chú về việc nhà cung cấp chuyển sang model dự phòng (Claude server-side fallback). */
-  fallbackUsed: boolean;
-}
-
-export class ProviderError extends Error {
-  constructor(
-    public code: 'AUTH' | 'RATE_LIMIT' | 'BAD_REQUEST' | 'NOT_FOUND' | 'TIMEOUT' | 'UPSTREAM' | 'REFUSED',
-    message: string,
-    public status?: number,
-  ) {
-    super(message);
-  }
-}
+export { ProviderError, type CompletionInput, type CompletionResult } from './provider-types';
 
 const TIMEOUT = 60_000;
 
@@ -223,11 +200,13 @@ export const PROVIDERS: Record<AiProvider, { listModels(k: string): Promise<stri
   openai,
   anthropic,
   gemini,
+  local: localProvider,
 };
 
 /** Kiểm tra sơ bộ định dạng khóa (không gửi đi đâu). */
 export function looksLikeKey(provider: AiProvider, key: string): boolean {
   const k = key.trim();
+  if (provider === 'local') return k.length >= 8 && k.length <= 300 && !/\s/.test(k);
   if (k.length < 20 || k.length > 300 || /\s/.test(k)) return false;
   if (provider === 'anthropic') return k.startsWith('sk-ant-');
   if (provider === 'openai') return k.startsWith('sk-');

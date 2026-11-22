@@ -86,7 +86,7 @@ export async function runAi(p: Principal, input: RunAiInput): Promise<RunAiResul
   if (settings.killSwitch) {
     throw new AppError(503, 'AI_DISABLED', 'AI đang tạm tắt theo cấu hình quản trị. Nghiệp vụ khác vẫn hoạt động bình thường.');
   }
-  const modelId = input.modelConfigId ?? settings.defaultModelId;
+  const modelId = input.modelConfigId ?? settings.featureModels?.[input.feature] ?? settings.defaultModelId;
   if (!modelId) throw new AppError(409, 'AI_NO_MODEL', 'Chưa chọn model AI mặc định trong AI Center.');
   const model = await loadModel(p.tenantId, modelId);
   if (!model || !model.enabled) throw new AppError(409, 'AI_MODEL_DISABLED', 'Model AI chưa được bật hoặc không tồn tại.');
@@ -120,8 +120,9 @@ export async function runAi(p: Principal, input: RunAiInput): Promise<RunAiResul
   if (providerStatus.exists && providerStatus.get('enabled') === false) {
     throw new AppError(409, 'AI_PROVIDER_DISABLED', 'Nhà cung cấp AI này đang bị tắt.');
   }
-  const apiKey = await secretStore().get(p.tenantId, model.provider);
-  if (!apiKey) throw new AppError(409, 'AI_KEY_MISSING', 'Chưa nạp khóa API cho nhà cung cấp này.');
+  // Máy chủ AI nội bộ: khóa không bắt buộc (địa chỉ và khóa do người cài đặt cấu hình qua biến môi trường).
+  const apiKey = (await secretStore().get(p.tenantId, model.provider)) ?? (model.provider === 'local' ? '' : null);
+  if (apiKey === null) throw new AppError(409, 'AI_KEY_MISSING', 'Chưa nạp khóa API cho nhà cung cấp này.');
 
   if (settings.monthlyBudgetVnd > 0 && settings.hardStop) {
     const spent = await monthSpend(p.tenantId, month);
@@ -139,7 +140,7 @@ export async function runAi(p: Principal, input: RunAiInput): Promise<RunAiResul
   } catch (e) {
     const code = e instanceof ProviderError ? e.code : 'UPSTREAM';
     await record(p, { ...base, provider: model.provider, modelId: model.modelId, inputTokens: 0, outputTokens: 0, latencyMs: Date.now() - started, status: 'ERROR', errorCode: code, priceKnown: false, costUsdMicros: null, costVnd: null, mock: false });
-    throw new AppError(code === 'AUTH' ? 424 : code === 'RATE_LIMIT' ? 429 : 502, `AI_${code}`, (e as Error).message);
+    throw new AppError(code === 'AUTH' ? 424 : code === 'RATE_LIMIT' ? 429 : code === 'TIMEOUT' ? 504 : 502, `AI_${code}`, (e as Error).message);
   }
   const cost = computeCost(r.inputTokens, r.outputTokens, model, settings.usdToVnd);
   const usage: Omit<AiUsageRecord, 'id'> = {
