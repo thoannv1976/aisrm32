@@ -16,8 +16,8 @@ const CIRCLED = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', 
 const RED = 'C62828';
 const NAVY = '1F3A5F';
 
-function createKit() {
-  const manifest = JSON.parse(fs.readFileSync(path.join(OUT, 'manifest-all.json'), 'utf8'));
+function createKit({ manifests = ['all'] } = {}) {
+  const manifest = manifests.flatMap((m) => JSON.parse(fs.readFileSync(path.join(OUT, `manifest-${m}.json`), 'utf8')));
   const byId = new Map(manifest.map((m) => [m.id, m]));
   const figNoOf = new Map();
   let figNo = 1;

@@ -1,0 +1,6 @@
+email,displayName,unitId,title,roles
+gv.a@truong.edu.vn,TS. Nguyễn Văn A,k-kt,Giảng viên,RESEARCHER;SUPERVISOR
+dm.kt@truong.edu.vn,ThS. Trần Thị B,k-kt,Đầu mối khoa học Khoa Kinh tế,RESEARCHER;UNIT_FOCAL@k-kt
+tk.kt@truong.edu.vn,PGS.TS. Lê Văn C,k-kt,Trưởng khoa Kinh tế,RESEARCHER;UNIT_HEAD@k-kt
+cv.qlkh@truong.edu.vn,Phạm Thị D,p-qlkh,Chuyên viên Phòng QLKH,SCIENCE_OFFICER
+sv.e@st.truong.edu.vn,Hoàng Văn E,k-kt,Sinh viên K65,STUDENT

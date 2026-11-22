@@ -1,0 +1,113 @@
+# Hướng dẫn cài đặt AI-SRM bản Local
+
+Bản Local cài trên máy chủ của trường; dữ liệu (CSDL, tệp tài liệu, khóa AI) lưu hoàn toàn tại trường. Hệ thống chạy được không cần Internet (trừ kiểm chứng DOI/ORCID và AI thương mại).
+
+## 1. Yêu cầu
+
+- Máy chủ: 4 vCPU, 8 GB RAM, 50 GB ổ đĩa trở lên (chưa tính AI nội bộ). AI nội bộ: thêm GPU NVIDIA ≥ 12 GB VRAM.
+- Hệ điều hành: Ubuntu 22.04/24.04, Debian 12, RHEL 9; hoặc Windows Server 2022 / Windows 11 có Docker Desktop.
+- Docker Engine 24+ và Docker Compose v2.
+- Mạng: một cổng web (mặc định 80) mở trong mạng trường. Nên đặt sau reverse proxy có HTTPS của trường.
+
+## 2. Nội dung bộ cài
+
+- `images/aisrm-images.tar.gz` — image đã đóng gói: aisrm-api, aisrm-web, postgres (cài được không cần Internet).
+- `docker-compose.yml`, `.env.example` — cấu hình dịch vụ.
+- `cai-dat.ps1` / `cai-dat.sh` — cài đặt (Windows / Linux).
+- `sao-luu`, `khoi-phuc`, `nang-cap` (.ps1 / .sh) — vận hành.
+- `don-vi.mau.csv`, `tai-khoan.mau.csv` — mẫu danh sách đơn vị, tài khoản.
+- Tài liệu: hướng dẫn cài đặt (tệp này), hướng dẫn sử dụng, bài tập thực hành.
+
+## 3. Cài đặt
+
+### 3.1. Dùng thử / tập huấn với dữ liệu mẫu
+
+Windows (PowerShell, chạy với quyền quản trị):
+
+```
+cd <thư mục bộ cài>
+powershell -ExecutionPolicy Bypass -File .\cai-dat.ps1 -CheDo demo
+```
+
+Linux:
+
+```
+cd <thư mục bộ cài>
+sudo ./cai-dat.sh demo
+```
+
+Script tự: kiểm tra Docker → tạo `.env` với mật khẩu ngẫu nhiên → nạp image → khởi động → nạp dữ liệu mẫu và in danh sách tài khoản mẫu. Mở trình duyệt tại `http://<địa chỉ máy chủ>`.
+
+Bản dữ liệu mẫu chỉ dùng cho tập huấn: tất cả tài khoản mẫu dùng chung một mật khẩu; không nhập dữ liệu thật.
+
+### 3.2. Cài cho trường (dữ liệu thật)
+
+1. Sửa `don-vi.mau.csv` theo cơ cấu tổ chức của trường (cột: `id,code,name,type,parentId`; đúng một đơn vị gốc; `type` thuộc UNIVERSITY, CAMPUS, FACULTY, INSTITUTE, OFFICE, DEPARTMENT).
+2. Chạy:
+
+```
+.\cai-dat.ps1 -CheDo truong -MaTruong abc -TenTruong "Trường Đại học ABC" -EmailQuanTri admin@abc.edu.vn -TepDonVi .\don-vi.mau.csv
+```
+
+hoặc trên Linux:
+
+```
+sudo ./cai-dat.sh truong abc "Trường Đại học ABC" admin@abc.edu.vn "Quản trị hệ thống" don-vi.mau.csv
+```
+
+3. Script in **mật khẩu tạm** của tài khoản quản trị (chỉ hiện một lần). Đăng nhập, đổi mật khẩu theo yêu cầu.
+4. Quản trị → Tài khoản → **Nhập tài khoản từ CSV** (theo mẫu `tai-khoan.mau.csv`); mật khẩu tạm của từng người hiện một lần để gửi qua kênh an toàn.
+
+Tùy chọn: `-Cong 8088` (Linux: `HTTP_PORT=8088 ./cai-dat.sh …`) đổi cổng web; `-AI` (Linux: `AI=1`) bật container Ollama.
+
+## 4. Cấu hình sau cài đặt (tệp `.env`)
+
+| Biến | Ý nghĩa |
+|---|---|
+| `HTTP_PORT` | Cổng web |
+| `POSTGRES_PASSWORD`, `LOCAL_SECRET_KEY` | Sinh tự động. **Không đổi** sau khi có dữ liệu (khóa AI đã lưu được mã hóa bằng `LOCAL_SECRET_KEY`). Sao lưu `.env` ở nơi an toàn. |
+| `LOCAL_AI_BASE_URL` | Máy chủ AI nội bộ: `http://ollama:11434` (container đi kèm) hoặc máy chủ AI riêng của trường |
+| `SMTP_URL`, `MAIL_FROM` | Máy chủ thư của trường để gửi thông báo, nhắc hạn |
+| `PUBLIC_BASE_URL` | Địa chỉ web dùng trong liên kết trong thư |
+
+Sau khi sửa `.env`: `docker compose up -d`. Bật gửi thư tại Quản trị → Thư điện tử.
+
+### AI nội bộ (tùy chọn)
+
+```
+docker compose --profile ai up -d
+docker compose exec ollama ollama pull qwen3:8b
+```
+
+Rồi vào **AI Center**: thêm model nhà cung cấp "Máy chủ AI nội bộ" với mã model vừa tải, bấm **Làm nóng**, chọn làm model mặc định, chuyển chế độ **Chạy thật**. Tải model lần đầu cần Internet; sau đó chạy không cần Internet.
+
+### HTTPS
+
+Đặt AI-SRM sau reverse proxy của trường (nginx, Apache, F5…) có chứng chỉ HTTPS, chuyển tiếp tới `http://<máy chủ>:<HTTP_PORT>`; tăng thời gian chờ đọc lên 300 giây cho chức năng AI.
+
+## 5. Vận hành
+
+| Việc | Windows | Linux |
+|---|---|---|
+| Xem trạng thái | `docker compose ps` | như bên trái |
+| Nhật ký | `docker compose logs -f api` | như bên trái |
+| Sao lưu (CSDL + tệp + .env) | `.\sao-luu.ps1` | `./sao-luu.sh` |
+| Khôi phục | `.\khoi-phuc.ps1 sao-luu\<thời điểm>` | `./khoi-phuc.sh sao-luu/<thời điểm>` |
+| Nâng cấp | chép bộ cài mới (giữ `.env`), `.\nang-cap.ps1` | `./nang-cap.sh` |
+| Dừng / chạy lại | `docker compose stop` / `docker compose up -d` | như bên trái |
+
+- Nên đặt sao lưu tự động hằng ngày (Task Scheduler / cron) và chép thư mục `sao-luu` sang máy khác hoặc ổ lưu trữ của trường.
+- Diễn tập khôi phục định kỳ trên một máy thử.
+- Nâng cấp tự sao lưu trước; CSDL tự nâng cấp lược đồ khi API khởi động.
+- Tác vụ nền (nhắc hạn 7:00 hằng ngày) chạy sẵn trong container api; xem tại Quản trị → Tác vụ nền.
+
+## 6. Xử lý sự cố
+
+| Hiện tượng | Cách xử lý |
+|---|---|
+| Trang báo "Đang khởi động…" lâu | API chưa sẵn sàng: `docker compose ps`, `docker compose logs api` |
+| Không đăng nhập được, báo khóa tạm | Sai mật khẩu 5 lần: chờ 15 phút hoặc quản trị cấp mật khẩu tạm |
+| Quên mật khẩu quản trị | Một quản trị khác cấp mật khẩu tạm; nếu chỉ có một quản trị: liên hệ đơn vị hỗ trợ |
+| Nút AI báo lỗi máy chủ AI nội bộ | Kiểm tra `LOCAL_AI_BASE_URL`, container ollama, model đã tải; bấm Làm nóng trong AI Center |
+| Kiểm chứng DOI / ORCID báo không kết nối | Máy chủ không có Internet — chức năng khác vẫn chạy bình thường |
+| Hết dung lượng | Dọn bản sao lưu cũ; `docker system df` |

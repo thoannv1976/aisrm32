@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.env
+.git
+.github
+.emulator-data
+apps/api
+tests
+docs
+data
+playwright-report

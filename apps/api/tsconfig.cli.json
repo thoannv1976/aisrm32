@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "rootDir": ".", "outDir": "dist-cli" },
+  "include": ["scripts/local-cli.ts"]
+}

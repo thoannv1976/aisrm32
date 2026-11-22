@@ -24,3 +24,5 @@ apps/api/data/
 
 # Tệp khóa tạm của Microsoft Office
 ~$*
+!.env.onprem
+dist-cli/

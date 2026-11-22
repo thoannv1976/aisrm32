@@ -1,0 +1,9 @@
+id,code,name,type,parentId
+root,TRUONG,Trường Đại học ABC,UNIVERSITY,
+bgh,BGH,Ban Giám hiệu,OFFICE,root
+p-qlkh,QLKH,Phòng Quản lý khoa học,OFFICE,root
+p-tc,TCKT,Phòng Tài chính – Kế toán,OFFICE,root
+k-kt,KT,Khoa Kinh tế,FACULTY,root
+k-qtkd,QTKD,Khoa Quản trị kinh doanh,FACULTY,root
+k-cntt,CNTT,Khoa Công nghệ thông tin,FACULTY,root
+bm-ktvm,KTVM,Bộ môn Kinh tế vĩ mô,DEPARTMENT,k-kt

@@ -63,7 +63,7 @@ export function PersonPicker({ value, onChange, allowExternal = true, placeholde
   );
 }
 
-export function PeoplePicker({ value, onChange, allowExternal = true }: { value: PersonRef[]; onChange: (v: PersonRef[]) => void; allowExternal?: boolean }) {
+export function PeoplePicker({ value, onChange, allowExternal = true, label = 'Thêm người' }: { value: PersonRef[]; onChange: (v: PersonRef[]) => void; allowExternal?: boolean; label?: string }) {
   return (
     <div>
       <ul className="mt-1 flex flex-wrap gap-1">
@@ -77,7 +77,7 @@ export function PeoplePicker({ value, onChange, allowExternal = true }: { value:
           </li>
         ))}
       </ul>
-      <PersonPicker value={null} allowExternal={allowExternal} placeholder="Thêm người (≥ 2 ký tự)…" onChange={(p) => p && !value.some((x) => x.uid && x.uid === p.uid) && onChange([...value, p])} />
+      <PersonPicker value={null} label={label} allowExternal={allowExternal} placeholder="Thêm người (≥ 2 ký tự)…" onChange={(p) => p && !value.some((x) => x.uid && x.uid === p.uid) && onChange([...value, p])} />
     </div>
   );
 }

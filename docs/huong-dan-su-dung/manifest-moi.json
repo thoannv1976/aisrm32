@@ -1,0 +1,341 @@
+[
+ {
+  "id": "N-A1-danh-muc",
+  "file": "N-A1-danh-muc.jpg",
+  "title": "Trang Danh mục KH&CN",
+  "notes": [
+   "Menu **Danh mục KH&CN** (mọi vai trò).",
+   "Năm danh mục: nhóm nghiên cứu, sở hữu trí tuệ, chuyển giao, hội thảo, giải thưởng — kèm số đã xác nhận / chờ xác nhận."
+  ]
+ },
+ {
+  "id": "N-A2-shtt-danh-sach",
+  "file": "N-A2-shtt-danh-sach.jpg",
+  "title": "Danh sách tài sản trí tuệ",
+  "notes": [
+   "Bấm **+ Kê khai tài sản trí tuệ** để thêm mới.",
+   "Xuất danh mục ra Excel (theo phạm vi quyền).",
+   "Danh sách: mã, tên, loại, tình trạng, văn bằng, trạng thái xác nhận."
+  ]
+ },
+ {
+  "id": "N-A3-shtt-ke-khai",
+  "file": "N-A3-shtt-ke-khai.jpg",
+  "title": "Kê khai tài sản trí tuệ",
+  "notes": [
+   "Nhập tên đối tượng; các trường có dấu * là bắt buộc.",
+   "Chọn loại theo danh mục (sáng chế, giải pháp hữu ích, quyền tác giả…).",
+   "Thêm tác giả: gõ tên để chọn người trong trường, hoặc nhập tên người ngoài trường.",
+   "Bấm **Lưu nháp**."
+  ]
+ },
+ {
+  "id": "N-A4-shtt-nop",
+  "file": "N-A4-shtt-nop.jpg",
+  "title": "Đính kèm minh chứng và nộp xác nhận",
+  "notes": [
+   "Tải minh chứng (đơn, văn bằng, quyết định…).",
+   "Bấm **Nộp để xác nhận** — Phòng KH nhận thông báo."
+  ]
+ },
+ {
+  "id": "N-A5-xac-nhan",
+  "file": "N-A5-xac-nhan.jpg",
+  "title": "Phòng KH xác nhận bản kê khai",
+  "notes": [
+   "Ghi chú (bắt buộc khi trả bổ sung).",
+   "Bấm **✓ Xác nhận** nếu thông tin khớp minh chứng; hoặc **↺ Trả bổ sung**."
+  ]
+ },
+ {
+  "id": "N-B1-kinh-phi",
+  "file": "N-B1-kinh-phi.jpg",
+  "title": "Tab Kinh phí – hợp đồng của đề tài",
+  "notes": [
+   "Mở tab **Kinh phí – hợp đồng** trong trang đề tài.",
+   "Tổng hợp: đề xuất, giá trị hợp đồng, đã duyệt chi, đã giải ngân, còn lại.",
+   "Hợp đồng do Phòng KH nhập.",
+   "Dự toán theo mục chi; sau khi Phòng KH **chốt** mới lập đề nghị chi."
+  ]
+ },
+ {
+  "id": "N-B2-de-nghi-chi",
+  "file": "N-B2-de-nghi-chi.jpg",
+  "title": "Lập đề nghị chi",
+  "notes": [
+   "Chọn mục chi trong dự toán đã chốt.",
+   "Ghi nội dung chi.",
+   "Số tiền — hệ thống chặn nếu vượt phần còn lại của mục chi.",
+   "Bấm **Gửi đề nghị**."
+  ]
+ },
+ {
+  "id": "N-B3-duyet-chi",
+  "file": "N-B3-duyet-chi.jpg",
+  "title": "Phòng KH duyệt đề nghị chi",
+  "notes": [
+   "Bấm **Duyệt** (hoặc **Không duyệt** kèm lý do).",
+   "Đề nghị khác đang chờ duyệt."
+  ]
+ },
+ {
+  "id": "N-B4-giai-ngan",
+  "file": "N-B4-giai-ngan.jpg",
+  "title": "Ghi nhận giải ngân theo chứng từ",
+  "notes": [
+   "Số tiền giải ngân (không vượt số đã duyệt).",
+   "Số chứng từ theo Phòng Tài chính — hệ thống không tự suy ra giải ngân.",
+   "Bấm **Ghi nhận**."
+  ]
+ },
+ {
+  "id": "N-B5-hemis",
+  "file": "N-B5-hemis.jpg",
+  "title": "Cập nhật thông tin HEMIS của đề tài",
+  "notes": [
+   "Cấp, phân loại, lĩnh vực KH&CN, nguồn kinh phí theo danh mục HEMIS.",
+   "Kết quả nghiệm thu, ngày nghiệm thu (khi có).",
+   "Bấm **Lưu** — dữ liệu dùng cho báo cáo HEMIS."
+  ]
+ },
+ {
+  "id": "N-C1-dien-tu-pdf",
+  "file": "N-C1-dien-tu-pdf.jpg",
+  "title": "Điền thông tin công bố từ tệp PDF",
+  "notes": [
+   "Bấm **✨ Điền từ tệp PDF**, chọn bản PDF bài báo.",
+   "Tiêu đề, DOI, năm, nơi công bố được điền sẵn — **kiểm tra lại** trước khi lưu.",
+   "Nhóm trường HEMIS: tập, số, trang, ISSN (sách: ISBN, NXB)."
+  ]
+ },
+ {
+  "id": "N-C2-phien-ban",
+  "file": "N-C2-phien-ban.jpg",
+  "title": "Kho minh chứng có phiên bản",
+  "notes": [
+   "Bản mới (v2) đang hiệu lực; bản cũ (v1) vẫn lưu, tải lại được."
+  ]
+ },
+ {
+  "id": "N-C3-orcid",
+  "file": "N-C3-orcid.jpg",
+  "title": "Kiểm chứng ORCID và AI giải thích kết quả",
+  "notes": [
+   "Đối chiếu công bố với hồ sơ ORCID công khai của tác giả trong trường.",
+   "Kết quả theo từng tác giả: khớp DOI / khớp tên bài / không thấy.",
+   "AI tóm tắt kết quả Crossref + ORCID và việc cần kiểm tra — không kết luận thay cán bộ."
+  ]
+ },
+ {
+  "id": "N-C4-nhap-orcid",
+  "file": "N-C4-nhap-orcid.jpg",
+  "title": "Nhập công bố từ ORCID",
+  "notes": [
+   "Chọn công trình chưa có trong AI-SRM (công trình đã có bị làm mờ).",
+   "Bấm **Tạo … bản nháp** — bổ sung tác giả, minh chứng rồi nộp như thường lệ."
+  ]
+ },
+ {
+  "id": "N-C5-phan-loai",
+  "file": "N-C5-phan-loai.jpg",
+  "title": "Phòng KH xác nhận phân loại tạp chí",
+  "notes": [
+   "Phạm vi tạp chí: quốc tế / trong nước.",
+   "Xếp hạng Q (nếu có) — bắt buộc ghi nguồn tra cứu. AI không tự kết luận Q.",
+   "Bấm **Lưu**."
+  ]
+ },
+ {
+  "id": "N-D1-chon-gvhd",
+  "file": "N-D1-chon-gvhd.jpg",
+  "title": "Sinh viên chọn giảng viên hướng dẫn",
+  "notes": [
+   "Chọn giảng viên hướng dẫn, khai ngành, khóa.",
+   "Bấm **Lưu thông tin** — giảng viên nhận thông báo đề nghị xác nhận."
+  ]
+ },
+ {
+  "id": "N-D2-gv-xac-nhan",
+  "file": "N-D2-gv-xac-nhan.jpg",
+  "title": "Giảng viên xác nhận hướng dẫn",
+  "notes": [
+   "Hồ sơ chưa nộp được khi giảng viên chưa xác nhận.",
+   "Giảng viên bấm **✓ Xác nhận hướng dẫn** (hoặc **Từ chối** kèm lý do)."
+  ]
+ },
+ {
+  "id": "N-D3-nhat-ky",
+  "file": "N-D3-nhat-ky.jpg",
+  "title": "Nhật ký hướng dẫn",
+  "notes": [
+   "Tab **Nhật ký hướng dẫn** của đề tài sinh viên.",
+   "Các buổi hướng dẫn đã ghi.",
+   "Ghi buổi mới: ngày, nội dung, việc tiếp theo → **Lưu**."
+  ]
+ },
+ {
+  "id": "N-D4-ai-tieu-chi",
+  "file": "N-D4-ai-tieu-chi.jpg",
+  "title": "AI gợi ý nhận xét theo tiêu chí",
+  "notes": [
+   "Bấm **✨ Gợi ý nhận xét theo tiêu chí**.",
+   "Nhận xét sơ bộ theo từng tiêu chí của phiếu — chỉ để tham khảo, không chấm điểm."
+  ]
+ },
+ {
+  "id": "N-D5-thong-ke",
+  "file": "N-D5-thong-ke.jpg",
+  "title": "Thống kê NCKH sinh viên",
+  "notes": [
+   "Menu **NCKH sinh viên**.",
+   "Ba tab: Thống kê, Danh sách đề tài, Xếp giải.",
+   "Thống kê theo khoa; bên dưới: cơ cấu giải, theo ngành, theo khóa."
+  ]
+ },
+ {
+  "id": "N-D6-xep-giai",
+  "file": "N-D6-xep-giai.jpg",
+  "title": "Xếp giải NCKH sinh viên",
+  "notes": [
+   "Chọn đợt NCKH sinh viên.",
+   "Xếp theo điểm trung bình của hội đồng; Phòng KH chọn mức giải theo quyết định."
+  ]
+ },
+ {
+  "id": "N-E1-tim-chuyen-gia",
+  "file": "N-E1-tim-chuyen-gia.jpg",
+  "title": "Tìm chuyên gia theo chủ đề",
+  "notes": [
+   "Nhập chủ đề / từ khóa, bấm **Tìm chuyên gia**.",
+   "Kết quả xếp theo điểm phù hợp, kèm minh chứng khớp (chuyên môn, công bố, đề tài)."
+  ]
+ },
+ {
+  "id": "N-E2-mang-luoi",
+  "file": "N-E2-mang-luoi.jpg",
+  "title": "Mạng lưới đồng tác giả",
+  "notes": [
+   "Mỗi nút là một nhà khoa học (màu theo đơn vị); cạnh là công bố chung.",
+   "Số người, số cặp hợp tác, hợp tác liên đơn vị."
+  ]
+ },
+ {
+  "id": "N-E3-nang-luc",
+  "file": "N-E3-nang-luc.jpg",
+  "title": "Bản đồ năng lực theo đơn vị",
+  "notes": [
+   "Chuyên môn phổ biến toàn trường.",
+   "Theo đơn vị: nhà khoa học, công bố, đề tài, nhóm nghiên cứu, chuyên môn nổi bật, lĩnh vực."
+  ]
+ },
+ {
+  "id": "N-E4-gioi-thieu",
+  "file": "N-E4-gioi-thieu.jpg",
+  "title": "AI dự thảo giới thiệu học thuật song ngữ",
+  "notes": [
+   "Bản tiếng Việt do AI dự thảo từ dữ liệu đã xác nhận — sửa nếu cần.",
+   "Bản tiếng Anh.",
+   "Bấm **✓ Duyệt và công khai**; chỉ bản đã duyệt hiển thị trên hồ sơ."
+  ]
+ },
+ {
+  "id": "N-E5-ho-so-360",
+  "file": "N-E5-ho-so-360.jpg",
+  "title": "Hồ sơ khoa học 360",
+  "notes": [
+   "**⬇ Lý lịch (Word)**: lý lịch khoa học theo mẫu, chỉ dữ liệu đã xác nhận.",
+   "Nhập công bố từ ORCID.",
+   "Giới thiệu song ngữ đã duyệt."
+  ]
+ },
+ {
+  "id": "N-E6-ho-so-danh-muc",
+  "file": "N-E6-ho-so-danh-muc.jpg",
+  "title": "Danh mục và đồng tác giả trên hồ sơ",
+  "notes": [
+   "Nhóm nghiên cứu, sở hữu trí tuệ, giải thưởng… đã xác nhận tự hiện trên hồ sơ.",
+   "Đồng tác giả trong trường."
+  ]
+ },
+ {
+  "id": "N-F1-chi-so",
+  "file": "N-F1-chi-so.jpg",
+  "title": "Chỉ số theo lĩnh vực, năm, sinh viên, kinh phí",
+  "notes": [
+   "Tab **Lĩnh vực, năm, sinh viên, kinh phí**.",
+   "Chỉ số NCKH sinh viên, hợp đồng, giải ngân, SHTT, nhóm mạnh.",
+   "Biểu đồ + bảng số liệu (bấm “Bảng số liệu”), có định nghĩa chỉ số."
+  ]
+ },
+ {
+  "id": "N-F2-hoi-dap",
+  "file": "N-F2-hoi-dap.jpg",
+  "title": "Hỏi đáp số liệu bằng tiếng Việt",
+  "notes": [
+   "Gõ câu hỏi tiếng Việt (hoặc bấm câu hỏi gợi ý), bấm **Hỏi**.",
+   "Câu trả lời do hệ thống tính.",
+   "Truy vấn được chọn, phạm vi, định nghĩa — AI chỉ chọn truy vấn, không tự sinh số."
+  ]
+ },
+ {
+  "id": "N-F3-bao-cao",
+  "file": "N-F3-bao-cao.jpg",
+  "title": "Xuất báo cáo và báo cáo cấp trên",
+  "notes": [
+   "**Báo cáo HEMIS (Excel)**: các bảng nhiệm vụ, bài báo, sách, nhóm NC, sáng chế, chuyển giao, hội thảo, giải thưởng.",
+   "Tiêu đề, nơi nhận của báo cáo.",
+   "Sau khi sửa dự thảo AI, bấm **⬇ Xuất Word** — kèm phụ lục bảng chỉ số."
+  ]
+ },
+ {
+  "id": "N-F4-chot-ky",
+  "file": "N-F4-chot-ky.jpg",
+  "title": "Chốt kỳ số liệu",
+  "notes": [
+   "Đặt tên kỳ, kỳ báo cáo.",
+   "Bấm **Chốt** — bộ số liệu được lưu bất biến để báo cáo kỳ luôn khớp."
+  ]
+ },
+ {
+  "id": "N-G1-uy-quyen",
+  "file": "N-G1-uy-quyen.jpg",
+  "title": "Ủy quyền có thời hạn",
+  "notes": [
+   "Menu **Ủy quyền** (lãnh đạo đơn vị, Phòng KH, BGH).",
+   "Chọn vai trò của mình cần ủy quyền.",
+   "Người nhận, thời hạn, lý do.",
+   "Bấm **Ủy quyền**; tự hết hiệu lực khi đến hạn, có thể thu hồi sớm."
+  ]
+ },
+ {
+  "id": "N-G2-phan-bien-ngoai",
+  "file": "N-G2-phan-bien-ngoai.jpg",
+  "title": "Tài khoản phản biện ngoài trường",
+  "notes": [
+   "Menu **Phản biện ngoài trường** (Phòng KH).",
+   "Thông tin phản biện; chuyên môn dùng cho gợi ý phản biện.",
+   "Thời hạn tài khoản (tối đa 12 tháng).",
+   "Bấm **Tạo tài khoản** — mật khẩu tạm hiện một lần, gửi qua kênh an toàn."
+  ]
+ },
+ {
+  "id": "N-G3-ban-giao",
+  "file": "N-G3-ban-giao.jpg",
+  "title": "Bàn giao hồ sơ",
+  "notes": [
+   "Quản trị → **Bàn giao hồ sơ** (khi nghỉ việc, chuyển công tác).",
+   "Hồ sơ chưa kết thúc của người bàn giao — chọn hồ sơ cần chuyển.",
+   "Chọn người nhận, ghi lý do, bấm **Bàn giao**."
+  ]
+ },
+ {
+  "id": "N-G4-thu-dien-tu",
+  "file": "N-G4-thu-dien-tu.jpg",
+  "title": "Cấu hình thư điện tử thông báo",
+  "notes": [
+   "Trạng thái máy chủ thư (SMTP) — đặt bằng biến môi trường khi cài đặt.",
+   "Bật / tắt gửi thư; chọn phạm vi (mọi thông báo / chỉ nhắc hạn).",
+   "Gửi thư thử; kết quả ghi ở Nhật ký gửi thư."
+  ]
+ }
+]

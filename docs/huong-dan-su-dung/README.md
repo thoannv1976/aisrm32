@@ -36,3 +36,11 @@ Mọi ảnh đều chụp trên **dữ liệu mẫu (giả lập)**.
    - Ghi chú ①②③ dưới mỗi hình lấy từ kịch bản chụp, nên luôn khớp với ô đỏ trên ảnh.
 
 4. Mở file `.docx` bằng Word, cập nhật mục lục (bấm chuột phải vào mục lục → Update Field), rồi lưu thành PDF.
+
+## Chức năng mới (hoàn thiện theo Thư mời K24) và hướng dẫn cài đặt
+
+```
+GUIDE_HEADLESS=1 pnpm exec playwright test -c tests/guide/playwright.config.ts capture-new   # ảnh N-*.jpg, manifest-moi.json
+node tests/guide/build-new.cjs       # HUONG_DAN_CHUC_NANG_MOI.docx, BAI_TAP_CHUC_NANG_MOI.docx
+node tests/guide/build-install.cjs   # HUONG_DAN_CAI_DAT_LOCAL.docx, HUONG_DAN_CAI_DAT_ONLINE.docx (từ deploy/*/HUONG_DAN*.md)
+```
