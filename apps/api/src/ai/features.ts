@@ -47,7 +47,7 @@ export interface AiDraft {
 
 const DISCLAIMER = 'Dự thảo do AI tạo — có thể chưa chính xác. Người dùng/người có thẩm quyền kiểm tra trước khi sử dụng; AI không thay thế đánh giá của đơn vị, hội đồng.';
 
-function draftFrom(task: string, r: RunAiResult, text: string, findings?: AiDraft['findings']): AiDraft {
+export function draftFrom(task: string, r: RunAiResult, text: string, findings?: AiDraft['findings']): AiDraft {
   return {
     task,
     text,

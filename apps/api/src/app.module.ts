@@ -14,6 +14,7 @@ import { OrgController } from './modules/org.controller';
 import { ProjectsController } from './modules/projects.controller';
 import { ProposalsController } from './modules/proposals.controller';
 import { PublicationsController } from './modules/publications.controller';
+import { RegulationsController } from './modules/regulations.controller';
 
 @Module({
   controllers: [
@@ -30,6 +31,7 @@ import { PublicationsController } from './modules/publications.controller';
     AiController,
     IntegrationsController,
     CouncilsController,
+    RegulationsController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthGuard },

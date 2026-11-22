@@ -14,8 +14,12 @@ Ngày 21/11/2026 · Căn cứ: Thư mời số 24/2026/TM-TH (Phụ lục 01–0
 >   - khai báo xung đột trước khi xem hồ sơ;
 >   - chấm độc lập theo phiếu có phiên bản, khóa phiếu, tổng hợp;
 >   - AI dự thảo biên bản, chủ tịch xác nhận, thu hồi quyền xem hồ sơ.
+> - ✅ **Trợ lý hỏi đáp quy chế (RAG)** (22/11/2026):
+>   - nạp văn bản .docx/.txt/.md, tự tách Chương/Điều/Khoản, xem trước trước khi nạp, nạp lại theo phiên bản;
+>   - tìm kiếm BM25 tiếng Việt (gõ có/không dấu), trả lời luôn dẫn "khoản X Điều Y";
+>   - thiếu căn cứ thì trả lời "không tìm thấy" và không gọi AI; cảnh báo căn cứ mô hình tự nêu không có trong văn bản;
+>   - đang dùng **quy chế mẫu giả định** (`Quy_che_KHCN_mau_FTU.docx`) — thay bằng văn bản thật của trường khi có.
 > - ⏳ **Còn lại của Sprint 1–2:**
->   - trợ lý hỏi đáp quy chế (RAG) — cần văn bản quy chế thật của trường;
 >   - nhắc hạn tự động + email — cần chọn dịch vụ gửi email;
 >   - xuất Word / Excel / PDF theo mẫu — cần mẫu của trường;
 >   - màn hình phân quyền / ủy quyền;
@@ -160,7 +164,7 @@ Mỗi sprint kết thúc bằng: chạy local + staging, test tự động, báo
   - tổng hợp, biên bản;
   - tài khoản phản biện ngoài trường có thời hạn.
 - **AI gợi ý phản biện:** dựa trên chuyên môn và công bố; loại trừ người có quan hệ (đồng tác giả, cùng đơn vị). Hội đồng quyết định.
-- **Trợ lý hỏi đáp quy chế (RAG):** nạp văn bản quy chế, trả lời có trích nguồn, từ chối khi thiếu căn cứ.
+- ✅ **Trợ lý hỏi đáp quy chế (RAG):** nạp văn bản quy chế, trả lời có trích nguồn, từ chối khi thiếu căn cứ. *(Đã xong 22/11/2026, đang dùng quy chế mẫu.)*
 - **Nhắc hạn tự động** (Cloud Scheduler) và **gửi email thông báo**.
 - **Xuất Word / Excel / PDF theo mẫu:** thuyết minh, biên bản, danh mục đề tài, báo cáo.
 - Màn hình phân quyền, ủy quyền, bàn giao hồ sơ.

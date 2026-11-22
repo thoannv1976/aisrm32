@@ -17,6 +17,7 @@ import { LoginPage } from './pages/LoginPage';
 import { ProjectDetailPage, ProjectsPage } from './pages/ProjectsPages';
 import { ProposalDetailPage, ProposalsPage } from './pages/ProposalsPages';
 import { PublicationDetailPage, PublicationFormPage, PublicationsPage } from './pages/PublicationsPages';
+import { RegulationDetailPage, RegulationsPage } from './pages/RegulationsPage';
 import { ResearcherPage } from './pages/ResearcherPage';
 import { WorkspacePage } from './pages/WorkspacePage';
 
@@ -57,6 +58,8 @@ function Gate() {
         <Route path="projects/:id" element={<ProjectDetailPage />} />
         <Route path="councils" element={<CouncilsPage />} />
         <Route path="councils/:id" element={<CouncilDetailPage />} />
+        <Route path="regulations" element={<RegulationsPage />} />
+        <Route path="regulations/:id" element={<RegulationDetailPage />} />
         <Route path="publications" element={<PublicationsPage />} />
         <Route path="publications/new" element={<PublicationFormPage />} />
         <Route path="publications/:id" element={<PublicationDetailPage />} />

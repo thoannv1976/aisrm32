@@ -277,6 +277,7 @@ export async function seedBusiness(tenantId: string, users: Record<string, { uid
   await seedAiDefaults(tenantId);
   await seedStudentResearch(tenantId);
   await seedProfiles(tenantId);
+  await seedRegulations(tenantId);
 }
 
 /**
@@ -368,6 +369,27 @@ export async function seedProfiles(tenantId: string): Promise<number> {
 }
 
 /** Cấu hình AI Center + UNI-DATA360 mặc định (dùng cho seed emulator và nâng cấp staging). */
+/** Quy chế KHCN mẫu (văn bản giả định) cho hỏi đáp quy chế. Bỏ qua nếu đã có văn bản cùng mã. */
+export async function seedRegulations(tenantId: string): Promise<boolean> {
+  const { readFileSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const { parseRegulationText } = await import('@aisrm/shared');
+  const { saveRegulation } = await import('../src/regulation/service');
+  const raw = readFileSync(join(__dirname, 'data', 'quy-che-khcn-mau.md'), 'utf8');
+  const fm = Object.fromEntries(
+    (/^---\r?\n([\s\S]*?)\r?\n---/.exec(raw)?.[1] ?? '').split(/\r?\n/).map((l) => [l.slice(0, l.indexOf(':')).trim(), l.slice(l.indexOf(':') + 1).trim()]),
+  );
+  const exists = await firestore().collection('tenants').doc(tenantId).collection('regulations').where('code', '==', fm.code).limit(1).get();
+  if (!exists.empty) return false;
+  await saveRegulation(
+    tenantId,
+    { code: fm.code, title: fm.title, issuer: fm.issuer, effectiveDate: fm.effectiveDate, note: fm.note, sourceFileName: 'Quy_che_KHCN_mau_FTU.docx' },
+    parseRegulationText(raw),
+    { uid: 'system', name: 'Dữ liệu mẫu' },
+  );
+  return true;
+}
+
 export async function seedAiDefaults(tenantId: string, opts: { onlyIfMissing?: boolean } = {}) {
   const t = firestore().collection('tenants').doc(tenantId);
   if (opts.onlyIfMissing && (await t.collection('aiConfig').doc('settings').get()).exists) return false;

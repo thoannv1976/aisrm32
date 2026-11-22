@@ -166,3 +166,73 @@ describe('Hội đồng — phiếu chấm và tổng hợp', () => {
     expect(aggregate(r, t, [mk('a', 60), mk('b', 65)], 2).suggestion).toBe('FAIL');
   });
 });
+
+import { readFileSync } from 'node:fs';
+import { buildBm25, extractCitations, isGrounded, normalizeVi, parseRegulationText, searchBm25 } from './regulation';
+
+describe('Hỏi đáp quy chế — tách điều khoản và tìm kiếm', () => {
+  const md = readFileSync(new URL('../../../apps/api/scripts/data/quy-che-khcn-mau.md', import.meta.url), 'utf8');
+  const parsed = parseRegulationText(md);
+  const chunks = parsed.articles.flatMap((a) => a.clauses.map((c) => ({ id: `${a.number}.${c.no}`, text: `Điều ${a.number}. ${a.title}\n${c.text}` })));
+  const idx = buildBm25(chunks);
+  const top = (q: string) => searchBm25(idx, q, 5);
+
+  it('nhận diện đủ 29 điều, chương, khoản; không cảnh báo', () => {
+    expect(parsed.articles.length).toBe(29);
+    expect(parsed.warnings).toEqual([]);
+    expect(parsed.heading).toContain('QUY CHẾ');
+    const a15 = parsed.articles.find((a) => a.number === 15)!;
+    expect(a15.title).toBe('Gia hạn');
+    expect(a15.chapter).toBe('Chương IV. THỰC HIỆN ĐỀ TÀI');
+    expect(a15.clauses.map((c) => c.no)).toEqual([1, 2, 3]);
+  });
+
+  it('văn bản dạng đoạn rời (trích từ Word): chương tách 2 dòng, khoản nối dòng', () => {
+    const p = parseRegulationText('QUY CHẾ THỬ\n\nChương I\n\nQUY ĐỊNH CHUNG\n\nĐiều 1. Phạm vi\n\n1. Khoản một\n\ntiếp dòng\n\n2. Khoản hai\n\nĐiều 3. Nhảy số\n\nNội dung');
+    expect(p.articles[0].chapter).toBe('Chương I. QUY ĐỊNH CHUNG');
+    expect(p.articles[0].clauses).toEqual([{ no: 1, text: 'Khoản một\ntiếp dòng' }, { no: 2, text: 'Khoản hai' }]);
+    expect(p.articles[1].clauses[0].no).toBe(0);
+    expect(p.warnings.some((w) => w.includes('không liên tục'))).toBe(true);
+  });
+
+  it('tìm đúng điều khoản cho câu hỏi thường gặp, kể cả gõ không dấu', () => {
+    expect(normalizeVi('Đề tài gia hạn')).toBe('de tai gia han');
+    expect(top('Đề tài được gia hạn tối đa mấy lần?').hits[0].id).toBe('15.1');
+    expect(top('de tai duoc gia han toi da may lan').hits[0].id).toBe('15.1');
+    expect(top('Điểm bao nhiêu thì hội đồng đề nghị phê duyệt thuyết minh?').hits.slice(0, 3).map((h) => h.id)).toContain('10.5');
+    expect(top('Bài báo Q1 được thưởng bao nhiêu tiền?').hits[0].id).toBe('27.1');
+    expect(top('Sinh viên làm đề tài nhóm tối đa mấy người').hits[0].id).toBe('22.1');
+  });
+
+  it('ngưỡng căn cứ: câu hỏi trong phạm vi được trả lời, ngoài phạm vi thì không (bộ hồi quy)', () => {
+    const inScope = [
+      'Đề tài được gia hạn tối đa mấy lần, bao lâu?',
+      'Thuyết minh cần bao nhiêu điểm thì được đề nghị phê duyệt?',
+      'Khi nào thành viên hội đồng bị coi là có xung đột lợi ích?',
+      'Bài báo Q1 được thưởng bao nhiêu, chia cho tác giả thế nào?',
+      'Chậm nộp báo cáo tiến độ thì bị xử lý thế nào?',
+      'Ai được làm chủ nhiệm đề tài cấp trường?',
+      'Có được dùng AI để viết thuyết minh không?',
+      'Định mức giờ nghiên cứu của giảng viên là bao nhiêu?',
+      'de tai duoc gia han toi da may lan',
+      'Hội đồng nghiệm thu có mấy thành viên',
+    ];
+    const outScope = [
+      'Thủ tục đăng ký ký túc xá như thế nào?',
+      'Thủ tục đăng ký ký túc xá và học bổng khuyến khích học tập',
+      'Lương giảng viên bao nhiêu một tháng?',
+      'Nghỉ phép năm được mấy ngày?',
+      'Học phí năm nay tăng bao nhiêu?',
+      'Cách đặt phòng họp hội trường',
+    ];
+    for (const q of inScope) expect([q, isGrounded(top(q))]).toEqual([q, true]);
+    for (const q of outScope) expect([q, isGrounded(top(q))]).toEqual([q, false]);
+  });
+
+  it('trích căn cứ trong câu trả lời', () => {
+    expect(extractCitations('Theo khoản 1 Điều 15 và Điều 25, ... (khoản 1 Điều 15)')).toEqual([
+      { article: 15, clause: 1 },
+      { article: 25, clause: 0 },
+    ]);
+  });
+});

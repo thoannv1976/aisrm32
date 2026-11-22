@@ -24,6 +24,7 @@ const MENU: MenuItem[] = [
   { to: '/projects', label: 'Đề tài', icon: '📁' },
   { to: '/publications', label: 'Công bố', icon: '📚' },
   { to: '/councils', label: 'Hội đồng', icon: '⚖️' },
+  { to: '/regulations', label: 'Hỏi đáp quy chế', icon: '💬' },
   { to: '/profile', label: 'Hồ sơ khoa học', icon: '👤', roles: ['STUDENT', 'RESEARCHER', 'SUPERVISOR', 'UNIT_FOCAL', 'UNIT_HEAD', 'SCIENCE_HEAD', 'VICE_RECTOR', 'RECTOR'] },
   { to: '/dashboard', label: 'Điều hành & báo cáo', icon: '📊', roles: MANAGERS },
   { to: '/ai', label: 'AI Center', icon: '✨' },
