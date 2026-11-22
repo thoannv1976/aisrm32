@@ -1,5 +1,5 @@
 import type { ApiError } from '@aisrm/shared';
-import { auth } from './firebase';
+import { getToken, onUnauthorized } from './auth';
 
 export class ApiFailure extends Error {
   constructor(
@@ -30,8 +30,8 @@ export function setTenant(id: string) {
 
 async function headers(extra: Record<string, string> = {}): Promise<Record<string, string>> {
   const h: Record<string, string> = { ...extra };
-  const user = auth.currentUser;
-  if (user) h.Authorization = `Bearer ${await user.getIdToken()}`;
+  const token = await getToken();
+  if (token) h.Authorization = `Bearer ${token}`;
   const t = getTenant();
   if (t) h['X-Tenant-Id'] = t;
   return h;
@@ -42,6 +42,7 @@ async function handle<T>(r: Response): Promise<T> {
     const ct = r.headers.get('content-type') ?? '';
     return (ct.includes('application/json') ? r.json() : r.text()) as Promise<T>;
   }
+  if (r.status === 401) onUnauthorized();
   let body: ApiError;
   try {
     body = await r.json();

@@ -13,7 +13,7 @@ Trạng thái: Chấp nhận · 22/11/2026 · Liên quan: [Kế hoạch bản Lo
    |---|---|---|
    | `DataStore` (`datastore.ts`) | `firestoreStore` | `postgresStore` (`postgres.ts`) ✅ |
    | `FileStore` (`filestore.ts`) | `gcsFileStore` | ổ đĩa / MinIO (L4) |
-   | `IdentityProvider` (`identity.ts`) | `firebaseIdentity` | tài khoản nội bộ / OIDC (L3) |
+   | `IdentityProvider` (`identity.ts`) | `firebaseIdentity` | `LocalIdentity` (`local-identity.ts`) ✅; OIDC khi có IdP của trường |
    | `SecretStore` (`ai/secrets.ts`, đã có) | Secret Manager | tệp mã hóa AES-GCM |
 
    Bản cài đặt được chọn theo `DEPLOY_TARGET=online|local` trong `infra/index.ts`. Chỉ `infra/firebase.ts` được import `firebase-admin`.
@@ -33,4 +33,5 @@ Trạng thái: Chấp nhận · 22/11/2026 · Liên quan: [Kế hoạch bản Lo
 - Muốn thêm thao tác dữ liệu mới thì phải có trong port. Nếu chưa có, bổ sung vào port và **cả hai** bản cài đặt, kèm test.
 - Bản Online không đổi hành vi. Ngày 22/11/2026 đã kiểm chứng lại: 24 unit test, 56 test tích hợp, E2E đều đạt.
 - L2 (22/11/2026): `infra/postgres.ts` cài đặt DataStore trên PostgreSQL. `DATA_BACKEND=postgres` (mặc định khi `DEPLOY_TARGET=local`) chọn bản này. `test/datastore.spec.ts` kiểm tra ngữ nghĩa trên cả hai bản; 65/65 test tích hợp đạt trên cả hai.
-- `DEPLOY_TARGET=local` vẫn báo lỗi rõ ràng "chưa cài đặt" cho FileStore và đăng nhập cho đến khi xong L3–L4.
+- L3 (22/11/2026): `IDENTITY_BACKEND=local` (mặc định khi `DEPLOY_TARGET=local`) chọn đăng nhập nội bộ. Tài khoản và phiên lưu qua DataStore nên chạy được trên cả hai kho. Web lấy kiểu đăng nhập từ `/auth/config` lúc chạy, nên một bản build dùng chung cho cả hai bản.
+- `DEPLOY_TARGET=local` vẫn báo lỗi rõ ràng "chưa cài đặt" cho FileStore cho đến khi xong L4.

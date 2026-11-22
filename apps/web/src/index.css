@@ -25,6 +25,9 @@ body {
   .btn-primary {
     @apply border-brand-700 bg-brand-700 text-white hover:bg-brand-800;
   }
+  .btn-sm {
+    @apply px-2 py-1 text-xs;
+  }
   .btn-danger {
     @apply border-red-700 bg-white text-red-700 hover:bg-red-50;
   }

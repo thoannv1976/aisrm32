@@ -53,14 +53,14 @@ pnpm typecheck
 
 ### Chạy trên PostgreSQL (bản Local, ADR-0003)
 
-Cùng bộ test tích hợp, kho dữ liệu là PostgreSQL. Đăng nhập và tệp vẫn dùng emulator cho đến giai đoạn L3/L4. CI chạy cả hai bản.
+Cùng bộ test tích hợp, kho dữ liệu là PostgreSQL. Thêm `IDENTITY_BACKEND=local` để dùng đăng nhập nội bộ (L3) thay Firebase Auth. Tệp vẫn dùng Storage emulator cho đến L4. CI chạy cả hai bản.
 
 ```powershell
 docker run -d --name aisrm-pg -e POSTGRES_USER=aisrm -e POSTGRES_PASSWORD=aisrm_dev -e POSTGRES_DB=aisrm_test -p 127.0.0.1:5433:5432 postgres:17-alpine
 ```
 
 ```powershell
-$env:DATA_BACKEND='postgres'; $env:DATABASE_URL='postgres://aisrm:aisrm_dev@127.0.0.1:5433/aisrm_test'; pnpm test:integration:pg
+$env:DATA_BACKEND='postgres'; $env:IDENTITY_BACKEND='local'; $env:DATABASE_URL='postgres://aisrm:aisrm_dev@127.0.0.1:5433/aisrm_test'; pnpm test:integration:pg
 ```
 
 - Lược đồ tự tạo khi API khởi động (bảng `schema_migrations`); view báo cáo nằm trong schema `report` (`v_proposals`, `v_projects`, `v_publications`, `v_audit_events`).

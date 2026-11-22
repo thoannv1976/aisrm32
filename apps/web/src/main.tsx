@@ -14,6 +14,7 @@ import { CallDetailPage, CallNewPage, CallsPage } from './pages/CallsPages';
 import { CouncilDetailPage, CouncilsPage } from './pages/CouncilsPages';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
+import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { ProjectDetailPage, ProjectsPage } from './pages/ProjectsPages';
 import { ProposalDetailPage, ProposalsPage } from './pages/ProposalsPages';
 import { PublicationDetailPage, PublicationFormPage, PublicationsPage } from './pages/PublicationsPages';
@@ -32,9 +33,10 @@ const queryClient = new QueryClient({
 });
 
 function Gate() {
-  const { user, ready, me, meLoading, meError, logout } = useSession();
+  const { user, ready, mode, mustChangePassword, me, meLoading, meError, logout } = useSession();
   if (!ready) return <Loading label="Đang khởi động…" />;
   if (!user) return <LoginPage />;
+  if (mustChangePassword) return <ChangePasswordPage forced />;
   if (meLoading) return <Loading label="Đang tải thông tin tài khoản…" />;
   if (meError || !me)
     return (
@@ -70,6 +72,7 @@ function Gate() {
         <Route path="ai" element={<AiCenterPage />} />
         <Route path="integrations" element={<IntegrationCenterPage />} />
         <Route path="admin" element={<AdminPage />} />
+        {mode === 'local' && <Route path="account/password" element={<ChangePasswordPage />} />}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

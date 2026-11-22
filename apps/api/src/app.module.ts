@@ -3,6 +3,7 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AuthGuard, RequestIdMiddleware } from './common/auth';
 import { AllExceptionsFilter } from './common/errors';
 import { AiController } from './modules/ai.controller';
+import { AccountsAdminController, AuthController } from './modules/auth.controller';
 import { CallsController } from './modules/calls.controller';
 import { CouncilsController } from './modules/councils.controller';
 import { AuditController, DashboardController } from './modules/dashboard.controller';
@@ -19,6 +20,8 @@ import { RegulationsController } from './modules/regulations.controller';
 @Module({
   controllers: [
     HealthController,
+    AuthController,
+    AccountsAdminController,
     MeController,
     OrgController,
     CallsController,

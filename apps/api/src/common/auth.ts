@@ -16,10 +16,15 @@ import { db, identity, tcol } from '../infra';
 export interface AuthedRequest extends Request {
   requestId?: string;
   principal?: Principal;
+  /** Token Bearer của yêu cầu (để đăng xuất / đổi mật khẩu ở bản Local). */
+  authToken?: string;
 }
 
 export const IS_PUBLIC = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC, true);
+/** Cho phép gọi khi tài khoản đang bị buộc đổi mật khẩu tạm (chỉ các API /auth). */
+export const ALLOW_PENDING_PASSWORD = 'allowPendingPassword';
+export const AllowPendingPassword = () => SetMetadata(ALLOW_PENDING_PASSWORD, true);
 
 export const CurrentPrincipal = createParamDecorator((_: unknown, ctx: ExecutionContext): Principal => {
   const req = ctx.switchToHttp().getRequest<AuthedRequest>();
@@ -59,11 +64,18 @@ export class AuthGuard implements CanActivate {
     if (!token) throw new AppError(401, 'UNAUTHENTICATED', 'Chưa đăng nhập.');
 
     let uid: string;
+    let mustChangePassword = false;
     try {
-      uid = (await identity().verifyToken(token)).uid;
+      const v = await identity().verifyToken(token);
+      uid = v.uid;
+      mustChangePassword = !!v.mustChangePassword;
     } catch {
       throw new AppError(401, 'UNAUTHENTICATED', 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn.');
     }
+    if (mustChangePassword && !this.reflector.getAllAndOverride<boolean>(ALLOW_PENDING_PASSWORD, [ctx.getHandler(), ctx.getClass()])) {
+      throw new AppError(403, 'PASSWORD_CHANGE_REQUIRED', 'Bạn cần đổi mật khẩu tạm trước khi tiếp tục.');
+    }
+    req.authToken = token;
 
     req.principal = await loadPrincipal(uid, req.header('x-tenant-id') ?? null);
     return true;

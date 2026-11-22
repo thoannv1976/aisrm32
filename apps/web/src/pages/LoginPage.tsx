@@ -1,7 +1,6 @@
-import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
 import { ErrorBox } from '../components/ui';
-import { auth, usingEmulators } from '../lib/firebase';
+import { authMode, signIn, usingEmulators } from '../lib/auth';
 
 /** Tài khoản giả lập trong emulator (xem apps/api/scripts/seed-data.ts). Chỉ hiện khi chạy với emulator. */
 const DEMO_ACCOUNTS = [
@@ -28,9 +27,9 @@ export function LoginPage() {
     setBusy(true);
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth, e, p);
-    } catch {
-      setError(new Error('Email hoặc mật khẩu không đúng.'));
+      await signIn(e, p);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Email hoặc mật khẩu không đúng.'));
     } finally {
       setBusy(false);
     }
@@ -71,7 +70,11 @@ export function LoginPage() {
             <button className="btn btn-primary w-full" disabled={busy}>
               {busy ? 'Đang đăng nhập…' : 'Đăng nhập'}
             </button>
-            <p className="text-xs text-slate-500">Đăng nhập một lần (SSO) của trường sẽ được kết nối khi có cấu hình định danh chính thức.</p>
+            <p className="text-xs text-slate-500">
+              {authMode() === 'local'
+                ? 'Tài khoản do quản trị hệ thống của trường cấp. Quên mật khẩu: liên hệ quản trị để được cấp mật khẩu tạm.'
+                : 'Đăng nhập một lần (SSO) của trường sẽ được kết nối khi có cấu hình định danh chính thức.'}
+            </p>
           </form>
 
           {usingEmulators && (

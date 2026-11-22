@@ -1,6 +1,6 @@
 # Kế hoạch xây dựng AI-SRM Local (PostgreSQL) — trình duyệt
 
-Ngày lập: 22/11/2026 · Cập nhật: 22/11/2026 (xong L1, L2) · Trạng thái: **đã duyệt 22/11/2026, đang triển khai**
+Ngày lập: 22/11/2026 · Cập nhật: 22/11/2026 (xong L1, L2, L3) · Trạng thái: **đã duyệt 22/11/2026, đang triển khai**
 
 ## Tiến độ
 
@@ -14,7 +14,16 @@ Ngày lập: 22/11/2026 · Cập nhật: 22/11/2026 (xong L1, L2) · Trạng th�
   - bộ test tương thích mới (9 kịch bản, gồm **duyệt đồng thời 5 người chỉ 1 thắng**) chạy trên cả hai bản;
   - kết quả: **65/65 test tích hợp đạt trên cả Firestore và PostgreSQL; 3/3 E2E đạt khi API chạy PostgreSQL**; CI có thêm job `integration-postgres`;
   - còn lại cho L5: chỉ mục biểu thức JSONB theo truy vấn thực tế khi dữ liệu lớn; bắt buộc đặt `LOCAL_SECRET_KEY` riêng cho kho khóa AI ở bản Local.
-- ⏳ **L3 — Đăng nhập nội bộ:** tiếp theo.
+- ✅ **L3 — Đăng nhập nội bộ (22/11/2026):**
+  - `infra/local-identity.ts`: mật khẩu băm scrypt; phiên là token ngẫu nhiên 256 bit, máy chủ chỉ lưu bản băm; phiên hết hạn sau 12 giờ, hoặc sau 2 giờ không hoạt động;
+  - khóa tạm 15 phút sau 5 lần sai, kể cả với email không tồn tại (không dò được tài khoản); giới hạn số lần sai theo IP;
+  - đổi mật khẩu, quản trị cấp mật khẩu tạm (buộc đổi ở lần đăng nhập sau), khóa / mở tài khoản; mỗi thao tác này thu hồi ngay mọi phiên cũ;
+  - **nhập tài khoản từ CSV** (có kiểm tra trước, mật khẩu tạm chỉ hiện một lần), chạy được ở cả bản Online;
+  - web: lớp đăng nhập chọn kiểu theo máy chủ (`/auth/config`), cùng một bản build chạy cả hai kiểu; SDK Firebase chỉ tải ở bản Online. Có trang đổi mật khẩu và tab Quản trị → Tài khoản;
+  - không có CSRF: token gửi qua header `Authorization`, không dùng cookie; có test chứng minh;
+  - kết quả: 75/75 test tích hợp đạt ở bản Local (PostgreSQL + đăng nhập nội bộ); 67/67 đạt ở hai cấu hình Firebase (8 test chỉ dành cho bản Local được bỏ qua); 4/4 E2E bản Local, 3/3 E2E bản Online. CI chạy E2E cho cả hai bản;
+  - **chưa làm OIDC / SSO của trường**: cần thông tin máy chủ định danh thật của trường thí điểm (câu Q7). Sẽ làm khi có, vì cấu trúc port đã sẵn sàng.
+- ⏳ **L4 — Lưu tệp trên ổ đĩa, hẹn giờ, AI nội bộ:** tiếp theo.
 
 ## 0. Mục tiêu và căn cứ
 

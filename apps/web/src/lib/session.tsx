@@ -1,13 +1,16 @@
 import type { MeResponse, Role } from '@aisrm/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { onIdTokenChanged, signOut, type User } from 'firebase/auth';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api, setTenant } from './api';
-import { auth } from './firebase';
+import { authMode, signOutUser, subscribeAuth, type AuthMode, type AuthUser } from './auth';
 
 interface Session {
-  user: User | null;
+  user: AuthUser | null;
   ready: boolean;
+  /** Kiểu đăng nhập của máy chủ: firebase (Online) hoặc local (đăng nhập nội bộ). */
+  mode: AuthMode | null;
+  /** Bản Local: phải đổi mật khẩu tạm trước khi dùng hệ thống. */
+  mustChangePassword: boolean;
   me: MeResponse | undefined;
   meLoading: boolean;
   meError: unknown;
@@ -40,7 +43,8 @@ const ROLE_PRIORITY: Role[] = [
 ];
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [mustChangePassword, setMustChange] = useState(false);
   const [ready, setReady] = useState(false);
   const [activeRole, setActiveRoleState] = useState<Role | null>(() => {
     try {
@@ -53,8 +57,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(
     () =>
-      onIdTokenChanged(auth, (u) => {
-        setUser(u);
+      subscribeAuth((s) => {
+        setUser(s.user);
+        setMustChange(s.mustChangePassword);
         setReady(true);
       }),
     [],
@@ -63,7 +68,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const meQ = useQuery({
     queryKey: ['me', user?.uid],
     queryFn: () => api<MeResponse>('/me'),
-    enabled: !!user,
+    enabled: !!user && !mustChangePassword,
     retry: false,
   });
 
@@ -78,6 +83,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       ready,
+      mode: authMode(),
+      mustChangePassword,
       me,
       meLoading: meQ.isLoading,
       meError: meQ.error,
@@ -97,11 +104,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         window.location.assign('/');
       },
       logout: async () => {
-        await signOut(auth);
+        await signOutUser();
         qc.clear();
       },
     }),
-    [user, ready, me, meQ.isLoading, meQ.error, activeRole, qc],
+    [user, ready, mustChangePassword, me, meQ.isLoading, meQ.error, activeRole, qc],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
-import { usingEmulators } from '../lib/firebase';
+import { usingEmulators } from '../lib/auth';
 import { useSession } from '../lib/session';
 import { fmtDateTime } from './ui';
 
@@ -98,7 +98,7 @@ function Notifications() {
 }
 
 export function Layout() {
-  const { me, activeRole, setActiveRole, logout, switchTenant } = useSession();
+  const { me, mode, activeRole, setActiveRole, logout, switchTenant } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const items = MENU.filter((m) => !m.roles || (activeRole && m.roles.includes(activeRole)));
 
@@ -146,6 +146,11 @@ export function Layout() {
               <div className="truncate text-sm font-medium">{me?.displayName}</div>
               <div className="text-[11px] text-white/70">{activeRole ? ROLE_LABELS[activeRole] : ''}</div>
             </div>
+            {mode === 'local' && (
+              <Link to="/account/password" className="hidden whitespace-nowrap rounded px-2 py-1 text-sm text-white/90 hover:bg-white/10 md:inline">
+                Đổi mật khẩu
+              </Link>
+            )}
             <button className="whitespace-nowrap rounded px-2 py-1 text-sm text-white/90 hover:bg-white/10" onClick={() => logout()}>
               Đăng xuất
             </button>

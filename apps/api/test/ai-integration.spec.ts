@@ -11,6 +11,7 @@ process.env.APP_ENV ??= 'test';
 import type { INestApplication } from '@nestjs/common';
 import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { signIn } from './support/auth';
 import { DEMO_PASSWORD } from '../scripts/seed-data';
 import { seed } from '../scripts/seed';
 import { db } from '../src/infra';
@@ -26,12 +27,7 @@ const FAKE_ANTHROPIC_KEY = 'sk-ant-test-0000000000000000000000000000XYZ9';
 
 async function token(email: string) {
   if (tokens.has(email)) return tokens.get(email)!;
-  const r = await fetch(`http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=demo-key`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password: DEMO_PASSWORD, returnSecureToken: true }),
-  });
-  const t = ((await r.json()) as { idToken: string }).idToken;
+  const t = await signIn(base, email, DEMO_PASSWORD);
   tokens.set(email, t);
   return t;
 }

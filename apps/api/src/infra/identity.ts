@@ -1,10 +1,12 @@
 /**
  * Port Identity — xác thực danh tính người gọi API (ADR-0003). Phân quyền (vai trò + phạm vi) KHÔNG nằm ở đây.
- * Bản Online: Firebase Auth ID token. Bản Local (L3): tài khoản nội bộ / OIDC.
+ * Bản Online: Firebase Auth ID token. Bản Local (L3): tài khoản nội bộ (infra/local-identity.ts).
  */
 export interface VerifiedIdentity {
   uid: string;
   email: string | null;
+  /** Bản Local: mật khẩu tạm do quản trị cấp — chỉ được gọi /auth/* cho đến khi đổi mật khẩu. */
+  mustChangePassword?: boolean;
 }
 
 export class IdentityError extends Error {

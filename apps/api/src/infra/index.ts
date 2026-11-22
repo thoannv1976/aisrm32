@@ -1,17 +1,19 @@
 /**
  * Điểm vào hạ tầng (ADR-0003). Chọn bản cài đặt theo DEPLOY_TARGET:
  *  - online (mặc định): Firestore + Cloud Storage + Firebase Auth;
- *  - local: PostgreSQL (L2 ✅) + ổ đĩa + tài khoản nội bộ (L3–L4).
+ *  - local: PostgreSQL (L2 ✅) + tài khoản nội bộ (L3 ✅) + ổ đĩa (L4).
  */
 import type { CollectionRef, DataStore } from './datastore';
 import type { FileStore } from './filestore';
 import type { IdentityProvider } from './identity';
 import { firebaseIdentity, firestoreStore, gcsFileStore } from './firebase';
+import { LocalIdentity } from './local-identity';
 import { postgresStore } from './postgres';
 
 export type { CollectionRef, CountQuery, DataStore, DocData, DocRef, DocSnap, Query, QueryDocSnap, QuerySnap, Tx, WhereOp, WriteBatch } from './datastore';
 export type { FileStore } from './filestore';
 export { IdentityError, type IdentityProvider, type VerifiedIdentity } from './identity';
+export { AuthFailure, LocalIdentity, PASSWORD_POLICY_TEXT, passwordPolicyError, type LoginResult } from './local-identity';
 
 export const config = {
   appEnv: process.env.APP_ENV ?? 'local',
@@ -21,6 +23,10 @@ export const config = {
   /** Kho dữ liệu: mặc định theo DEPLOY_TARGET; DATA_BACKEND cho phép chạy riêng PostgreSQL (vd. test L2 khi đăng nhập vẫn dùng emulator). */
   get dataBackend() {
     return (process.env.DATA_BACKEND ?? (this.deployTarget === 'local' ? 'postgres' : 'firestore')) as 'firestore' | 'postgres';
+  },
+  /** Đăng nhập: mặc định theo DEPLOY_TARGET; IDENTITY_BACKEND=local cho phép chạy riêng (vd. test L3). */
+  get identityBackend() {
+    return (process.env.IDENTITY_BACKEND ?? (this.deployTarget === 'local' ? 'local' : 'firebase')) as 'firebase' | 'local';
   },
   get databaseUrl() {
     return process.env.DATABASE_URL ?? '';
@@ -60,8 +66,14 @@ export function files(): FileStore {
 }
 
 export function identity(): IdentityProvider {
-  if (!_identity) _identity = config.deployTarget === 'local' ? notYet('đăng nhập nội bộ') : firebaseIdentity(config);
+  if (!_identity) _identity = config.identityBackend === 'local' ? new LocalIdentity(db) : firebaseIdentity(config);
   return _identity;
+}
+
+/** Đăng nhập nội bộ (chỉ khi bản Local); null nếu đang dùng Firebase Auth. */
+export function localAuth(): LocalIdentity | null {
+  const id = identity();
+  return id instanceof LocalIdentity ? id : null;
 }
 
 /** Cho test / bản Local thay bản cài đặt. */
