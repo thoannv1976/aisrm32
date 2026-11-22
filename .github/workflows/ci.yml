@@ -59,7 +59,7 @@ jobs:
     env:
       DEPLOY_TARGET: local
       DATABASE_URL: postgres://aisrm:aisrm_ci@127.0.0.1:5432/aisrm_test
-      FILE_STORAGE_DIR: ${{ runner.temp }}/aisrm-files
+      FILE_STORAGE_DIR: /tmp/aisrm-files
       LOCAL_SECRET_KEY: khoa-chi-dung-cho-ci-khong-phai-bi-mat-0123
     steps:
       - uses: actions/checkout@v4
