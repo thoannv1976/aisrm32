@@ -23,7 +23,9 @@ function assertEmulator() {
 async function clearEmulators() {
   const fsHost = process.env.FIRESTORE_EMULATOR_HOST;
   const authHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
-  await fetch(`http://${fsHost}/emulator/v1/projects/${config.projectId}/databases/(default)/documents`, { method: 'DELETE' });
+  const store = db();
+  if (store.kind === 'postgres') await store.reset!();
+  else await fetch(`http://${fsHost}/emulator/v1/projects/${config.projectId}/databases/(default)/documents`, { method: 'DELETE' });
   await fetch(`http://${authHost}/emulator/v1/projects/${config.projectId}/accounts`, { method: 'DELETE' });
 }
 

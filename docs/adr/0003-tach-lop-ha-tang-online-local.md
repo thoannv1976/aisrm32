@@ -11,7 +11,7 @@ Trạng thái: Chấp nhận · 22/11/2026 · Liên quan: [Kế hoạch bản Lo
 
    | Port | Online | Local |
    |---|---|---|
-   | `DataStore` (`datastore.ts`) | `firestoreStore` | PostgreSQL (L2) |
+   | `DataStore` (`datastore.ts`) | `firestoreStore` | `postgresStore` (`postgres.ts`) ✅ |
    | `FileStore` (`filestore.ts`) | `gcsFileStore` | ổ đĩa / MinIO (L4) |
    | `IdentityProvider` (`identity.ts`) | `firebaseIdentity` | tài khoản nội bộ / OIDC (L3) |
    | `SecretStore` (`ai/secrets.ts`, đã có) | Secret Manager | tệp mã hóa AES-GCM |
@@ -32,4 +32,5 @@ Trạng thái: Chấp nhận · 22/11/2026 · Liên quan: [Kế hoạch bản Lo
 ## Hệ quả
 - Muốn thêm thao tác dữ liệu mới thì phải có trong port. Nếu chưa có, bổ sung vào port và **cả hai** bản cài đặt, kèm test.
 - Bản Online không đổi hành vi. Ngày 22/11/2026 đã kiểm chứng lại: 24 unit test, 56 test tích hợp, E2E đều đạt.
-- `DEPLOY_TARGET=local` hiện báo lỗi rõ ràng "chưa cài đặt" cho đến khi xong L2–L4.
+- L2 (22/11/2026): `infra/postgres.ts` cài đặt DataStore trên PostgreSQL. `DATA_BACKEND=postgres` (mặc định khi `DEPLOY_TARGET=local`) chọn bản này. `test/datastore.spec.ts` kiểm tra ngữ nghĩa trên cả hai bản; 65/65 test tích hợp đạt trên cả hai.
+- `DEPLOY_TARGET=local` vẫn báo lỗi rõ ràng "chưa cài đặt" cho FileStore và đăng nhập cho đến khi xong L3–L4.

@@ -40,3 +40,38 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  # Bản Local (ADR-0003): cùng bộ test tích hợp, DataStore chạy trên PostgreSQL.
+  # Đăng nhập và tệp vẫn dùng emulator cho đến L3/L4.
+  integration-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: aisrm
+          POSTGRES_PASSWORD: aisrm_ci
+          POSTGRES_DB: aisrm_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U aisrm" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATA_BACKEND: postgres
+      DATABASE_URL: postgres://aisrm:aisrm_ci@127.0.0.1:5432/aisrm_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:shared
+      - run: npm install -g firebase-tools@15
+      - name: Integration tests (PostgreSQL + emulator đăng nhập/tệp)
+        run: pnpm test:integration:pg

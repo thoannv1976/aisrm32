@@ -51,6 +51,21 @@ pnpm test:e2e                      # E2E Playwright (cần emulator đang chạy
 pnpm typecheck
 ```
 
+### Chạy trên PostgreSQL (bản Local, ADR-0003)
+
+Cùng bộ test tích hợp, kho dữ liệu là PostgreSQL. Đăng nhập và tệp vẫn dùng emulator cho đến giai đoạn L3/L4. CI chạy cả hai bản.
+
+```powershell
+docker run -d --name aisrm-pg -e POSTGRES_USER=aisrm -e POSTGRES_PASSWORD=aisrm_dev -e POSTGRES_DB=aisrm_test -p 127.0.0.1:5433:5432 postgres:17-alpine
+```
+
+```powershell
+$env:DATA_BACKEND='postgres'; $env:DATABASE_URL='postgres://aisrm:aisrm_dev@127.0.0.1:5433/aisrm_test'; pnpm test:integration:pg
+```
+
+- Lược đồ tự tạo khi API khởi động (bảng `schema_migrations`); view báo cáo nằm trong schema `report` (`v_proposals`, `v_projects`, `v_publications`, `v_audit_events`).
+- `pnpm seed` chỉ xóa dữ liệu khi tên CSDL kết thúc bằng `_test` hoặc `_dev`.
+
 ## Cấu trúc
 
 ```text

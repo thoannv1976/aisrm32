@@ -1,12 +1,13 @@
 /**
  * Điểm vào hạ tầng (ADR-0003). Chọn bản cài đặt theo DEPLOY_TARGET:
  *  - online (mặc định): Firestore + Cloud Storage + Firebase Auth;
- *  - local: PostgreSQL + ổ đĩa + tài khoản nội bộ (L2–L4).
+ *  - local: PostgreSQL (L2 ✅) + ổ đĩa + tài khoản nội bộ (L3–L4).
  */
 import type { CollectionRef, DataStore } from './datastore';
 import type { FileStore } from './filestore';
 import type { IdentityProvider } from './identity';
 import { firebaseIdentity, firestoreStore, gcsFileStore } from './firebase';
+import { postgresStore } from './postgres';
 
 export type { CollectionRef, CountQuery, DataStore, DocData, DocRef, DocSnap, Query, QueryDocSnap, QuerySnap, Tx, WhereOp, WriteBatch } from './datastore';
 export type { FileStore } from './filestore';
@@ -16,6 +17,13 @@ export const config = {
   appEnv: process.env.APP_ENV ?? 'local',
   get deployTarget() {
     return (process.env.DEPLOY_TARGET ?? 'online') as 'online' | 'local';
+  },
+  /** Kho dữ liệu: mặc định theo DEPLOY_TARGET; DATA_BACKEND cho phép chạy riêng PostgreSQL (vd. test L2 khi đăng nhập vẫn dùng emulator). */
+  get dataBackend() {
+    return (process.env.DATA_BACKEND ?? (this.deployTarget === 'local' ? 'postgres' : 'firestore')) as 'firestore' | 'postgres';
+  },
+  get databaseUrl() {
+    return process.env.DATABASE_URL ?? '';
   },
   projectId: process.env.FIREBASE_PROJECT_ID ?? process.env.GCP_PROJECT_ID ?? 'demo-aisrm',
   storageBucket: process.env.STORAGE_BUCKET ?? `${process.env.FIREBASE_PROJECT_ID ?? 'demo-aisrm'}.appspot.com`,
@@ -37,7 +45,12 @@ function notYet(what: string): never {
 }
 
 export function db(): DataStore {
-  if (!_db) _db = config.deployTarget === 'local' ? notYet('DataStore PostgreSQL') : firestoreStore(config);
+  if (!_db) {
+    if (config.dataBackend === 'postgres') {
+      if (!config.databaseUrl) throw new Error('DATA_BACKEND=postgres nhưng chưa đặt DATABASE_URL.');
+      _db = postgresStore({ databaseUrl: config.databaseUrl, maxConnections: Number(process.env.DATABASE_POOL_MAX ?? 10) });
+    } else _db = firestoreStore(config);
+  }
   return _db;
 }
 

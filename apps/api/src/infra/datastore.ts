@@ -2,8 +2,8 @@
  * Port DataStore — tập con API kho tài liệu mà nghiệp vụ AI-SRM sử dụng (ADR-0003).
  *
  * Mã nghiệp vụ CHỈ dùng các kiểu ở đây, không import firebase-admin. Hai bản cài đặt:
- *  - Firestore (bản Online)  — infra/firestore.ts, bọc trực tiếp Admin SDK;
- *  - PostgreSQL (bản Local)  — infra/postgres.ts (giai đoạn L2).
+ *  - Firestore (bản Online)  — infra/firebase.ts, bọc trực tiếp Admin SDK;
+ *  - PostgreSQL (bản Local)  — infra/postgres.ts (JSONB, giai đoạn L2).
  * Ngữ nghĩa theo Firestore: đường dẫn collection/doc lồng nhau, set(merge), update với khóa "a.b",
  * giao dịch đọc-trước-ghi-sau, increment nguyên tử. Bộ test tích hợp chạy trên cả hai bản để bảo đảm giống nhau.
  */
@@ -93,4 +93,6 @@ export interface DataStore {
   /** Giá trị đặc biệt: cộng dồn nguyên tử khi ghi. */
   increment(n: number): unknown;
   close?(): Promise<void>;
+  /** Chỉ cho seed / test: xóa sạch dữ liệu (bản PostgreSQL từ chối nếu CSDL không phải _test / _dev). */
+  reset?(): Promise<void>;
 }

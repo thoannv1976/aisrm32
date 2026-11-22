@@ -17,6 +17,7 @@
     "dev:api": "pnpm --filter @aisrm/api dev",
     "dev:web": "pnpm --filter @aisrm/web dev",
     "test:integration": "firebase emulators:exec --project demo-aisrm --only auth,firestore,storage \"pnpm --filter @aisrm/api test:integration\"",
+    "test:integration:pg": "firebase emulators:exec --project demo-aisrm --only auth,storage \"pnpm --filter @aisrm/api test:integration\"",
     "test:e2e": "playwright test"
   },
   "devDependencies": {

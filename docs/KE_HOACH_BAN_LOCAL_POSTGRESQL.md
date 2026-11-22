@@ -1,6 +1,6 @@
 # Kế hoạch xây dựng AI-SRM Local (PostgreSQL) — trình duyệt
 
-Ngày lập: 22/11/2026 · Cập nhật: 22/11/2026 (thêm kết quả đo AI nội bộ trên máy thử, mục 2.5) · Trạng thái: **đã duyệt 22/11/2026, đang triển khai**
+Ngày lập: 22/11/2026 · Cập nhật: 22/11/2026 (xong L1, L2) · Trạng thái: **đã duyệt 22/11/2026, đang triển khai**
 
 ## Tiến độ
 
@@ -8,7 +8,13 @@ Ngày lập: 22/11/2026 · Cập nhật: 22/11/2026 (thêm kết quả đo AI n�
   - port `DataStore` / `FileStore` / `IdentityProvider` trong `apps/api/src/infra/`; chỉ `infra/firebase.ts` còn import `firebase-admin` ([ADR-0003](adr/0003-tach-lop-ha-tang-online-local.md));
   - 24 unit test, 56 test tích hợp, 3 E2E vẫn đạt; staging revision 00006 chạy bình thường;
   - đổi cổng API khi chạy dev sang **8090** để không trùng LocalAI (8080).
-- ⏳ **L2 — PostgreSQL:** tiếp theo.
+- ✅ **L2 — PostgreSQL (22/11/2026):**
+  - `infra/postgres.ts`: bảng `docs` (JSONB) theo đường dẫn tài liệu; mô phỏng ngữ nghĩa Firestore (so sánh theo kiểu, chuỗi theo byte, orderBy bỏ tài liệu thiếu trường, `startAfter`, `set merge` sâu, `update "a.b"`, `increment`);
+  - giao dịch khóa bi quan theo tài liệu, tự thử lại khi deadlock; migration có phiên bản (`schema_migrations`); view báo cáo trong schema `report`;
+  - bộ test tương thích mới (9 kịch bản, gồm **duyệt đồng thời 5 người chỉ 1 thắng**) chạy trên cả hai bản;
+  - kết quả: **65/65 test tích hợp đạt trên cả Firestore và PostgreSQL; 3/3 E2E đạt khi API chạy PostgreSQL**; CI có thêm job `integration-postgres`;
+  - còn lại cho L5: chỉ mục biểu thức JSONB theo truy vấn thực tế khi dữ liệu lớn; bắt buộc đặt `LOCAL_SECRET_KEY` riêng cho kho khóa AI ở bản Local.
+- ⏳ **L3 — Đăng nhập nội bộ:** tiếp theo.
 
 ## 0. Mục tiêu và căn cứ
 

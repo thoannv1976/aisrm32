@@ -97,7 +97,7 @@ class LocalEncryptedStore implements SecretStore {
 
 let store: SecretStore | undefined;
 export function secretStore(): SecretStore {
-  if (!store) store = process.env.FIRESTORE_EMULATOR_HOST ? new LocalEncryptedStore() : new GcpSecretStore();
+  if (!store) store = process.env.FIRESTORE_EMULATOR_HOST || config.deployTarget === 'local' ? new LocalEncryptedStore() : new GcpSecretStore();
   return store;
 }
 
