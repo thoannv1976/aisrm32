@@ -7,6 +7,8 @@ import { ActionBar, DocumentRow, HistoryList, Uploader, type ActionInfo } from '
 import { ProposalAiPanel } from '../components/ai';
 import { api, download } from '../lib/api';
 import { useSession } from '../lib/session';
+import { DownloadButton } from '../components/extras';
+import { StudentCard } from './ProposalExtras';
 
 interface ProposalRow {
   id: string;
@@ -303,6 +305,7 @@ export function ProposalDetailPage() {
         }
         actions={
           <>
+            <DownloadButton path={`/exports/proposals/${id}/docx`} name={`Thuyet_minh_${p.code}.docx`} label="⬇ Word" />
             {editable && (
               <button className="btn" onClick={() => save.mutate()} disabled={!dirty || save.isPending}>
                 {save.isPending ? 'Đang lưu…' : dirty ? '💾 Lưu nháp' : 'Đã lưu'}
@@ -423,7 +426,7 @@ export function ProposalDetailPage() {
                     </div>
                     <ul className="ml-6">
                       {docsByKey(c.key).map((x) => (
-                        <DocumentRow key={x.id} d={x} canRevoke={editable && x.uploadedBy === me?.uid} />
+                        <DocumentRow key={x.id} d={x} canRevoke={editable && x.uploadedBy === me?.uid} canVersion={editable} />
                       ))}
                     </ul>
                   </li>
@@ -435,7 +438,7 @@ export function ProposalDetailPage() {
                   </div>
                   <ul className="ml-6">
                     {otherDocs.map((x) => (
-                      <DocumentRow key={x.id} d={x} canRevoke={editable && x.uploadedBy === me?.uid} />
+                      <DocumentRow key={x.id} d={x} canRevoke={editable && x.uploadedBy === me?.uid} canVersion={editable} />
                     ))}
                   </ul>
                 </li>
@@ -470,6 +473,7 @@ export function ProposalDetailPage() {
               <p className="mt-3 text-xs text-slate-500">Kiểm tra theo quy tắc của biểu mẫu (đã lưu). Dùng thêm “Kiểm tra thuyết minh” (AI) ở khung Trợ lý AI.</p>
             </Card>
           )}
+          {(p.callLevel === 'STUDENT' || p.supervisor) && <StudentCard p={p} editable={editable} />}
           <Card title="Trợ lý AI">
             <ProposalAiPanel id={id} version={p.version} />
           </Card>

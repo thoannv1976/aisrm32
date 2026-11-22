@@ -19,6 +19,7 @@ import { AiMeta, useAiStatus, type AiDraft } from '../components/ai';
 import { Card, Empty, ErrorBox, Field, fmtDate, fmtDateTime, Loading, Modal, PageHeader, StatusBadge, Tabs } from '../components/ui';
 import { api } from '../lib/api';
 import { useSession } from '../lib/session';
+import { DownloadButton } from '../components/extras';
 
 const STATUS_TONE: Record<CouncilStatus, string> = { SETUP: 'DRAFT', SCORING: 'ACTIVE', SCORING_CLOSED: 'APPROVAL_PENDING', MINUTES_CONFIRMED: 'APPROVED' };
 const CouncilBadge = ({ s }: { s: CouncilStatus }) => <StatusBadge status={STATUS_TONE[s]} label={COUNCIL_STATUS_LABELS[s]} />;
@@ -657,11 +658,14 @@ function ResultsTab({ d }: { d: Detail }) {
       <Card
         title="Biên bản"
         actions={
-          editable && (
+          <span className="flex gap-2">
+            {d.item.minutes && <DownloadButton path={`/exports/councils/${d.item.id}/minutes-docx`} name="Bien_ban.docx" label="⬇ Word" className="btn text-xs" />}
+            {editable && (
             <button className="btn text-xs" disabled={!ai.data?.enabled || draft.isPending} onClick={() => draft.mutate()}>
               {draft.isPending ? 'Đang dự thảo…' : '✨ AI dự thảo biên bản'}
             </button>
-          )
+          )}
+          </span>
         }
       >
         <ErrorBox error={draft.error ?? m.error} />

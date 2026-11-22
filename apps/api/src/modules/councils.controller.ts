@@ -28,7 +28,7 @@ import { audit, canRead, notify, reserveCode } from '../common/records';
 import { parse } from '../common/util';
 import { suggestReviewers } from '../council/suggest';
 
-interface Council {
+export interface Council {
   id: string;
   code: string;
   title: string;
@@ -56,7 +56,7 @@ const hasRole = (c: Council, uid: string, ...roles: CouncilRole[]) => {
   return !!m && m.status === 'ACCEPTED' && roles.includes(m.role);
 };
 
-async function load(p: Principal, id: string): Promise<Council> {
+export async function load(p: Principal, id: string): Promise<Council> {
   const s = await tcol(p.tenantId, 'councils').doc(id).get();
   if (!s.exists) throw notFound();
   const c = { id: s.id, ...s.data() } as Council;

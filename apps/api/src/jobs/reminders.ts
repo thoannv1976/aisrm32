@@ -45,7 +45,7 @@ export async function runDeadlineReminders(now: Date): Promise<JobResult> {
           title: left < 0 ? 'Mốc tiến độ đã quá hạn' : 'Sắp đến hạn mốc tiến độ',
           body: `Đề tài ${p.get('code') ?? ''} — mốc "${m.get('title')}" ${when}.`,
           link: `/projects/${p.id}`,
-        });
+        }, 'deadline');
         counts.milestoneReminders++;
       }
     }
@@ -63,7 +63,7 @@ export async function runDeadlineReminders(now: Date): Promise<JobResult> {
           title: 'Đợt đăng ký sắp đóng',
           body: `Đợt "${c.get('title')}" đóng ${left === 0 ? 'hôm nay' : `sau ${left} ngày`} (${close}). Hồ sơ "${d.get('title') || d.get('code')}" vẫn là bản nháp, chưa nộp.`,
           link: `/proposals/${d.id}`,
-        });
+        }, 'deadline');
         counts.callReminders++;
       }
     }

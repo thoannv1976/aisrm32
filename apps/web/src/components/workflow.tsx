@@ -136,9 +136,66 @@ export function HistoryList({ kind, id, wf }: { kind: 'proposals' | 'projects' |
 
 const fmtSize = (n: number) => (n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.ceil(n / 1024)} KB`);
 
-export function DocumentRow({ d, canRevoke }: { d: DocumentMeta; canRevoke: boolean }) {
+/** Lịch sử phiên bản của tài liệu (kho minh chứng có phiên bản). */
+function VersionHistory({ id }: { id: string }) {
+  const [err, setErr] = useState<unknown>(null);
+  const q = useQuery({ queryKey: ['doc-versions', id], queryFn: () => api<{ items: DocumentMeta[] }>(`/documents/${id}/versions`) });
+  if (q.isLoading) return <Loading />;
+  if (q.error) return <ErrorBox error={q.error} />;
+  return (
+    <>
+      <ol className="divide-y text-sm">
+        {q.data!.items.map((v) => (
+          <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+            <div>
+              <span className="mr-2 rounded bg-slate-100 px-1.5 text-xs font-semibold">v{v.versionNo ?? 1}</span>
+              <button className="link" onClick={() => download(`/documents/${v.id}/download`, v.fileName).catch(setErr)}>
+                {v.fileName}
+              </button>
+              <div className="text-xs text-slate-500">
+                {v.uploadedByName} · {fmtDateTime(v.uploadedAt)} · {v.status === 'ACTIVE' ? 'Đang hiệu lực' : 'Đã thay thế'}
+                {v.changeNote ? ` · ${v.changeNote}` : ''}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ol>
+      {err ? <div className="text-xs text-red-700">{errorMessage(err)}</div> : null}
+    </>
+  );
+}
+
+function NewVersion({ d }: { d: DocumentMeta }) {
+  const qc = useQueryClient();
+  const input = useRef<HTMLInputElement>(null);
+  const m = useMutation({
+    mutationFn: (file: File) => {
+      const note = prompt('Ghi chú thay đổi của phiên bản mới (không bắt buộc):') ?? '';
+      const fd = new FormData();
+      fd.set('parentType', d.parentType);
+      fd.set('parentId', d.parentId);
+      fd.set('replacesId', d.id);
+      if (note.trim()) fd.set('changeNote', note.trim());
+      fd.set('file', file);
+      return api('/documents', { method: 'POST', body: fd });
+    },
+    onSuccess: () => qc.invalidateQueries(),
+  });
+  return (
+    <>
+      <input ref={input} type="file" className="sr-only" accept=".pdf,.doc,.docx,.xls,.xlsx,.pptx,.png,.jpg,.jpeg,.txt,.csv" onChange={(e) => { const f = e.target.files?.[0]; if (f) m.mutate(f); e.target.value = ''; }} />
+      <button className="btn text-xs" disabled={m.isPending} onClick={() => input.current?.click()} title="Tải phiên bản mới thay cho tệp này; bản cũ vẫn được lưu">
+        {m.isPending ? 'Đang tải…' : '⟳ Phiên bản mới'}
+      </button>
+      {m.error && <span className="text-xs text-red-700">{errorMessage(m.error)}</span>}
+    </>
+  );
+}
+
+export function DocumentRow({ d, canRevoke, canVersion = false }: { d: DocumentMeta; canRevoke: boolean; canVersion?: boolean }) {
   const qc = useQueryClient();
   const [err, setErr] = useState<unknown>(null);
+  const [history, setHistory] = useState(false);
   const revoke = useMutation({
     mutationFn: () => api(`/documents/${d.id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries(),
@@ -151,15 +208,27 @@ export function DocumentRow({ d, canRevoke }: { d: DocumentMeta; canRevoke: bool
           {d.fileName}
         </button>
         <div className="text-xs text-slate-500">
+          {(d.versionNo ?? 1) > 1 && <span className="mr-1 rounded bg-amber-50 px-1 font-semibold text-amber-800">v{d.versionNo}</span>}
           {fmtSize(d.size)} · {d.uploadedByName} · {fmtDateTime(d.uploadedAt)}
+          {(d.versionNo ?? 1) > 1 && (
+            <button className="ml-2 text-brand-700 hover:underline" onClick={() => setHistory(true)}>
+              Lịch sử phiên bản
+            </button>
+          )}
         </div>
         {err ? <div className="text-xs text-red-700">{errorMessage(err)}</div> : null}
+        <Modal open={history} title={`Phiên bản — ${d.fileName}`} onClose={() => setHistory(false)}>
+          <VersionHistory id={d.id} />
+        </Modal>
       </div>
+      <div className="flex gap-2">
+      {canVersion && <NewVersion d={d} />}
       {canRevoke && (
         <button className="btn btn-danger text-xs" disabled={revoke.isPending} onClick={() => confirm(`Thu hồi tệp "${d.fileName}"?`) && revoke.mutate()}>
           Thu hồi
         </button>
       )}
+      </div>
     </li>
   );
 }
@@ -171,7 +240,7 @@ export function Uploader({
   milestoneId,
   label = 'Tải tệp lên',
 }: {
-  parentType: 'proposal' | 'project' | 'publication';
+  parentType: 'proposal' | 'project' | 'publication' | 'registry';
   parentId: string;
   checklistKey?: string;
   milestoneId?: string;

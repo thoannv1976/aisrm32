@@ -2,6 +2,8 @@
 
 Ngày 21/11/2026 · Căn cứ: Thư mời số 24/2026/TM-TH (Phụ lục 01–03), tài liệu API HEMIS v1.0 (mục 12 — dữ liệu NCKH), hiện trạng AI-SRM sau Giai đoạn 0–2.
 
+> **Cập nhật 22/11/2026 — đã hoàn thiện các chức năng còn thiếu (P1–P5):** xem [BAO_CAO_HOAN_THIEN_THU_MOI_K24.md](BAO_CAO_HOAN_THIEN_THU_MOI_K24.md). Các bảng ❌/🟡 bên dưới là hiện trạng trước đợt hoàn thiện.
+>
 > **Cập nhật tiến độ (đêm 21/11/2026, đã chạy trên staging https://aisrm32.web.app):**
 > - ✅ **Sprint 0 xong** — xem [BAO_CAO_SPRINT_0.md](BAO_CAO_SPRINT_0.md):
 >   - AI Center: khóa OpenAI / Claude / Gemini, giá, chi phí, hạn mức;

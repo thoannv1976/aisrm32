@@ -17,6 +17,8 @@ import { parseIdempotencyKey, runTransition, transitionBody } from '../common/tr
 import { docData, parse, withActions } from '../common/util';
 import { callIsOpen } from './calls.controller';
 import { checkProposal, summarizeProposal } from '../ai/features';
+import { criteriaComments } from '../ai/features-ext';
+import { RUBRIC_TEMPLATES } from '@aisrm/shared';
 
 const memberSchema = z.object({
   uid: z.string().max(128).nullable(),
@@ -114,6 +116,10 @@ export class ProposalsController {
         projectId: null,
         expertReview: call.expertReview,
         classification: 'INTERNAL',
+        callLevel: call.level,
+        supervisor: null,
+        major: null,
+        cohort: null,
         createdAt: now,
         createdBy: p.uid,
         updatedAt: now,
@@ -135,6 +141,7 @@ export class ProposalsController {
       tcol(p.tenantId, 'documents').where('parentId', '==', id).where('status', '==', 'ACTIVE').get(),
     ]);
     const call = docData<Call>(callSnap);
+    rec.callLevel = rec.callLevel ?? call.level;
     const documents = docs.docs.map((d) => docData<DocumentMeta>(d)).filter((d) => d.parentType === 'proposal');
     const editable = canEditProposal(p, rec);
     const issues = editable
@@ -175,7 +182,7 @@ export class ProposalsController {
         const others = b.members.filter((m) => m.role !== 'PI' && m.uid !== p.uid);
         const members = [{ uid: p.uid, name: p.displayName, role: 'PI' as const, unitName: rec.unitName }, ...others];
         patch.members = members;
-        patch.memberUids = [...new Set(members.map((m) => m.uid).filter((u): u is string => !!u))];
+        patch.memberUids = [...new Set([...members.map((m) => m.uid), rec.supervisor?.uid].filter((u): u is string => !!u))];
       }
       const version = rec.version + 1;
       tx.update(ref, { ...patch, version, updatedAt: nowIso(), updatedBy: p.uid });
@@ -212,6 +219,9 @@ export class ProposalsController {
           if (action === 'submit' && !callIsOpen(call)) {
             throw conflict('CALL_CLOSED', 'Đợt đăng ký đã hết hạn nộp hoặc chưa mở.');
           }
+          if (call.level === 'STUDENT' && !rec.supervisor?.confirmedAt) {
+            throw unprocessable('SUPERVISOR_NOT_CONFIRMED', 'Đề tài sinh viên cần giảng viên hướng dẫn xác nhận trước khi nộp.');
+          }
           const docsSnap = await tx.get(
             tcol(p.tenantId, 'documents').where('parentId', '==', rec.id).where('status', '==', 'ACTIVE'),
           );
@@ -243,6 +253,7 @@ export class ProposalsController {
           };
         }
         if (action === 'approve') {
+          const callLevel = rec.callLevel ?? docData<Call>(await tx.get(tcol(p.tenantId, 'calls').doc(rec.callId))).level;
           const r = await reserveCode(tx, p.tenantId, 'DT');
           const projectRef = tcol(p.tenantId, 'projects').doc();
           const now = nowIso();
@@ -272,6 +283,11 @@ export class ProposalsController {
                 actorsByAction: {},
                 returnTo: null,
                 milestoneStats: { total: 0, accepted: 0, open: 0, nextDue: null },
+                callLevel,
+                supervisor: rec.supervisor ? { uid: rec.supervisor.uid, name: rec.supervisor.name } : null,
+                major: rec.major ?? null,
+                cohort: rec.cohort ?? null,
+                hemis: { classification: null, level: callLevel === 'STUDENT' ? 'STUDENT' : callLevel === 'UNIT' ? 'UNIT' : 'UNIVERSITY', field: null, fundingSource: 'UNIVERSITY', hostAgency: null, evaluationResult: null, acceptanceDate: null },
                 createdAt: now,
                 createdBy: p.uid,
                 updatedAt: now,
@@ -290,12 +306,15 @@ export class ProposalsController {
   /** Trợ lý AI cho hồ sơ: tóm tắt thuyết minh / kiểm tra thuyết minh. Kết quả là dự thảo, lưu kèm người tạo. */
   @Post(':id/ai')
   async ai(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Param('id') id: string, @Body() body: unknown) {
-    const { task } = parse(z.object({ task: z.enum(['summary', 'check']) }), body);
+    const { task } = parse(z.object({ task: z.enum(['summary', 'check', 'criteria']) }), body);
     const rec = await loadReadable(p, id);
     const call = docData<Call>(await tcol(p.tenantId, 'calls').doc(rec.callId).get());
     let draft;
     if (task === 'summary') {
       draft = await summarizeProposal(p, rec, call.form);
+    } else if (task === 'criteria') {
+      const rubric = RUBRIC_TEMPLATES.find((r) => r.templateKey === (call.level === 'STUDENT' ? 'student_award' : 'proposal_review'))!;
+      draft = await criteriaComments(p, rec, call.form, rubric);
     } else {
       const docs = await tcol(p.tenantId, 'documents').where('parentId', '==', id).where('status', '==', 'ACTIVE').get();
       const keys = docs.docs.filter((d) => d.get('parentType') === 'proposal').map((d) => (d.get('checklistKey') as string) ?? '');
@@ -311,7 +330,7 @@ export class ProposalsController {
     await loadReadable(p, id);
     const snap = await tcol(p.tenantId, 'proposals').doc(id).collection('aiDrafts').orderBy('generatedAt', 'desc').limit(20).get();
     const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as { id: string; task: string });
-    return { latest: { summary: items.find((x) => x.task === 'summary') ?? null, check: items.find((x) => x.task === 'check') ?? null } };
+    return { latest: { summary: items.find((x) => x.task === 'summary') ?? null, check: items.find((x) => x.task === 'check') ?? null, criteria: items.find((x) => x.task === 'criteria_comments') ?? null } };
   }
 
   @Get(':id/history')

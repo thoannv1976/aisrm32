@@ -1,4 +1,8 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { downloadPost } from '../components/extras';
+import { Tabs } from '../components/ui';
+import { AskPanel, ExportsBar, ExtendedPanel, SnapshotsPanel } from './AnalyticsPanels';
 import { AiMeta, useAiStatus, type AiDraft } from '../components/ai';
 import { Link } from 'react-router-dom';
 import { Card, Empty, ErrorBox, fmtDate, fmtDateTime, fmtVnd, Loading, PageHeader } from '../components/ui';
@@ -50,7 +54,11 @@ function Bars({ title, rows }: { title: string; rows: { label: string; count: nu
 
 function AiReport() {
   const status = useAiStatus();
-  const m = useMutation({ mutationFn: () => api<AiDraft>('/dashboard/ai-report', { method: 'POST' }) });
+  const [text, setText] = useState('');
+  const [title, setTitle] = useState('Báo cáo tình hình hoạt động khoa học');
+  const [recipient, setRecipient] = useState('');
+  const [err, setErr] = useState<unknown>(null);
+  const m = useMutation({ mutationFn: () => api<AiDraft>('/dashboard/ai-report', { method: 'POST' }), onSuccess: (d) => setText(d.text) });
   const save = (text: string) => {
     const blob = new Blob([String.fromCharCode(0xfeff) + text], { type: 'text/plain;charset=utf-8' });
     const a = document.createElement('a');
@@ -73,15 +81,23 @@ function AiReport() {
       <ErrorBox error={m.error} />
       {m.data && (
         <div className="mt-3">
-          <textarea className="input font-mono text-xs" rows={18} defaultValue={m.data.text} aria-label="Dự thảo báo cáo" />
-          <div className="mt-2 flex gap-2">
-            <button className="btn text-xs" onClick={() => save(m.data!.text)}>
-              ⬇ Tải dự thảo (.txt)
+          <div className="mb-2 grid gap-2 sm:grid-cols-2">
+            <input className="input text-sm" value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Tiêu đề báo cáo" />
+            <input className="input text-sm" value={recipient} onChange={(e) => setRecipient(e.target.value)} placeholder="Kính gửi (báo cáo cấp trên, không bắt buộc)" aria-label="Nơi nhận" />
+          </div>
+          <textarea className="input font-mono text-xs" rows={18} value={text} onChange={(e) => setText(e.target.value)} aria-label="Dự thảo báo cáo" />
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button className="btn btn-primary text-xs" onClick={() => downloadPost('/exports/report-docx', { title, text, recipient: recipient || undefined }, 'Bao_cao.docx').catch(setErr)}>
+              ⬇ Xuất Word (kèm bảng chỉ số)
             </button>
-            <button className="btn text-xs" onClick={() => navigator.clipboard?.writeText(m.data!.text)}>
+            <button className="btn text-xs" onClick={() => save(text)}>
+              ⬇ Tải (.txt)
+            </button>
+            <button className="btn text-xs" onClick={() => navigator.clipboard?.writeText(text)}>
               Sao chép
             </button>
           </div>
+          <ErrorBox error={err} />
           <AiMeta d={m.data} />
         </div>
       )}
@@ -90,6 +106,7 @@ function AiReport() {
 }
 
 export function DashboardPage() {
+  const [tab, setTab] = useState<'overview' | 'extended' | 'ask' | 'reports'>('overview');
   const q = useQuery({ queryKey: ['dashboard'], queryFn: () => api<Metrics>('/dashboard/metrics') });
   if (q.isLoading) return <Loading />;
   if (q.error) return <ErrorBox error={q.error} />;
@@ -118,6 +135,29 @@ export function DashboardPage() {
         }
       />
       <p className="mb-4 text-xs text-slate-500">{m.dataNote}</p>
+      <Tabs
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          { key: 'overview', label: 'Tổng quan' },
+          { key: 'extended', label: 'Lĩnh vực, năm, sinh viên, kinh phí' },
+          { key: 'ask', label: 'Hỏi đáp số liệu' },
+          { key: 'reports', label: 'Báo cáo & chốt kỳ' },
+        ]}
+      />
+      {tab === 'extended' && <ExtendedPanel />}
+      {tab === 'ask' && <AskPanel />}
+      {tab === 'reports' && (
+        <div className="space-y-5">
+          <Card title="Xuất báo cáo">
+            <ExportsBar />
+            <p className="mt-2 text-xs text-slate-500">Excel theo phạm vi quyền của bạn. Báo cáo HEMIS gồm các bảng nhiệm vụ KH&CN, bài báo, sách, nhóm nghiên cứu, sáng chế, chuyển giao, hội thảo, giải thưởng — chỉ dữ liệu đã duyệt / xác nhận.</p>
+          </Card>
+          <AiReport />
+          <SnapshotsPanel />
+        </div>
+      )}
+      {tab === 'overview' && (<>
       <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4 2xl:grid-cols-7">
         {m.tiles.map((t) => (
           <div key={t.key} className="card p-3" title={t.definition}>
@@ -133,9 +173,6 @@ export function DashboardPage() {
         <Bars title="Đề xuất theo trạng thái" rows={m.proposalsByStatus} />
         <Bars title="Đề tài theo trạng thái" rows={m.projectsByStatus} />
         <Bars title="Công bố theo trạng thái" rows={m.publicationsByStatus} />
-      </div>
-      <div className="mb-5">
-        <AiReport />
       </div>
       <div className="grid gap-5 xl:grid-cols-2">
         <Card title="Theo đơn vị">
@@ -188,6 +225,7 @@ export function DashboardPage() {
           )}
         </Card>
       </div>
+      </>)}
     </>
   );
 }

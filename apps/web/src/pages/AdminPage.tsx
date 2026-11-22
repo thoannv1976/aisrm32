@@ -5,6 +5,8 @@ import { Card, Empty, ErrorBox, fmtDate, fmtDateTime, Loading, PageHeader, Statu
 import { api } from '../lib/api';
 import { AccountsTab } from './AccountsTab';
 import { JobsTab } from './JobsTab';
+import { DelegationsTab, ExternalReviewersTab, HandoverTab, MailTab } from './AdminExtTabs';
+import { useSession } from '../lib/session';
 
 const UNIT_TYPE: Record<string, string> = { UNIVERSITY: 'Trường', CAMPUS: 'Cơ sở', FACULTY: 'Khoa', INSTITUTE: 'Viện', OFFICE: 'Phòng/Ban', DEPARTMENT: 'Bộ môn' };
 
@@ -120,7 +122,8 @@ function AuditTab() {
 }
 
 export function AdminPage() {
-  const [tab, setTab] = useState<'units' | 'accounts' | 'roles' | 'jobs' | 'audit'>('units');
+  const { hasRole } = useSession();
+  const [tab, setTab] = useState<'units' | 'accounts' | 'roles' | 'delegations' | 'handover' | 'external' | 'mail' | 'jobs' | 'audit'>('units');
   return (
     <>
       <PageHeader title="Quản trị" subtitle="Tổ chức, tài khoản, phân quyền và nhật ký kiểm toán" />
@@ -131,6 +134,10 @@ export function AdminPage() {
           { key: 'units', label: 'Đơn vị' },
           { key: 'accounts', label: 'Tài khoản' },
           { key: 'roles', label: 'Phân quyền' },
+          { key: 'delegations', label: 'Ủy quyền' },
+          { key: 'handover', label: 'Bàn giao hồ sơ' },
+          { key: 'external', label: 'Phản biện ngoài trường' },
+          ...(hasRole('SYS_ADMIN') ? [{ key: 'mail' as const, label: 'Thư điện tử' }] : []),
           { key: 'jobs', label: 'Tác vụ nền' },
           { key: 'audit', label: 'Nhật ký' },
         ]}
@@ -138,6 +145,10 @@ export function AdminPage() {
       {tab === 'units' && <UnitsTab />}
       {tab === 'accounts' && <AccountsTab />}
       {tab === 'roles' && <RolesTab />}
+      {tab === 'delegations' && <DelegationsTab />}
+      {tab === 'handover' && <HandoverTab />}
+      {tab === 'external' && <ExternalReviewersTab />}
+      {tab === 'mail' && <MailTab />}
       {tab === 'jobs' && <JobsTab />}
       {tab === 'audit' && <AuditTab />}
     </>

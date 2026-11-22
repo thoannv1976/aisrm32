@@ -37,6 +37,12 @@ const pubBody = z.object({
   indexing: z.array(z.string().max(50)).max(10).default([]),
   authors: z.array(authorSchema).min(1).max(100),
   projectId: z.string().max(128).nullable().optional(),
+  volume: z.string().max(50).nullable().optional(),
+  issue: z.string().max(50).nullable().optional(),
+  pages: z.string().max(50).nullable().optional(),
+  issn: z.string().max(20).nullable().optional(),
+  isbn: z.string().max(20).nullable().optional(),
+  publisher: z.string().max(300).nullable().optional(),
 });
 
 const EDITABLE = ['DRAFT', 'NEEDS_REVISION'];
@@ -58,6 +64,12 @@ function prepare(b: z.infer<typeof pubBody>) {
     indexing: b.indexing,
     authors,
     projectId: b.projectId ?? null,
+    volume: b.volume?.trim() || null,
+    issue: b.issue?.trim() || null,
+    pages: b.pages?.trim() || null,
+    issn: b.issn?.trim() || null,
+    isbn: b.isbn?.replace(/[^\dXx-]/g, '') || null,
+    publisher: b.publisher?.trim() || null,
   };
 }
 

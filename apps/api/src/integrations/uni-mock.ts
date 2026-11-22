@@ -124,19 +124,20 @@ export function projectToHemis(tenantId: string, p: Project & { id: string; dura
     Modified: ymd(p.updatedAt),
     MA_NHIEM_VU: p.code,
     TEN_NHIEM_VU: p.title,
-    PHAN_LOAI_NHIEM_VU: null,
-    PHAN_CAP_NHIEM_VU: null,
-    LINH_VUC_NCKH: null,
-    CO_QUAN_CHU_QUAN: null,
+    PHAN_LOAI_NHIEM_VU: p.hemis?.classification ?? null,
+    PHAN_CAP_NHIEM_VU: p.hemis?.level ?? null,
+    LINH_VUC_NCKH: p.hemis?.field ?? null,
+    CO_QUAN_CHU_QUAN: p.hemis?.hostAgency ?? null,
     CO_QUAN_CHU_TRI: tenantName,
     NGUOI_CHU_TRI: p.ownerName,
     TG_BAT_DAU: p.startDate,
     TG_KET_THUC: p.endDate,
-    NGUON_KINH_PHI: null,
-    TONG_KINH_PHI: p.budgetVnd,
-    TINH_TRANG_NV: null,
-    DANH_GIA_NV: null,
+    NGUON_KINH_PHI: p.hemis?.fundingSource ?? null,
+    TONG_KINH_PHI: p.financeStats?.contractValueVnd || p.budgetVnd,
+    TINH_TRANG_NV: p.status,
+    DANH_GIA_NV: p.hemis?.evaluationResult ?? null,
   };
+  const unmapped = ['PHAN_LOAI_NHIEM_VU', 'PHAN_CAP_NHIEM_VU', 'LINH_VUC_NCKH', 'NGUON_KINH_PHI'].filter((k) => !record[k]);
   const required = ['Id', 'Created', 'Modified', 'MA_NHIEM_VU', 'TEN_NHIEM_VU', 'TG_BAT_DAU'];
   return {
     table: '_KHCN_NHIEM_VU_KHCN',
@@ -144,8 +145,8 @@ export function projectToHemis(tenantId: string, p: Project & { id: string; dura
     record,
     missingRequired: required.filter((k) => record[k] === null || record[k] === undefined || record[k] === ''),
     warnings: [
-      'Chưa ánh xạ mã danh mục HEMIS: PHAN_LOAI_NHIEM_VU, PHAN_CAP_NHIEM_VU, LINH_VUC_NCKH, NGUON_KINH_PHI, TINH_TRANG_NV, DANH_GIA_NV.',
-      `Trạng thái AI-SRM "${p.status}" cần bảng ánh xạ sang mã tình trạng nhiệm vụ HEMIS.`,
+      ...(unmapped.length ? [`Phòng KH chưa cập nhật: ${unmapped.join(', ')} (Đề tài → Thông tin HEMIS).`] : []),
+      'Giá trị đang là mã nội bộ AI-SRM; khi kết nối thật, UNI-DATA360 tra bảng ánh xạ sang mã danh mục HEMIS chính thức.',
     ],
   };
 }
@@ -159,9 +160,10 @@ export function publicationToHemis(tenantId: string, x: Publication & { id: stri
       MA_NHIEM_VU_NCKH: projectCode,
       MA_TAI_LIEU: x.code,
       TEN_SACH: x.title,
-      MA_LOAI_SACH: null,
-      MA_ISBN: null,
-      NHA_XUAT_BAN: x.venue || null,
+      MA_LOAI_SACH: x.type,
+      MA_ISBN: x.isbn ?? null,
+      NHA_XUAT_BAN: x.publisher || x.venue || null,
+      SO_TRANG: x.pages ?? null,
       NAM_XUAT_BAN: x.year,
     };
     const required = ['Id', 'Created', 'Modified', 'MA_TAI_LIEU', 'TEN_SACH', 'MA_LOAI_SACH'];
@@ -170,7 +172,7 @@ export function publicationToHemis(tenantId: string, x: Publication & { id: stri
       sourceCode: x.code,
       record,
       missingRequired: required.filter((k) => record[k] === null || record[k] === undefined || record[k] === ''),
-      warnings: ['AI-SRM chưa có trường ISBN, số trang, mã loại sách (danh mục HEMIS) — cần bổ sung vào biểu mẫu công bố.'],
+      warnings: [...(x.isbn ? [] : ['Chưa khai ISBN.']), 'Mã loại sách là mã nội bộ; cần bảng ánh xạ danh mục HEMIS.'],
     };
   }
   const record: Record<string, unknown> = {
@@ -181,11 +183,12 @@ export function publicationToHemis(tenantId: string, x: Publication & { id: stri
     MA_BAI_BAO: x.code,
     TEN_BAI_BAO: x.title,
     TEN_TAP_CHI: x.venue || null,
-    TAP_CHI_QUOC_TE: null,
-    TAP_CHI_TRONG_NUOC: null,
-    XEP_HANG_Q: null,
-    TAP_SO: null,
-    TRANG: null,
+    TAP_CHI_QUOC_TE: x.journalScope === 'INTERNATIONAL' ? x.venue || null : null,
+    TAP_CHI_TRONG_NUOC: x.journalScope === 'DOMESTIC' ? x.venue || null : null,
+    XEP_HANG_Q: x.quartile ?? null,
+    ISSN: x.issn ?? null,
+    TAP_SO: [x.volume, x.issue].filter(Boolean).join('/') || null,
+    TRANG: x.pages ?? null,
     NAM_CONG_BO: x.year,
   };
   const required = ['Id', 'Created', 'Modified', 'MA_BAI_BAO', 'TEN_BAI_BAO', 'NAM_CONG_BO'];
@@ -195,8 +198,9 @@ export function publicationToHemis(tenantId: string, x: Publication & { id: stri
     record,
     missingRequired: required.filter((k) => record[k] === null || record[k] === undefined || record[k] === ''),
     warnings: [
-      'Chưa có mã danh mục tạp chí quốc tế/trong nước và xếp hạng Q (HEMIS) — AI-SRM không tự kết luận Q/Scopus/WoS; cần cán bộ xác nhận theo nguồn.',
-      'AI-SRM chưa có trường Tập/Số, Trang — cần bổ sung.',
+      ...(x.journalScope ? [] : ['Phòng KH chưa xác nhận phạm vi tạp chí (quốc tế / trong nước).']),
+      ...(x.quartile ? [`Xếp hạng ${x.quartile} theo nguồn: ${x.quartileSource ?? '—'} (do cán bộ xác nhận, AI không tự kết luận).`] : []),
+      ...(x.volume || x.pages ? [] : ['Chưa khai Tập/Số, Trang.']),
     ],
   };
 }

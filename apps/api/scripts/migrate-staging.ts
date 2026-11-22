@@ -23,6 +23,8 @@ async function main() {
       console.log(`[${t.id}] dữ liệu mẫu NCKH sinh viên: ${(await seedStudentResearch(t.id)) ? 'đã tạo' : 'đã có, giữ nguyên'}`);
       console.log(`[${t.id}] hồ sơ chuyên môn mẫu: thêm ${await seedProfiles(t.id)}`);
       console.log(`[${t.id}] quy chế KHCN mẫu: ${(await seedRegulations(t.id)) ? 'đã nạp' : 'đã có, giữ nguyên'}`);
+      const { seedExtended } = await import('./seed-extended');
+      console.log(`[${t.id}] dữ liệu mẫu HEMIS / kinh phí / NCKH sinh viên / danh mục KH&CN: ${(await seedExtended(t.id)) ? 'đã tạo' : 'đã có, giữ nguyên'}`);
     }
     // Bổ sung vai trò còn thiếu theo seed-data (vd: AI_ADMIN, INTEGRATION_ADMIN cho quản trị)
     for (const u of t.users) {

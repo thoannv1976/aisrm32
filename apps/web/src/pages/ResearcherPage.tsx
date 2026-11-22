@@ -1,4 +1,6 @@
-import { PUBLICATION_TYPE_LABELS, type PublicationType } from '@aisrm/shared';
+import { PUBLICATION_TYPE_LABELS, REGISTRY, registryDisplay, type PublicationType, type RegistryKind } from '@aisrm/shared';
+import { AiMeta } from '../components/ai';
+import { DownloadButton } from '../components/extras';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -14,6 +16,9 @@ interface Profile {
   expertise: string[];
   researchInterests: string;
   bio: string;
+  introVi?: string;
+  introEn?: string;
+  introApprovedAt?: string;
 }
 
 interface ResearcherData {
@@ -26,6 +31,50 @@ interface ResearcherData {
   projects: { id: string; code: string; title: string; status: string; role: string; startDate: string | null; endDate: string | null }[];
   canEdit: boolean;
   note: string;
+  registry: { id: string; kind: RegistryKind; kindLabel: string; code: string; title: string; data: Record<string, unknown> }[];
+  coauthors: { uid: string; name: string; count: number }[];
+}
+
+type Draft = Parameters<typeof AiMeta>[0]['d'] & { vi: string; en: string };
+
+function IntroCard({ d, canEdit }: { d: ResearcherData; canEdit: boolean }) {
+  const qc = useQueryClient();
+  const [draft, setDraft] = useState<{ vi: string; en: string } | null>(null);
+  const gen = useMutation({ mutationFn: () => api<Draft>('/me/profile/intro-draft', { method: 'POST' }), onSuccess: (r) => setDraft({ vi: r.vi, en: r.en }) });
+  const save = useMutation({ mutationFn: () => api('/me/profile/intro', { method: 'PUT', body: { introVi: draft!.vi, introEn: draft!.en, approved: true } }), onSuccess: () => (setDraft(null), qc.invalidateQueries({ queryKey: ['researcher', d.uid] })) });
+  const pr = d.profile;
+  return (
+    <Card
+      title="Giới thiệu học thuật (Việt – Anh)"
+      className="mb-5"
+      actions={canEdit && !draft && <button className="btn text-xs" disabled={gen.isPending} onClick={() => gen.mutate()}>{gen.isPending ? 'AI đang viết…' : '✨ AI dự thảo giới thiệu'}</button>}
+    >
+      <ErrorBox error={gen.error ?? save.error} />
+      {draft ? (
+        <div className="space-y-3">
+          <Field label="Tiếng Việt">
+            <textarea className="input mt-1" rows={5} value={draft.vi} onChange={(e) => setDraft({ ...draft, vi: e.target.value })} />
+          </Field>
+          <Field label="English">
+            <textarea className="input mt-1" rows={5} value={draft.en} onChange={(e) => setDraft({ ...draft, en: e.target.value })} />
+          </Field>
+          {gen.data && <AiMeta d={gen.data} />}
+          <p className="text-xs text-slate-500">AI chỉ dùng dữ liệu tự khai và kết quả đã xác nhận. Sửa nội dung cho đúng rồi duyệt; chỉ bản đã duyệt được hiển thị công khai.</p>
+          <div className="flex gap-2">
+            <button className="btn btn-primary" disabled={save.isPending} onClick={() => save.mutate()}>✓ Duyệt và công khai</button>
+            <button className="btn" onClick={() => setDraft(null)}>Hủy</button>
+          </div>
+        </div>
+      ) : pr?.introVi ? (
+        <div className="space-y-2 text-sm">
+          <p className="whitespace-pre-wrap">{pr.introVi}</p>
+          {pr.introEn && <p className="whitespace-pre-wrap italic text-slate-700">{pr.introEn}</p>}
+        </div>
+      ) : (
+        <Empty>Chưa có đoạn giới thiệu.</Empty>
+      )}
+    </Card>
+  );
 }
 
 const EMPTY: Profile = { academicTitle: '', degree: '', orcid: '', googleScholar: '', expertise: [], researchInterests: '', bio: '' };
@@ -64,6 +113,12 @@ export function ResearcherPage({ self }: { self?: boolean }) {
               <button className="btn" onClick={() => setEditing(true)}>
                 ✎ Cập nhật thông tin
               </button>
+            )}
+            <DownloadButton path={`/exports/researchers/${uid}/docx`} name="Ly_lich_khoa_hoc.docx" label="⬇ Lý lịch (Word)" />
+            {d.canEdit && (
+              <Link className="btn" to="/publications/orcid">
+                ⇩ Nhập từ ORCID
+              </Link>
             )}
             <button className="btn" onClick={() => window.print()}>
               🖨 In / Lưu PDF
@@ -141,6 +196,7 @@ export function ResearcherPage({ self }: { self?: boolean }) {
           </dl>
         </Card>
       )}
+      <IntroCard d={d} canEdit={d.canEdit} />
       <div className="grid gap-5 lg:grid-cols-2">
         <Card title={`Đề tài (${d.projects.length})`}>
           {d.projects.length === 0 ? (
@@ -174,6 +230,41 @@ export function ResearcherPage({ self }: { self?: boolean }) {
               ))}
             </ol>
           )}
+        </Card>
+        {Object.keys(REGISTRY).map((k) => {
+          const items = d.registry.filter((x) => x.kind === k);
+          if (items.length === 0) return null;
+          const def = REGISTRY[k as RegistryKind];
+          return (
+            <Card key={k} title={`${def.icon} ${def.plural} (${items.length})`}>
+              <ul className="divide-y divide-slate-100 text-sm">
+                {items.map((x) => (
+                  <li key={x.id} className="py-2">
+                    <Link className="link" to={`/registry/${k}/${x.id}`}>{x.title}</Link>
+                    <div className="text-xs text-slate-500">
+                      {def.fields.filter((f) => f.list && f.key !== def.titleField).map((f) => registryDisplay(f, x.data[f.key])).join(' · ')}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          );
+        })}
+        <Card title={`Mạng lưới đồng tác giả trong trường (${d.coauthors.length})`}>
+          {d.coauthors.length === 0 ? (
+            <Empty>Chưa có đồng tác giả trong trường trên công bố đã xác nhận.</Empty>
+          ) : (
+            <ul className="flex flex-wrap gap-2 text-sm">
+              {d.coauthors.map((c) => (
+                <li key={c.uid}>
+                  <Link className="rounded bg-slate-100 px-2 py-1 hover:bg-brand-50" to={`/researchers/${c.uid}`}>
+                    {c.name} <span className="text-xs text-slate-500">· {c.count} bài</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link to="/experts?tab=network" className="link mt-3 inline-block text-xs">Xem mạng lưới hợp tác toàn trường →</Link>
         </Card>
       </div>
     </>

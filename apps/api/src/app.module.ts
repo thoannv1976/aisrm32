@@ -17,6 +17,14 @@ import { ProjectsController } from './modules/projects.controller';
 import { ProposalsController } from './modules/proposals.controller';
 import { PublicationsController } from './modules/publications.controller';
 import { RegulationsController } from './modules/regulations.controller';
+import { AdminExtController } from './modules/admin-ext.controller';
+import { AnalyticsController } from './modules/analytics.controller';
+import { ExportsController } from './modules/exports.controller';
+import { FinanceController } from './modules/finance.controller';
+import { PublicationsExtController } from './modules/publications-ext.controller';
+import { RegistryController } from './modules/registry.controller';
+import { ResearchersController } from './modules/researchers.controller';
+import { HemisDataController, StudentResearchController } from './modules/student.controller';
 
 @Module({
   controllers: [
@@ -37,6 +45,15 @@ import { RegulationsController } from './modules/regulations.controller';
     IntegrationsController,
     CouncilsController,
     RegulationsController,
+    RegistryController,
+    FinanceController,
+    HemisDataController,
+    StudentResearchController,
+    PublicationsExtController,
+    ResearchersController,
+    AdminExtController,
+    AnalyticsController,
+    ExportsController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthGuard },

@@ -23,6 +23,7 @@ import { notFound } from '../common/errors';
 import { db, nowIso, tcol } from '../infra';
 import { audit, listVisible } from '../common/records';
 import { docData, parse, todayIso } from '../common/util';
+import { researcherExtras } from './researchers.controller';
 
 const profileSchema = z.object({
   academicTitle: z.string().max(100).default(''),
@@ -251,6 +252,7 @@ export class MeController {
       profile: profile.exists ? profile.data() : null,
       publications: confirmedPubs.map((x) => ({ id: x.id, code: x.code, title: x.title, venue: x.venue, year: x.year, doi: x.doi, type: x.type, authors: x.authors.map((a) => a.name).join('; ') })),
       projects,
+      ...(await researcherExtras(p.tenantId, uid, confirmedPubs)),
       canEdit: uid === p.uid,
       note: 'Chỉ hiển thị công bố đã được phòng KH xác nhận và đề tài đã được phê duyệt.',
     };

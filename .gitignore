@@ -21,3 +21,6 @@ test-results/
 # Tệp tải lên của bản Local khi chạy dev / test
 data/
 apps/api/data/
+
+# Tệp khóa tạm của Microsoft Office
+~$*

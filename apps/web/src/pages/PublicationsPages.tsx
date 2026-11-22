@@ -6,6 +6,7 @@ import { Card, Empty, ErrorBox, Field, KeyValue, Loading, PageHeader, StatusBadg
 import { ActionBar, DocumentRow, HistoryList, Uploader, type ActionInfo } from '../components/workflow';
 import { api, download } from '../lib/api';
 import { useSession } from '../lib/session';
+import { ClassificationCard, HemisPubInputs, OrcidVerifyCard, PdfExtract, type HemisPubFields } from './PublicationExtras';
 
 interface PubRow {
   id: string;
@@ -56,6 +57,9 @@ export function PublicationsPage() {
                 ⬇ Xuất công bố đã xác nhận
               </button>
             )}
+            <Link to="/publications/orcid" className="btn">
+              ⇩ Nhập từ ORCID
+            </Link>
             <Link to="/publications/new" className="btn btn-primary">
               + Khai báo công bố
             </Link>
@@ -159,7 +163,9 @@ type PubForm = {
   url: string;
   indexing: string;
   authors: PublicationAuthor[];
+  hemis: HemisPubFields;
 };
+const EMPTY_HEMIS: HemisPubFields = { volume: '', issue: '', pages: '', issn: '', isbn: '', publisher: '' };
 
 export function PublicationFormPage() {
   const { id } = useParams();
@@ -176,10 +182,11 @@ export function PublicationFormPage() {
     url: '',
     indexing: '',
     authors: me ? [{ name: me.displayName, uid: me.uid, isInternal: true, order: 1 }] : [],
+    hemis: EMPTY_HEMIS,
   });
   useEffect(() => {
     const p = existing.data?.item;
-    if (p) setF({ title: p.title, type: p.type, venue: p.venue, year: p.year, doi: p.doi ?? '', url: p.url ?? '', indexing: p.indexing.join(', '), authors: p.authors });
+    if (p) setF({ title: p.title, type: p.type, venue: p.venue, year: p.year, doi: p.doi ?? '', url: p.url ?? '', indexing: p.indexing.join(', '), authors: p.authors, hemis: { volume: p.volume ?? '', issue: p.issue ?? '', pages: p.pages ?? '', issn: p.issn ?? '', isbn: p.isbn ?? '', publisher: p.publisher ?? '' } });
   }, [existing.data]);
 
   const [debounced, setDebounced] = useState({ doi: '', title: '' });
@@ -204,6 +211,7 @@ export function PublicationFormPage() {
         url: f.url.trim() || null,
         indexing: f.indexing.split(',').map((s) => s.trim()).filter(Boolean),
         authors: f.authors.map((a, i) => ({ ...a, order: i + 1 })),
+        ...Object.fromEntries(Object.entries(f.hemis).map(([k, v]) => [k, v.trim() || null])),
       };
       return id
         ? api<{ id: string }>(`/publications/${id}`, { method: 'PATCH', body: { ...body, expectedVersion: existing.data!.item.version } }).then(() => ({ id }))
@@ -229,6 +237,20 @@ export function PublicationFormPage() {
           m.mutate();
         }}
       >
+        <PdfExtract
+          onApply={(x) =>
+            setF((cur) => ({
+              ...cur,
+              title: x.title ?? cur.title,
+              type: x.type ?? cur.type,
+              venue: x.venue ?? cur.venue,
+              year: x.year ?? cur.year,
+              doi: x.doi ?? cur.doi,
+              authors: x.authors.length ? [...cur.authors.filter((a) => a.uid), ...x.authors.filter((n) => !cur.authors.some((a) => a.name === n)).map((name) => ({ name, uid: null, isInternal: false, order: 0 }))] : cur.authors,
+              hemis: { volume: x.volume ?? cur.hemis.volume, issue: x.issue ?? cur.hemis.issue, pages: x.pages ?? cur.hemis.pages, issn: x.issn ?? cur.hemis.issn, isbn: x.isbn ?? cur.hemis.isbn, publisher: x.publisher ?? cur.hemis.publisher },
+            }))
+          }
+        />
         <Field label="Tiêu đề" required>
           <textarea className="input mt-1" rows={2} required minLength={3} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
         </Field>
@@ -260,6 +282,7 @@ export function PublicationFormPage() {
             <input className="input mt-1" type="url" value={f.url} onChange={(e) => setF({ ...f, url: e.target.value })} />
           </Field>
         </div>
+        <HemisPubInputs f={f.hemis} type={f.type} onChange={(hemis) => setF({ ...f, hemis })} />
         <DuplicateWarning items={otherDups} />
         <fieldset>
           <legend className="label">Tác giả (theo thứ tự)</legend>
@@ -492,13 +515,15 @@ export function PublicationDetailPage() {
           <div className="lg:col-span-2">
             <VerifyCard id={id} initial={p.verification ?? null} canVerify={p.ownerUid === me?.uid || hasRole('SCIENCE_OFFICER', 'SCIENCE_HEAD')} hasDoi={!!p.doiNormalized} />
           </div>
+          <OrcidVerifyCard id={id} initial={(p as { orcidCheck?: Parameters<typeof OrcidVerifyCard>[0]['initial'] }).orcidCheck ?? null} canVerify={p.ownerUid === me?.uid || hasRole('SCIENCE_OFFICER', 'SCIENCE_HEAD')} />
+          <ClassificationCard p={p} canEdit={hasRole('SCIENCE_OFFICER', 'SCIENCE_HEAD') && p.ownerUid !== me?.uid} />
           <Card title="Minh chứng" actions={d.canEdit && <Uploader parentType="publication" parentId={id} label="Tải minh chứng" />}>
             {d.documents.length === 0 ? (
               <Empty>Chưa có tệp minh chứng. Cần có DOI, đường dẫn hoặc tệp trước khi nộp xác nhận.</Empty>
             ) : (
               <ul className="divide-y divide-slate-100">
                 {d.documents.map((x) => (
-                  <DocumentRow key={x.id} d={x} canRevoke={d.canEdit && x.uploadedBy === me?.uid} />
+                  <DocumentRow key={x.id} d={x} canRevoke={d.canEdit && x.uploadedBy === me?.uid} canVersion={d.canEdit} />
                 ))}
               </ul>
             )}

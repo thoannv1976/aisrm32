@@ -6,6 +6,7 @@ import { Card, Empty, ErrorBox, Field, fmtDate, fmtDateTime, fmtVnd, KeyValue, L
 import { ActionBar, DocumentRow, HistoryList, Uploader, type ActionInfo } from '../components/workflow';
 import { api, download } from '../lib/api';
 import { useSession } from '../lib/session';
+import { FinanceTab, HemisCard, SupervisionTab } from './ProjectExtras';
 
 interface ProjectRow {
   id: string;
@@ -172,7 +173,7 @@ function MilestonesCard({ d, id }: { d: ProjectDetail; id: string }) {
                   {ms.submittedNote && <p className="mt-1 rounded bg-slate-50 p-2 text-sm">{ms.submittedNote}</p>}
                   <ul className="ml-2">
                     {docsFor(ms.id).map((x) => (
-                      <DocumentRow key={x.id} d={x} canRevoke={ms.status === 'OPEN' && x.uploadedBy === me?.uid} />
+                      <DocumentRow key={x.id} d={x} canRevoke={ms.status === 'OPEN' && x.uploadedBy === me?.uid} canVersion={ms.status === 'OPEN'} />
                     ))}
                   </ul>
                 </div>
@@ -375,7 +376,7 @@ function ScheduleForm({ d, id }: { d: ProjectDetail; id: string }) {
 
 export function ProjectDetailPage() {
   const { id } = useParams() as { id: string };
-  const [tab, setTab] = useState<'overview' | 'history'>('overview');
+  const [tab, setTab] = useState<'overview' | 'finance' | 'supervision' | 'history'>('overview');
   const q = useQuery({ queryKey: ['projects', id], queryFn: () => api<ProjectDetail>(`/projects/${id}`) });
   if (q.isLoading) return <Loading />;
   if (q.error) return <ErrorBox error={q.error} />;
@@ -400,10 +401,16 @@ export function ProjectDetailPage() {
         onChange={setTab}
         tabs={[
           { key: 'overview', label: 'Tổng quan & tiến độ' },
+          { key: 'finance', label: 'Kinh phí – hợp đồng' },
+          ...(p.callLevel === 'STUDENT' || p.supervisor ? [{ key: 'supervision' as const, label: 'Nhật ký hướng dẫn' }] : []),
           { key: 'history', label: 'Lịch sử xử lý' },
         ]}
       />
-      {tab === 'overview' ? (
+      {tab === 'finance' ? (
+        <FinanceTab id={id} />
+      ) : tab === 'supervision' ? (
+        <SupervisionTab id={id} />
+      ) : tab === 'overview' ? (
         <div className="grid gap-5 xl:grid-cols-[1fr_340px]">
           <div className="min-w-0 space-y-5">
             <MilestonesCard d={d} id={id} />
@@ -425,8 +432,15 @@ export function ProjectDetailPage() {
                   <ScheduleForm d={d} id={id} />
                 </div>
               )}
-              <p className="mt-3 text-xs text-slate-500">Trạng thái giải ngân/quyết toán sẽ được nhận từ hệ thống tài chính (phân hệ Kinh phí — P1); không suy ra từ việc phê duyệt.</p>
+              <p className="mt-3 text-xs text-slate-500">Hợp đồng, dự toán, giải ngân, quyết toán: xem tab “Kinh phí – hợp đồng”.</p>
             </Card>
+            <HemisCard project={p} canEdit={d.permissions.isOffice} />
+            {p.supervisor && (
+              <Card title="Người hướng dẫn">
+                <Link className="link text-sm" to={`/researchers/${p.supervisor.uid}`}>{p.supervisor.name}</Link>
+                {(p.major || p.cohort) && <p className="text-xs text-slate-500">Ngành {p.major ?? '—'} · Khóa {p.cohort ?? '—'}</p>}
+              </Card>
+            )}
             <Card title="Thành viên">
               <ul className="space-y-1 text-sm">
                 {p.members.map((m, i) => (

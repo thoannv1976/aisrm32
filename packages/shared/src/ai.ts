@@ -75,6 +75,10 @@ export const AI_FEATURE_LABELS: Record<string, string> = {
   report_draft: 'Dự thảo báo cáo',
   meeting_minutes: 'Dự thảo biên bản hội đồng',
   publication_verify: 'Giải thích kiểm chứng công bố',
+  publication_extract: 'Trích thông tin công bố từ PDF',
+  criteria_comments: 'Gợi ý nhận xét theo tiêu chí',
+  researcher_intro: 'Giới thiệu nhà khoa học song ngữ',
+  data_qa: 'Hỏi đáp số liệu',
   playground: 'Chạy thử (quản trị)',
 };
 

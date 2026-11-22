@@ -9,6 +9,7 @@
 import { PROJECT_WORKFLOW, PROPOSAL_WORKFLOW, PUBLICATION_WORKFLOW, normalizeDoi, normalizeTitle } from '@aisrm/shared';
 import { config, db, identity } from '../src/infra';
 import { CALL_FORM, DEMO_PASSWORD, STUDENT_CALL_FORM, TENANTS, type SeedTenant } from './seed-data';
+import { seedExtended } from './seed-extended';
 
 export type SeedResult = Record<string, Record<string, { uid: string; email: string }>>;
 
@@ -286,6 +287,7 @@ export async function seedBusiness(tenantId: string, users: Record<string, { uid
   await seedStudentResearch(tenantId);
   await seedProfiles(tenantId);
   await seedRegulations(tenantId);
+  await seedExtended(tenantId);
 }
 
 /**

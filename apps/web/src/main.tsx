@@ -21,6 +21,12 @@ import { PublicationDetailPage, PublicationFormPage, PublicationsPage } from './
 import { RegulationDetailPage, RegulationsPage } from './pages/RegulationsPage';
 import { ResearcherPage } from './pages/ResearcherPage';
 import { WorkspacePage } from './pages/WorkspacePage';
+import { RegistryDetailPage, RegistryFormPage, RegistryHubPage, RegistryListPage } from './pages/RegistryPages';
+import { ExpertsPage } from './pages/ExpertsPage';
+import { StudentResearchPage } from './pages/StudentResearchPage';
+import { OrcidImportPage } from './pages/PublicationExtras';
+import { DelegationsTab, ExternalReviewersTab } from './pages/AdminExtTabs';
+import { PageHeader } from './components/ui';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,6 +70,16 @@ function Gate() {
         <Route path="regulations/:id" element={<RegulationDetailPage />} />
         <Route path="publications" element={<PublicationsPage />} />
         <Route path="publications/new" element={<PublicationFormPage />} />
+        <Route path="publications/orcid" element={<OrcidImportPage />} />
+        <Route path="registry" element={<RegistryHubPage />} />
+        <Route path="registry/:kind" element={<RegistryListPage />} />
+        <Route path="registry/:kind/new" element={<RegistryFormPage />} />
+        <Route path="registry/:kind/:id" element={<RegistryDetailPage />} />
+        <Route path="registry/:kind/:id/edit" element={<RegistryFormPage />} />
+        <Route path="experts" element={<ExpertsPage />} />
+        <Route path="student-research" element={<StudentResearchPage />} />
+        <Route path="delegations" element={<><PageHeader title="Ủy quyền" subtitle="Ủy quyền vai trò có thời hạn khi vắng mặt" /><DelegationsTab /></>} />
+        <Route path="external-reviewers" element={<><PageHeader title="Phản biện ngoài trường" subtitle="Tài khoản có thời hạn, chỉ xem hồ sơ được mời chấm" /><ExternalReviewersTab /></>} />
         <Route path="publications/:id" element={<PublicationDetailPage />} />
         <Route path="publications/:id/edit" element={<PublicationFormPage />} />
         <Route path="profile" element={<ResearcherPage self />} />

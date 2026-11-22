@@ -9,6 +9,7 @@ import {
 import { type DocRef, type Query, type Tx } from '../infra';
 import { randomUUID } from 'node:crypto';
 import { db, nowIso, tcol } from '../infra';
+import { mailNotifications } from '../infra/mailer';
 
 export interface ScopedRecord {
   ownerUid: string;
@@ -35,7 +36,7 @@ export function isTenantReader(p: Principal): boolean {
 export async function listVisible<T extends { id: string; updatedAt: string }>(
   p: Principal,
   collection: string,
-  opts: { memberField?: 'memberUids' | 'authorUids'; limit?: number } = {},
+  opts: { memberField?: 'memberUids' | 'authorUids' | 'personUids'; limit?: number } = {},
 ): Promise<T[]> {
   const col = tcol(p.tenantId, collection);
   const limit = Math.min(opts.limit ?? 500, 1000);
@@ -123,7 +124,7 @@ export function outbox(
 }
 
 /** Thông báo trong ứng dụng — ghi sau khi transaction nghiệp vụ đã commit. */
-export async function notify(tenantId: string, uids: string[], n: { title: string; body: string; link?: string | null }) {
+export async function notify(tenantId: string, uids: string[], n: { title: string; body: string; link?: string | null }, kind: 'notification' | 'deadline' = 'notification') {
   const unique = [...new Set(uids.filter(Boolean))];
   if (unique.length === 0) return;
   const batch = db().batch();
@@ -138,6 +139,7 @@ export async function notify(tenantId: string, uids: string[], n: { title: strin
     });
   }
   await batch.commit();
+  await mailNotifications(tenantId, unique, n, kind).catch(() => undefined);
 }
 
 /** Người giữ vai trò áp dụng cho đơn vị (để gửi thông báo việc cần xử lý). */

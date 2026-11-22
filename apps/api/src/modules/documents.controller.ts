@@ -10,13 +10,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import type { DocumentMeta, Principal, Project, Proposal, Publication } from '@aisrm/shared';
+import { hasRoleFor, SCIENCE_OFFICE, type DocumentMeta, type Principal, type Project, type Proposal, type Publication, type RegistryItem } from '@aisrm/shared';
 import type { Response } from 'express';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { CurrentPrincipal, RequestId } from '../common/auth';
-import { badRequest, forbidden, notFound, unprocessable } from '../common/errors';
-import { config, files, nowIso, tcol } from '../infra';
+import { badRequest, conflict, forbidden, notFound, unprocessable } from '../common/errors';
+import { config, db, files, nowIso, tcol } from '../infra';
 import { audit, canRead, hasReviewAccess } from '../common/records';
 import { docData, parse } from '../common/util';
 
@@ -45,31 +45,42 @@ function sniffOk(buf: Buffer, mime: string): boolean {
 }
 
 const uploadBody = z.object({
-  parentType: z.enum(['proposal', 'project', 'publication']),
+  parentType: z.enum(['proposal', 'project', 'publication', 'registry']),
   parentId: z.string().min(1).max(128),
   checklistKey: z.string().max(64).optional().nullable(),
   milestoneId: z.string().max(128).optional().nullable(),
+  /** Tải phiên bản mới thay cho tài liệu này (kho minh chứng có phiên bản). */
+  replacesId: z.string().max(128).optional().nullable(),
+  changeNote: z.string().max(500).optional().nullable(),
 });
 
-type Parent = (Proposal | Project | Publication) & { id: string };
+type Parent = (Proposal | Project | Publication | RegistryItem) & { id: string };
+
+const COLLECTION: Record<string, string> = { proposal: 'proposals', project: 'projects', publication: 'publications', registry: 'registryItems' };
 
 async function loadParent(p: Principal, type: string, id: string): Promise<Parent> {
-  const col = type === 'proposal' ? 'proposals' : type === 'project' ? 'projects' : 'publications';
-  const snap = await tcol(p.tenantId, col).doc(id).get();
+  const snap = await tcol(p.tenantId, COLLECTION[type]).doc(id).get();
   if (!snap.exists) throw notFound();
   const rec = docData<Parent>(snap);
-  if (!canRead(p, rec) && !(type !== 'publication' && (await hasReviewAccess(p, rec.id)))) throw notFound();
+  if (type === 'registry') {
+    const r = rec as RegistryItem;
+    if (!canRead(p, { ownerUid: r.ownerUid, unitPath: r.unitPath, memberUids: r.personUids }) && !hasRoleFor(p, SCIENCE_OFFICE, null)) throw notFound();
+    return rec;
+  }
+  if (!canRead(p, rec as Proposal) && !(type !== 'publication' && (await hasReviewAccess(p, rec.id)))) throw notFound();
   return rec;
 }
 
 /** Ai được tải lên / thu hồi tài liệu của hồ sơ, ở trạng thái nào. */
 function canWrite(p: Principal, type: string, rec: Parent): boolean {
-  if (type === 'proposal' || type === 'publication') {
+  if (type === 'proposal' || type === 'publication' || type === 'registry') {
     return rec.ownerUid === p.uid && ['DRAFT', 'NEEDS_REVISION'].includes(rec.status);
   }
   const pr = rec as Project;
   return (pr.ownerUid === p.uid || pr.memberUids.includes(p.uid)) && ['CONTRACT_PENDING', 'ACTIVE', 'COMPLETION_REVISION'].includes(pr.status);
 }
+
+type Versioned = DocumentMeta & { id: string };
 
 @Controller('documents')
 export class DocumentsController {
@@ -96,6 +107,15 @@ export class DocumentsController {
       if (!m.exists) throw notFound('Không tìm thấy mốc.');
     }
 
+    let previous: Versioned | null = null;
+    if (b.replacesId) {
+      const old = await tcol(p.tenantId, 'documents').doc(b.replacesId).get();
+      if (!old.exists) throw notFound('Không tìm thấy tài liệu cần thay phiên bản.');
+      previous = docData<DocumentMeta>(old);
+      if (previous.parentId !== b.parentId || previous.parentType !== b.parentType) throw badRequest('Tài liệu không thuộc hồ sơ này.');
+      if (previous.status !== 'ACTIVE') throw conflict('INVALID_STATE', 'Chỉ thay phiên bản cho tài liệu đang hiệu lực.');
+    }
+
     const ref = tcol(p.tenantId, 'documents').doc();
     const storagePath = `tenants/${p.tenantId}/${b.parentType}/${b.parentId}/${ref.id}`;
     const sha256 = createHash('sha256').update(file.buffer).digest('hex');
@@ -116,9 +136,22 @@ export class DocumentsController {
       uploadedAt: nowIso(),
       classification: 'INTERNAL',
       status: 'ACTIVE',
+      versionGroup: previous ? (previous.versionGroup ?? previous.id) : ref.id,
+      versionNo: previous ? (previous.versionNo ?? 1) + 1 : 1,
+      supersededBy: null,
+      changeNote: b.changeNote?.trim() || null,
+      ...(previous ? { checklistKey: previous.checklistKey, milestoneId: previous.milestoneId } : {}),
     };
-    await ref.set(meta);
-    await audit({ actor: p, action: 'document.upload', resourceType: 'document', resourceId: ref.id, requestId: rid, detail: `${b.parentType}/${b.parentId}` });
+    if (previous) {
+      const prevRef = tcol(p.tenantId, 'documents').doc(previous.id);
+      await db().runTransaction(async (tx) => {
+        const s = await tx.get(prevRef);
+        if (s.get('status') !== 'ACTIVE') throw conflict('INVALID_STATE', 'Tài liệu vừa được thay bởi người khác.');
+        tx.update(prevRef, { status: 'SUPERSEDED', supersededBy: ref.id, versionGroup: meta.versionGroup, versionNo: previous!.versionNo ?? 1 });
+        tx.set(ref, meta);
+      });
+    } else await ref.set(meta);
+    await audit({ actor: p, action: previous ? 'document.new_version' : 'document.upload', resourceType: 'document', resourceId: ref.id, requestId: rid, detail: `${b.parentType}/${b.parentId}` });
     return { id: ref.id, ...meta };
   }
 
@@ -128,7 +161,7 @@ export class DocumentsController {
     const snap = await tcol(p.tenantId, 'documents').doc(id).get();
     if (!snap.exists) throw notFound();
     const meta = docData<DocumentMeta>(snap);
-    if (meta.status !== 'ACTIVE') throw notFound('Tài liệu đã bị thu hồi.');
+    if (meta.status === 'REVOKED') throw notFound('Tài liệu đã bị thu hồi.');
     await loadParent(p, meta.parentType, meta.parentId);
     const buf = await files().read(meta.storagePath);
     await audit({ actor: p, action: 'document.download', resourceType: 'document', resourceId: id, requestId: rid });
@@ -137,6 +170,21 @@ export class DocumentsController {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Cache-Control', 'private, no-store');
     res.end(buf);
+  }
+
+  /** Lịch sử phiên bản của một tài liệu (mới nhất trước). */
+  @Get(':id/versions')
+  async versions(@CurrentPrincipal() p: Principal, @Param('id') id: string) {
+    const snap = await tcol(p.tenantId, 'documents').doc(id).get();
+    if (!snap.exists) throw notFound();
+    const meta = docData<DocumentMeta>(snap);
+    await loadParent(p, meta.parentType, meta.parentId);
+    const group = meta.versionGroup ?? meta.id;
+    const all = await tcol(p.tenantId, 'documents').where('versionGroup', '==', group).get();
+    const items = all.docs.map((d) => docData<DocumentMeta>(d)).filter((d) => d.status !== 'REVOKED');
+    if (!items.some((d) => d.id === meta.id)) items.push(meta);
+    items.sort((a, b) => (b.versionNo ?? 1) - (a.versionNo ?? 1));
+    return { items: items.map(({ storagePath: _s, ...rest }) => rest) };
   }
 
   /** Thu hồi tài liệu (đánh dấu REVOKED, giữ metadata cho lịch sử; xóa bản lưu). */

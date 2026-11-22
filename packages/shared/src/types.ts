@@ -1,4 +1,5 @@
 import type { RoleBinding } from './authz';
+import type { JournalScope, ProjectHemis, Quartile } from './hemis';
 import type { Role } from './roles';
 
 export type Classification = 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'RESTRICTED';
@@ -133,6 +134,11 @@ export interface Proposal extends BaseDoc {
   projectId: string | null;
   expertReview: boolean;
   classification: Classification;
+  /** NCKH sinh viên: giảng viên hướng dẫn phải xác nhận trước khi nộp. */
+  callLevel?: 'UNIVERSITY' | 'UNIT' | 'STUDENT';
+  supervisor?: { uid: string; name: string; confirmedAt: string | null; note: string | null } | null;
+  major?: string | null;
+  cohort?: string | null;
 }
 
 export interface ProposalRevision {
@@ -190,6 +196,13 @@ export interface Project extends BaseDoc {
   actorsByAction: Record<string, string>;
   returnTo: string | null;
   milestoneStats: { total: number; accepted: number; open?: number; nextDue: string | null };
+  hemis?: ProjectHemis | null;
+  callLevel?: 'UNIVERSITY' | 'UNIT' | 'STUDENT';
+  supervisor?: { uid: string; name: string } | null;
+  major?: string | null;
+  cohort?: string | null;
+  /** Tóm tắt tài chính (cập nhật khi ghi nhận hợp đồng / giải ngân). */
+  financeStats?: { contractValueVnd: number; approvedVnd: number; disbursedVnd: number; settlement: string } | null;
 }
 
 export interface PublicationAuthor {
@@ -228,6 +241,16 @@ export interface Publication extends BaseDoc {
   unitName: string;
   projectId: string | null;
   url: string | null;
+  /** Thông tin theo HEMIS. Xếp hạng Q và phạm vi tạp chí do Phòng KH xác nhận theo nguồn — AI không tự kết luận. */
+  volume?: string | null;
+  issue?: string | null;
+  pages?: string | null;
+  issn?: string | null;
+  isbn?: string | null;
+  publisher?: string | null;
+  journalScope?: JournalScope | null;
+  quartile?: Quartile | null;
+  quartileSource?: string | null;
   status: string;
   workflowKey: 'publication';
   workflowVersion: number;
@@ -238,7 +261,7 @@ export interface Publication extends BaseDoc {
 export interface DocumentMeta {
   id: string;
   tenantId: string;
-  parentType: 'proposal' | 'project' | 'publication';
+  parentType: 'proposal' | 'project' | 'publication' | 'registry';
   parentId: string;
   checklistKey: string | null;
   milestoneId: string | null;
@@ -251,7 +274,12 @@ export interface DocumentMeta {
   uploadedByName: string;
   uploadedAt: string;
   classification: Classification;
-  status: 'ACTIVE' | 'REVOKED';
+  status: 'ACTIVE' | 'REVOKED' | 'SUPERSEDED';
+  /** Kho minh chứng có phiên bản: các phiên bản cùng nhóm, số tăng dần. */
+  versionGroup?: string | null;
+  versionNo?: number;
+  supersededBy?: string | null;
+  changeNote?: string | null;
 }
 
 export interface NotificationItem {
