@@ -16,7 +16,7 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { badRequest, forbidden, notFound, unprocessable } from '../common/errors';
-import { bucket, config, nowIso, tcol } from '../common/firebase';
+import { config, files, nowIso, tcol } from '../infra';
 import { audit, canRead, hasReviewAccess } from '../common/records';
 import { docData, parse } from '../common/util';
 
@@ -99,11 +99,7 @@ export class DocumentsController {
     const ref = tcol(p.tenantId, 'documents').doc();
     const storagePath = `tenants/${p.tenantId}/${b.parentType}/${b.parentId}/${ref.id}`;
     const sha256 = createHash('sha256').update(file.buffer).digest('hex');
-    await bucket().file(storagePath).save(file.buffer, {
-      contentType: file.mimetype,
-      resumable: false,
-      metadata: { metadata: { tenantId: p.tenantId, uploadedBy: p.uid, sha256 } },
-    });
+    await files().save(storagePath, file.buffer, { contentType: file.mimetype, metadata: { tenantId: p.tenantId, uploadedBy: p.uid, sha256 } });
     const meta: Omit<DocumentMeta, 'id'> = {
       tenantId: p.tenantId,
       parentType: b.parentType,
@@ -134,7 +130,7 @@ export class DocumentsController {
     const meta = docData<DocumentMeta>(snap);
     if (meta.status !== 'ACTIVE') throw notFound('Tài liệu đã bị thu hồi.');
     await loadParent(p, meta.parentType, meta.parentId);
-    const [buf] = await bucket().file(meta.storagePath).download();
+    const buf = await files().read(meta.storagePath);
     await audit({ actor: p, action: 'document.download', resourceType: 'document', resourceId: id, requestId: rid });
     res.setHeader('Content-Type', meta.contentType);
     res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(meta.fileName)}`);
@@ -164,7 +160,7 @@ export class DocumentsController {
       }
     }
     await ref.update({ status: 'REVOKED', revokedAt: nowIso(), revokedBy: p.uid });
-    await bucket().file(meta.storagePath).delete({ ignoreNotFound: true });
+    await files().remove(meta.storagePath);
     await audit({ actor: p, action: 'document.revoke', resourceType: 'document', resourceId: id, requestId: rid });
     return { id, status: 'REVOKED' };
   }

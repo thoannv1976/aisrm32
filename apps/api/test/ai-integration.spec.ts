@@ -13,7 +13,7 @@ import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { DEMO_PASSWORD } from '../scripts/seed-data';
 import { seed } from '../scripts/seed';
-import { firestore } from '../src/common/firebase';
+import { db } from '../src/infra';
 import { createApp } from '../src/main';
 
 let app: INestApplication;
@@ -134,7 +134,7 @@ describe('AI Center — quản trị khóa API, model, giá', () => {
   it('chế độ live: vượt ngân sách tháng → chặn trước khi gọi nhà cung cấp', async () => {
     await api(ADMIN, 'PUT', '/ai/admin/settings', settings({ mode: 'live', monthlyBudgetVnd: 1000 }));
     const month = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 7);
-    await firestore().collection('tenants').doc('ftu').collection('aiUsageMonthly').doc(month).set({ costVnd: 999 }, { merge: true });
+    await db().collection('tenants').doc('ftu').collection('aiUsageMonthly').doc(month).set({ costVnd: 999 }, { merge: true });
     const r = await api(ADMIN, 'POST', '/ai/admin/playground', { modelConfigId: 'anthropic__claude-opus-5-5', prompt: 'xin chào' });
     expect(r.status).toBe(429);
     expect(r.body.code).toBe('AI_BUDGET_EXCEEDED');
@@ -168,7 +168,7 @@ describe('UNI-DATA360 giả lập', () => {
     expect(job.body.counts.ACCEPTED).toBeGreaterThanOrEqual(1);
 
     // Đưa sự kiện đã gửi về hàng chờ và gửi lại → UNI nhận diện trùng (idempotent theo eventId)
-    const sent = await firestore().collection('tenants').doc('ftu').collection('outboxEvents').where('status', '==', 'SENT').get();
+    const sent = await db().collection('tenants').doc('ftu').collection('outboxEvents').where('status', '==', 'SENT').get();
     await Promise.all(sent.docs.map((d) => d.ref.update({ status: 'PENDING' })));
     const again = await api(ADMIN, 'POST', '/integrations/uni-data360/sync-jobs', { type: 'outbound' });
     expect(again.body.counts.ACCEPTED).toBe(0);
@@ -199,11 +199,11 @@ describe('UNI-DATA360 giả lập', () => {
   });
 
   it('nhận danh mục đơn vị/cán bộ: báo khác biệt, không tự ghi đè', async () => {
-    const before = await firestore().collection('tenants').doc('ftu').collection('units').get();
+    const before = await db().collection('tenants').doc('ftu').collection('units').get();
     const r = await api(ADMIN, 'POST', '/integrations/uni-data360/sync-jobs', { type: 'import_org' });
     expect(r.body.counts.CHANGED).toBe(1);
     expect(r.body.counts.NEW_IN_UNI).toBe(2);
-    const after = await firestore().collection('tenants').doc('ftu').collection('units').get();
+    const after = await db().collection('tenants').doc('ftu').collection('units').get();
     expect(after.size).toBe(before.size);
   });
 
@@ -219,7 +219,7 @@ describe('UNI-DATA360 giả lập', () => {
     expect(bf.body.counts.QUEUED).toBeGreaterThanOrEqual(2);
     const again = await api(ADMIN, 'POST', '/integrations/uni-data360/sync-jobs', { type: 'backfill' });
     // Sự kiện cùng (loại, id, version) dùng cùng mã → không nhân bản trong outbox
-    const pending = await firestore().collection('tenants').doc('ftu').collection('outboxEvents').where('status', '==', 'PENDING').get();
+    const pending = await db().collection('tenants').doc('ftu').collection('outboxEvents').where('status', '==', 'PENDING').get();
     expect(pending.size).toBe(again.body.counts.QUEUED);
     await api(ADMIN, 'POST', '/integrations/uni-data360/sync-jobs', { type: 'outbound' });
     const rec = await api(ADMIN, 'POST', '/integrations/uni-data360/sync-jobs', { type: 'reconcile' });

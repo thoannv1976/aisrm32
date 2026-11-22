@@ -6,9 +6,9 @@ import {
   type Principal,
   type Role,
 } from '@aisrm/shared';
-import type { DocumentReference, Query, Transaction } from 'firebase-admin/firestore';
+import { type DocRef, type Query, type Tx } from '../infra';
 import { randomUUID } from 'node:crypto';
-import { firestore, nowIso, tcol } from './firebase';
+import { db, nowIso, tcol } from '../infra';
 
 export interface ScopedRecord {
   ownerUid: string;
@@ -60,7 +60,7 @@ export async function listVisible<T extends { id: string; updatedAt: string }>(
  * Sinh mã hồ sơ duy nhất theo năm trong transaction (vd: DX-2026-0007).
  * Firestore yêu cầu mọi lệnh đọc trước lệnh ghi: gọi hàm này ở pha đọc, gọi `commit()` ở pha ghi.
  */
-export async function reserveCode(tx: Transaction, tenantId: string, prefix: string) {
+export async function reserveCode(tx: Tx, tenantId: string, prefix: string) {
   const year = new Date().getFullYear();
   const ref = tcol(tenantId, 'counters').doc(`${prefix}-${year}`);
   const snap = await tx.get(ref);
@@ -83,7 +83,7 @@ export interface AuditInput {
 }
 
 /** Nhật ký kiểm toán: ai, vai trò, làm gì, trên hồ sơ/phiên bản nào, khi nào, kết quả. Không chứa nội dung nhạy cảm. */
-export function audit(input: AuditInput, tx?: Transaction) {
+export function audit(input: AuditInput, tx?: Tx) {
   const ref = tcol(input.actor.tenantId, 'auditEvents').doc();
   const data = {
     at: nowIso(),
@@ -103,7 +103,7 @@ export function audit(input: AuditInput, tx?: Transaction) {
 
 /** Outbox: sự kiện nghiệp vụ ghi cùng transaction, dispatcher (Giai đoạn 3) gửi sang UNI-DATA360. */
 export function outbox(
-  tx: Transaction,
+  tx: Tx,
   tenantId: string,
   e: { eventType: string; entityType: string; entityId: string; entityVersion: number; data: Record<string, unknown> },
 ) {
@@ -126,7 +126,7 @@ export function outbox(
 export async function notify(tenantId: string, uids: string[], n: { title: string; body: string; link?: string | null }) {
   const unique = [...new Set(uids.filter(Boolean))];
   if (unique.length === 0) return;
-  const batch = firestore().batch();
+  const batch = db().batch();
   for (const uid of unique) {
     batch.set(tcol(tenantId, 'notifications').doc(), {
       uid,
@@ -151,7 +151,7 @@ export async function holdersOf(tenantId: string, roles: Role[], unitPath: strin
     .map((b) => b.uid as string);
 }
 
-export type Ref = DocumentReference;
+export type Ref = DocRef;
 
 /**
  * Quyền xem hồ sơ của thành viên hội đồng: chỉ cấp sau khi khai báo không xung đột lợi ích với đúng hồ sơ đó,

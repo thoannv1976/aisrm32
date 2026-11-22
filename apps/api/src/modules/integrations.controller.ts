@@ -1,11 +1,10 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { hasAnyRole, type Principal, type Project, type Publication } from '@aisrm/shared';
-import type { DocumentData } from 'firebase-admin/firestore';
+import { db, nowIso, tcol, type DocData, type DocRef, type QueryDocSnap } from '../infra';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { AppError, badRequest, forbidden, notFound } from '../common/errors';
-import { firestore, nowIso, tcol } from '../common/firebase';
 import { audit } from '../common/records';
 import { parse } from '../common/util';
 import {
@@ -40,7 +39,7 @@ function exportPolicy(entityType: string, status: string): boolean {
   return false;
 }
 
-function canonical(entityType: string, d: DocumentData): Record<string, unknown> {
+function canonical(entityType: string, d: DocData): Record<string, unknown> {
   const common = { code: d.code, title: d.title, status: d.status, unitId: d.unitId, unitName: d.unitName, ownerName: d.ownerName, updatedAt: d.updatedAt };
   if (entityType === 'project') return { ...common, startDate: d.startDate, endDate: d.endDate, budgetVnd: d.budgetVnd, proposalId: d.proposalId };
   if (entityType === 'publication') return { ...common, type: d.type, venue: d.venue, year: d.year, doi: d.doi, authors: (d.authors ?? []).map((a: { name: string }) => a.name) };
@@ -53,7 +52,7 @@ async function startJob(p: Principal, type: string, extra: Record<string, unknow
   return ref;
 }
 
-async function finishJob(ref: FirebaseFirestore.DocumentReference, counts: Record<string, number>, items: JobItem[], failed: number) {
+async function finishJob(ref: DocRef, counts: Record<string, number>, items: JobItem[], failed: number) {
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const status = failed === 0 ? 'SUCCESS' : failed < total ? 'PARTIAL' : 'FAILED';
   await ref.update({ status, finishedAt: nowIso(), counts, items: items.slice(0, 300), itemsTruncated: items.length > 300 });
@@ -127,7 +126,7 @@ export class IntegrationsController {
     const job = await tcol(p.tenantId, 'syncJobs').doc(id).get();
     if (!job.exists || job.get('type') !== 'outbound') throw notFound('Không tìm thấy phiên gửi dữ liệu.');
     const failedIds = ((job.get('items') as JobItem[]) ?? []).filter((i) => ['FAILED', 'DEAD'].includes(i.result)).map((i) => i.key);
-    const batch = firestore().batch();
+    const batch = db().batch();
     for (const fid of failedIds) batch.update(tcol(p.tenantId, 'outboxEvents').doc(fid), { status: 'PENDING', attempts: 0, nextAttemptAt: null, lastError: null });
     if (failedIds.length) await batch.commit();
     const settings = await loadIntegration(p.tenantId);
@@ -139,10 +138,10 @@ export class IntegrationsController {
   private async outbound(p: Principal, failureRatePct: number, opts: { replayOf?: string; onlyIds?: string[] } = {}) {
     const job = await startJob(p, 'outbound', opts.replayOf ? { replayOf: opts.replayOf } : {});
     const now = Date.now();
-    let docs: FirebaseFirestore.QueryDocumentSnapshot[];
+    let docs: QueryDocSnap[];
     if (opts.onlyIds) {
       const snaps = await Promise.all(opts.onlyIds.map((i) => tcol(p.tenantId, 'outboxEvents').doc(i).get()));
-      docs = snaps.filter((s) => s.exists) as FirebaseFirestore.QueryDocumentSnapshot[];
+      docs = snaps.filter((s) => s.exists) as QueryDocSnap[];
     } else {
       docs = (await tcol(p.tenantId, 'outboxEvents').where('status', 'in', ['PENDING', 'FAILED']).limit(300).get()).docs.filter(
         (d) => !d.get('nextAttemptAt') || new Date(d.get('nextAttemptAt')).getTime() <= now,
@@ -248,7 +247,7 @@ export class IntegrationsController {
     const uniVersion = new Map(uni.map((e) => [`${e.entityType}__${e.entityId}`, e.entityVersion]));
     const counts: Record<string, number> = { QUEUED: 0, UP_TO_DATE: 0 };
     const items: JobItem[] = [];
-    const batch = firestore().batch();
+    const batch = db().batch();
     const entries = [...projects.docs.map((d) => ['project', d] as const), ...pubs.docs.map((d) => ['publication', d] as const)];
     for (const [type, d] of entries) {
       const version = d.get('version') as number;
@@ -339,7 +338,7 @@ export class IntegrationsController {
   @Get('hemis-preview')
   async hemisPreview(@CurrentPrincipal() p: Principal, @Query('entity') entity = 'projects') {
     requireAdmin(p);
-    const tenant = await firestore().collection('tenants').doc(p.tenantId).get();
+    const tenant = await db().collection('tenants').doc(p.tenantId).get();
     const tenantName = tenant.get('name') ?? p.tenantId;
     if (entity === 'projects') {
       const snap = await tcol(p.tenantId, 'projects').limit(200).get();

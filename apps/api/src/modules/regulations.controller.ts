@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { askRegulation, saveRegulation, touchIndex, type RegChunk, type RegulationMeta } from '../regulation/service';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { badRequest, forbidden, notFound, unprocessable } from '../common/errors';
-import { nowIso, tcol } from '../common/firebase';
+import { nowIso, tcol } from '../infra';
 import { audit } from '../common/records';
 import { docData, parse } from '../common/util';
 

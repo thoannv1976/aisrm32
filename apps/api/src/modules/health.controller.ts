@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { Public } from '../common/auth';
-import { config } from '../common/firebase';
+import { config } from '../infra';
 
 @Controller('health')
 export class HealthController {

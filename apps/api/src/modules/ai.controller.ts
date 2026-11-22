@@ -18,7 +18,7 @@ import { looksLikeKey, PROVIDERS, ProviderError } from '../ai/providers';
 import { secretStore } from '../ai/secrets';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { AppError, badRequest, forbidden, notFound } from '../common/errors';
-import { nowIso, tcol } from '../common/firebase';
+import { nowIso, tcol } from '../infra';
 import { audit } from '../common/records';
 import { parse } from '../common/util';
 

@@ -36,12 +36,12 @@ function strongPassword(): string {
 
 async function main() {
   // Import sau khi đặt biến môi trường để Admin SDK trỏ đúng project thật.
-  const { firestore } = await import('../src/common/firebase');
+  const { db } = await import('../src/infra');
   const { seedTenant, seedBusiness } = await import('./seed');
   const { TENANTS } = await import('./seed-data');
 
   for (const t of TENANTS) {
-    const exists = await firestore().collection('tenants').doc(t.id).get();
+    const exists = await db().collection('tenants').doc(t.id).get();
     if (exists.exists) {
       console.error(`Tenant "${t.id}" đã tồn tại trên ${project} — dừng, không ghi đè dữ liệu.`);
       process.exit(2);

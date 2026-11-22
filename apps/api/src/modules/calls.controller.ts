@@ -3,7 +3,7 @@ import { hasRoleFor, SCIENCE_OFFICE, type Call, type Principal } from '@aisrm/sh
 import { z } from 'zod';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { badRequest, conflict, forbidden, notFound } from '../common/errors';
-import { firestore, nowIso, tcol } from '../common/firebase';
+import { db, nowIso, tcol } from '../infra';
 import { audit, reserveCode } from '../common/records';
 import { docData, parse } from '../common/util';
 
@@ -70,7 +70,7 @@ export class CallsController {
       keys.add(f.key);
     }
     const ref = tcol(p.tenantId, 'calls').doc();
-    const code = await firestore().runTransaction(async (tx) => {
+    const code = await db().runTransaction(async (tx) => {
       const r = await reserveCode(tx, p.tenantId, 'DOT');
       r.commit();
       const now = nowIso();
@@ -105,7 +105,7 @@ export class CallsController {
     if (!isOffice(p)) throw forbidden();
     const b = parse(z.object({ status: z.enum(['OPEN', 'CLOSED']), expectedVersion: z.number().int() }), body);
     const ref = tcol(p.tenantId, 'calls').doc(id);
-    return firestore().runTransaction(async (tx) => {
+    return db().runTransaction(async (tx) => {
       const snap = await tx.get(ref);
       if (!snap.exists) throw notFound();
       const c = snap.data() as Call;

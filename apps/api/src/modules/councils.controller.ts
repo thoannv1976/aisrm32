@@ -23,7 +23,7 @@ import { z } from 'zod';
 import { draftMinutes } from '../ai/features';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../common/errors';
-import { firestore, nowIso, tcol } from '../common/firebase';
+import { db, nowIso, tcol } from '../infra';
 import { audit, canRead, notify, reserveCode } from '../common/records';
 import { parse } from '../common/util';
 import { suggestReviewers } from '../council/suggest';
@@ -138,7 +138,7 @@ export class CouncilsController {
       targets.push({ id: s.id, type: t.type, code: d.code, title: d.title, ownerUid: d.ownerUid, ownerName: d.ownerName, unitName: d.unitName });
     }
     const ref = tcol(p.tenantId, 'councils').doc();
-    const code = await firestore().runTransaction(async (tx) => {
+    const code = await db().runTransaction(async (tx) => {
       const r = await reserveCode(tx, p.tenantId, 'HD');
       r.commit();
       tx.set(ref, {
@@ -206,7 +206,7 @@ export class CouncilsController {
     const person = await tcol(p.tenantId, 'people').doc(b.uid).get();
     if (!person.exists || person.get('status') !== 'ACTIVE') throw notFound('Không tìm thấy người dùng.');
     const unit = person.get('unitId') ? await tcol(p.tenantId, 'units').doc(person.get('unitId')).get() : null;
-    const result = await firestore().runTransaction(async (tx) => {
+    const result = await db().runTransaction(async (tx) => {
       const s = await tx.get(ref);
       if (!s.exists) throw notFound();
       const c = { id: s.id, ...s.data() } as Council;
@@ -233,7 +233,7 @@ export class CouncilsController {
   async removeMember(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Param('id') id: string, @Param('uid') uid: string) {
     if (!isOffice(p)) throw forbidden();
     const ref = tcol(p.tenantId, 'councils').doc(id);
-    return firestore().runTransaction(async (tx) => {
+    return db().runTransaction(async (tx) => {
       const s = await tx.get(ref);
       if (!s.exists) throw notFound();
       const c = { id: s.id, ...s.data() } as Council;
@@ -249,7 +249,7 @@ export class CouncilsController {
   async respond(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Param('id') id: string, @Body() body: unknown) {
     const { accept } = parse(z.object({ accept: z.boolean() }), body);
     const ref = tcol(p.tenantId, 'councils').doc(id);
-    return firestore().runTransaction(async (tx) => {
+    return db().runTransaction(async (tx) => {
       const s = await tx.get(ref);
       if (!s.exists) throw notFound();
       const c = { id: s.id, ...s.data() } as Council;
@@ -271,7 +271,7 @@ export class CouncilsController {
   async declareCoi(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Param('id') id: string, @Body() body: unknown) {
     const b = parse(z.object({ targetId: z.string().min(1), hasConflict: z.boolean(), note: z.string().max(1000).optional().nullable() }), body);
     const ref = tcol(p.tenantId, 'councils').doc(id);
-    const c = await firestore().runTransaction(async (tx) => {
+    const c = await db().runTransaction(async (tx) => {
       const s = await tx.get(ref);
       if (!s.exists) throw notFound();
       const c = { id: s.id, ...s.data() } as Council;
@@ -300,7 +300,7 @@ export class CouncilsController {
   async open(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Param('id') id: string) {
     if (!isOffice(p)) throw forbidden();
     const ref = tcol(p.tenantId, 'councils').doc(id);
-    const c = await firestore().runTransaction(async (tx) => {
+    const c = await db().runTransaction(async (tx) => {
       const s = await tx.get(ref);
       if (!s.exists) throw notFound();
       const c = { id: s.id, ...s.data() } as Council;
@@ -321,7 +321,7 @@ export class CouncilsController {
     const b = parse(z.object({ scores: z.record(z.string(), z.number()), comment: z.string().max(5000).default(''), submit: z.boolean().default(false) }), body);
     const ref = tcol(p.tenantId, 'councils').doc(id);
     const sheetRef = ref.collection('sheets').doc(`${p.uid}__${targetId}`);
-    return firestore().runTransaction(async (tx) => {
+    return db().runTransaction(async (tx) => {
       const [s, existing] = await Promise.all([tx.get(ref), tx.get(sheetRef)]);
       if (!s.exists) throw notFound();
       const c = { id: s.id, ...s.data() } as Council;
@@ -359,7 +359,7 @@ export class CouncilsController {
   @Post(':id/close')
   async close(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Param('id') id: string) {
     const ref = tcol(p.tenantId, 'councils').doc(id);
-    const c = await firestore().runTransaction(async (tx) => {
+    const c = await db().runTransaction(async (tx) => {
       const [s, sheetsSnap] = await Promise.all([tx.get(ref), tx.get(ref.collection('sheets'))]);
       if (!s.exists) throw notFound();
       const c = { id: s.id, ...s.data() } as Council;
@@ -424,7 +424,7 @@ export class CouncilsController {
   @Post(':id/minutes/confirm')
   async confirm(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Param('id') id: string) {
     const ref = tcol(p.tenantId, 'councils').doc(id);
-    const c = await firestore().runTransaction(async (tx) => {
+    const c = await db().runTransaction(async (tx) => {
       const s = await tx.get(ref);
       if (!s.exists) throw notFound();
       const c = { id: s.id, ...s.data() } as Council;
@@ -438,7 +438,7 @@ export class CouncilsController {
       return c;
     });
     const access = await tcol(p.tenantId, 'reviewAccess').where('councilId', '==', id).get();
-    const batch = firestore().batch();
+    const batch = db().batch();
     access.docs.forEach((d) => batch.update(d.ref, { active: false, updatedAt: nowIso() }));
     if (!access.empty) await batch.commit();
     const office = (await tcol(p.tenantId, 'roleBindings').where('role', 'in', ['SCIENCE_OFFICER', 'SCIENCE_HEAD']).get()).docs.map((d) => d.get('uid') as string);

@@ -20,7 +20,7 @@ import {
 import { z } from 'zod';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { notFound } from '../common/errors';
-import { firestore, nowIso, tcol } from '../common/firebase';
+import { db, nowIso, tcol } from '../infra';
 import { audit, listVisible } from '../common/records';
 import { docData, parse, todayIso } from '../common/util';
 
@@ -76,12 +76,12 @@ export class MeController {
   @Get('me')
   async me(@CurrentPrincipal() p: Principal): Promise<MeResponse> {
     const [membership, tenant, unit] = await Promise.all([
-      firestore().collection('userTenants').doc(p.uid).get(),
-      firestore().collection('tenants').doc(p.tenantId).get(),
+      db().collection('userTenants').doc(p.uid).get(),
+      db().collection('tenants').doc(p.tenantId).get(),
       p.unitId ? tcol(p.tenantId, 'units').doc(p.unitId).get() : Promise.resolve(null),
     ]);
     const tenantIds: string[] = membership.get('tenantIds') ?? [];
-    const tenantDocs = await Promise.all(tenantIds.map((t) => firestore().collection('tenants').doc(t).get()));
+    const tenantDocs = await Promise.all(tenantIds.map((t) => db().collection('tenants').doc(t).get()));
     return {
       uid: p.uid,
       displayName: p.displayName,
@@ -205,7 +205,7 @@ export class MeController {
   @Post('me/notifications/read-all')
   async markAllRead(@CurrentPrincipal() p: Principal) {
     const snap = await tcol(p.tenantId, 'notifications').where('uid', '==', p.uid).where('read', '==', false).limit(400).get();
-    const batch = firestore().batch();
+    const batch = db().batch();
     snap.docs.forEach((d) => batch.update(d.ref, { read: true }));
     await batch.commit();
     return { updated: snap.size };

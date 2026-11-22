@@ -8,9 +8,9 @@ import {
   type AiUsageRecord,
   type Principal,
 } from '@aisrm/shared';
-import { FieldValue } from 'firebase-admin/firestore';
+import { increment } from '../infra';
 import { AppError } from '../common/errors';
-import { nowIso, tcol } from '../common/firebase';
+import { nowIso, tcol } from '../infra';
 import { mockProvider, PROVIDERS, ProviderError, type CompletionResult } from './providers';
 import { secretStore } from './secrets';
 
@@ -61,13 +61,13 @@ async function record(p: Principal, u: Omit<AiUsageRecord, 'id'>) {
     .set(
       {
         month: u.month,
-        calls: FieldValue.increment(1),
-        errors: FieldValue.increment(u.status === 'ERROR' ? 1 : 0),
-        inputTokens: FieldValue.increment(u.inputTokens),
-        outputTokens: FieldValue.increment(u.outputTokens),
-        costVnd: FieldValue.increment(u.costVnd ?? 0),
-        costUsdMicros: FieldValue.increment(u.costUsdMicros ?? 0),
-        unpricedCalls: FieldValue.increment(!u.mock && !u.priceKnown && u.status === 'SUCCESS' ? 1 : 0),
+        calls: increment(1),
+        errors: increment(u.status === 'ERROR' ? 1 : 0),
+        inputTokens: increment(u.inputTokens),
+        outputTokens: increment(u.outputTokens),
+        costVnd: increment(u.costVnd ?? 0),
+        costUsdMicros: increment(u.costUsdMicros ?? 0),
+        unpricedCalls: increment(!u.mock && !u.priceKnown && u.status === 'SUCCESS' ? 1 : 0),
         updatedAt: nowIso(),
       },
       { merge: true },

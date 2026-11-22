@@ -10,7 +10,7 @@ import {
 } from '@aisrm/shared';
 import { draftFrom, type AiDraft } from '../ai/features';
 import { runAi } from '../ai/gateway';
-import { firestore, nowIso, tcol } from '../common/firebase';
+import { db, nowIso, tcol } from '../infra';
 
 export interface RegulationMeta {
   id: string;
@@ -55,7 +55,7 @@ export async function saveRegulation(
 
   const old = await tcol(tenantId, 'regulationChunks').where('regId', '==', ref.id).get();
   for (let i = 0; i < old.docs.length; i += 400) {
-    const b = firestore().batch();
+    const b = db().batch();
     old.docs.slice(i, i + 400).forEach((d) => b.delete(d.ref));
     await b.commit();
   }
@@ -63,7 +63,7 @@ export async function saveRegulation(
     a.clauses.map((c) => ({ regId: ref.id, regCode: input.code, regTitle: input.title, chapter: a.chapter, article: a.number, articleTitle: a.title, clause: c.no, text: c.text })),
   );
   for (let i = 0; i < chunks.length; i += 400) {
-    const b = firestore().batch();
+    const b = db().batch();
     for (const c of chunks.slice(i, i + 400)) b.set(tcol(tenantId, 'regulationChunks').doc(`${ref.id}_${c.article}_${c.clause}`), c);
     await b.commit();
   }

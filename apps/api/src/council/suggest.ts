@@ -1,5 +1,5 @@
 import { normalizeTitle } from '@aisrm/shared';
-import { tcol } from '../common/firebase';
+import { tcol } from '../infra';
 
 /**
  * Gợi ý phản biện theo chuyên môn (đối sánh từ khóa có trọng số, minh bạch, giải thích được) và cảnh báo xung đột lợi ích.

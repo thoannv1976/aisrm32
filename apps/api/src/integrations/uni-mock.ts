@@ -1,6 +1,6 @@
 import type { Principal, Project, Publication } from '@aisrm/shared';
 import { createHash } from 'node:crypto';
-import { firestore, nowIso, tcol } from '../common/firebase';
+import { db, nowIso, tcol } from '../infra';
 
 /**
  * UNI-DATA360 GIẢ LẬP. Đóng vai hệ thống bên ngoài để kiểm thử luồng tích hợp khi chưa có hợp đồng API thật.
@@ -22,7 +22,7 @@ export async function loadIntegration(tenantId: string): Promise<IntegrationSett
   return { ...DEFAULT_INTEGRATION, ...(s.exists ? (s.data() as Partial<IntegrationSettings>) : {}) };
 }
 
-const mockRoot = (tenantId: string) => firestore().collection('mockUniData360').doc(tenantId);
+const mockRoot = (tenantId: string) => db().collection('mockUniData360').doc(tenantId);
 
 export class MockUnavailable extends Error {}
 
@@ -50,7 +50,7 @@ export async function mockReceive(tenantId: string, e: OutboundEvent, failureRat
   const root = mockRoot(tenantId);
   const inboxRef = root.collection('inbox').doc(e.eventId);
   const entityRef = root.collection('entities').doc(`${e.entityType}__${e.entityId}`);
-  return firestore().runTransaction(async (tx) => {
+  return db().runTransaction(async (tx) => {
     const [inbox, entity] = await Promise.all([tx.get(inboxRef), tx.get(entityRef)]);
     if (inbox.exists) return 'DUPLICATE';
     const receivedAt = nowIso();

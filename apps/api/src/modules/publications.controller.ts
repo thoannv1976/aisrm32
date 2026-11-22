@@ -14,7 +14,7 @@ import {
 import { z } from 'zod';
 import { CurrentPrincipal, RequestId, unitPathOf } from '../common/auth';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../common/errors';
-import { firestore, nowIso, tcol } from '../common/firebase';
+import { db, nowIso, tcol } from '../infra';
 import { audit, canRead, listVisible, reserveCode } from '../common/records';
 import { parseIdempotencyKey, runTransition, transitionBody } from '../common/transition';
 import { docData, parse, toCsv, withActions } from '../common/util';
@@ -155,7 +155,7 @@ export class PublicationsController {
     const { path, unit } = await unitPathOf(p.tenantId, p.unitId);
     const ref = tcol(p.tenantId, 'publications').doc();
     const authorUids = [...new Set(b.authors.map((a) => a.uid).filter((u): u is string => !!u))];
-    const code = await firestore().runTransaction(async (tx) => {
+    const code = await db().runTransaction(async (tx) => {
       const r = await reserveCode(tx, p.tenantId, 'CB');
       r.commit();
       const now = nowIso();
@@ -205,7 +205,7 @@ export class PublicationsController {
     const raw = parse(pubBody.extend({ expectedVersion: z.number().int() }), body);
     const b = prepare(raw);
     const ref = tcol(p.tenantId, 'publications').doc(id);
-    return firestore().runTransaction(async (tx) => {
+    return db().runTransaction(async (tx) => {
       const snap = await tx.get(ref);
       if (!snap.exists) throw notFound();
       const rec = docData<Publication>(snap);

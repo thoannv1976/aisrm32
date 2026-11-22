@@ -15,7 +15,7 @@ import {
 } from '@aisrm/shared';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { badRequest, forbidden } from '../common/errors';
-import { firestore, nowIso, tcol } from '../common/firebase';
+import { db, nowIso, tcol } from '../infra';
 import { audit, isTenantReader, listVisible } from '../common/records';
 import { toCsv, todayIso } from '../common/util';
 
@@ -91,7 +91,7 @@ export class DashboardController {
   async aiReport(@CurrentPrincipal() p: Principal, @RequestId() rid: string) {
     if (!hasAnyRole(p, REPORT_ROLES as unknown as Role[])) throw forbidden('Chỉ cán bộ quản lý được tạo dự thảo báo cáo.');
     const m = await computeMetrics(p);
-    const tenant = await firestore().collection('tenants').doc(p.tenantId).get();
+    const tenant = await db().collection('tenants').doc(p.tenantId).get();
     const draft = await draftReport(p, m, tenant.get('name') ?? p.tenantId);
     await audit({ actor: p, action: 'ai.report_draft', resourceType: 'report', resourceId: 'dashboard', requestId: rid, detail: `${draft.model.provider}/${draft.model.modelId}${draft.mock ? ' (mock)' : ''}` });
     return { ...draft, metrics: m };

@@ -2,7 +2,7 @@ import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 import type { AiProvider } from '@aisrm/shared';
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { AppError } from '../common/errors';
-import { config, firestore } from '../common/firebase';
+import { config, db } from '../infra';
 
 /**
  * Kho bí mật cho khóa API của nhà cung cấp AI.
@@ -72,7 +72,7 @@ class GcpSecretStore implements SecretStore {
 
 class LocalEncryptedStore implements SecretStore {
   private key = createHash('sha256').update(process.env.LOCAL_SECRET_KEY ?? 'aisrm-local-emulator-only').digest();
-  private ref = (t: string, p: AiProvider) => firestore().collection('_localSecrets').doc(secretId(t, p));
+  private ref = (t: string, p: AiProvider) => db().collection('_localSecrets').doc(secretId(t, p));
 
   async put(tenantId: string, provider: AiProvider, value: string) {
     const iv = randomBytes(12);

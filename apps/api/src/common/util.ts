@@ -4,7 +4,7 @@ import {
   type WithActions,
   type WorkflowDef,
 } from '@aisrm/shared';
-import type { DocumentSnapshot } from 'firebase-admin/firestore';
+import { type DocSnap } from '../infra';
 import type { z } from 'zod';
 import type { ScopedRecord } from './records';
 
@@ -12,7 +12,7 @@ export function parse<S extends z.ZodTypeAny>(schema: S, body: unknown): z.infer
   return schema.parse(body ?? {});
 }
 
-export function docData<T>(snap: DocumentSnapshot): T & { id: string } {
+export function docData<T>(snap: DocSnap): T & { id: string } {
   return { id: snap.id, ...(snap.data() as object) } as T & { id: string };
 }
 

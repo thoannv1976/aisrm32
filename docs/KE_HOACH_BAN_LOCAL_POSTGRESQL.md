@@ -1,6 +1,14 @@
 # Kế hoạch xây dựng AI-SRM Local (PostgreSQL) — trình duyệt
 
-Ngày lập: 22/11/2026 · Cập nhật: 22/11/2026 (thêm kết quả đo AI nội bộ trên máy thử, mục 2.5) · Trạng thái: **chờ duyệt** (chưa triển khai)
+Ngày lập: 22/11/2026 · Cập nhật: 22/11/2026 (thêm kết quả đo AI nội bộ trên máy thử, mục 2.5) · Trạng thái: **đã duyệt 22/11/2026, đang triển khai**
+
+## Tiến độ
+
+- ✅ **L1 — Tách lớp hạ tầng (22/11/2026):**
+  - port `DataStore` / `FileStore` / `IdentityProvider` trong `apps/api/src/infra/`; chỉ `infra/firebase.ts` còn import `firebase-admin` ([ADR-0003](adr/0003-tach-lop-ha-tang-online-local.md));
+  - 24 unit test, 56 test tích hợp, 3 E2E vẫn đạt; staging revision 00006 chạy bình thường;
+  - đổi cổng API khi chạy dev sang **8090** để không trùng LocalAI (8080).
+- ⏳ **L2 — PostgreSQL:** tiếp theo.
 
 ## 0. Mục tiêu và căn cứ
 

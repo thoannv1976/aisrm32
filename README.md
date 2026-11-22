@@ -21,7 +21,7 @@ pnpm emulators:fresh     # 1. Firebase Emulator (Auth 9099, Firestore 8180, Stor
 
 ```powershell
 pnpm seed                # 2. Nạp dữ liệu giả lập (chạy khi emulator đã lên; chạy lại để làm sạch dữ liệu)
-pnpm dev:api             #    API: http://localhost:8080/api/v1  — tài liệu API: http://localhost:8080/api/docs
+pnpm dev:api             #    API: http://localhost:8090/api/v1  — tài liệu API: http://localhost:8090/api/docs
 ```
 
 ```powershell

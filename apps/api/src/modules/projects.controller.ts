@@ -9,11 +9,11 @@ import {
   type Principal,
   type Project,
 } from '@aisrm/shared';
-import { FieldValue, type Transaction } from 'firebase-admin/firestore';
+import { increment, type Tx } from '../infra';
 import { z } from 'zod';
 import { CurrentPrincipal, RequestId } from '../common/auth';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../common/errors';
-import { firestore, nowIso, tcol } from '../common/firebase';
+import { db, nowIso, tcol } from '../infra';
 import { audit, canRead, hasReviewAccess, listVisible, notify } from '../common/records';
 import { parseIdempotencyKey, runTransition, transitionBody } from '../common/transition';
 import { docData, parse, todayIso, withActions } from '../common/util';
@@ -49,10 +49,10 @@ async function mutateProject<R>(
   rid: string,
   id: string,
   action: string,
-  fn: (tx: Transaction, rec: Project & { id: string }, milestones: (Milestone & { id: string })[]) => Promise<{ result: R; changedMilestones?: boolean; patch?: Record<string, unknown>; detail?: string }>,
+  fn: (tx: Tx, rec: Project & { id: string }, milestones: (Milestone & { id: string })[]) => Promise<{ result: R; changedMilestones?: boolean; patch?: Record<string, unknown>; detail?: string }>,
 ): Promise<R> {
   const ref = tcol(p.tenantId, 'projects').doc(id);
-  return firestore().runTransaction(async (tx) => {
+  return db().runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists) throw notFound();
     const rec = docData<Project>(snap);
@@ -267,7 +267,7 @@ export class ProjectsController {
         decisionNote: null,
       };
       tx.set(ref, cr);
-      return { result: { id: ref.id }, patch: { pendingChangeRequests: FieldValue.increment(1) }, detail: b.type };
+      return { result: { id: ref.id }, patch: { pendingChangeRequests: increment(1) }, detail: b.type };
     });
   }
 
@@ -285,7 +285,7 @@ export class ProjectsController {
       if (b.decision === 'REJECTED' && !b.note?.trim()) throw unprocessable('COMMENT_REQUIRED', 'Cần nêu lý do không chấp thuận.');
       tx.update(ref, { status: b.decision, decidedBy: p.uid, decidedAt: nowIso(), decisionNote: b.note?.trim() || null });
       ownerUid = rec.ownerUid;
-      const patch: Record<string, unknown> = { pendingChangeRequests: FieldValue.increment(-1) };
+      const patch: Record<string, unknown> = { pendingChangeRequests: increment(-1) };
       if (b.decision === 'APPROVED' && cr.type === 'EXTENSION' && cr.proposedEndDate) patch.endDate = cr.proposedEndDate;
       return { result: { id: cid, status: b.decision }, patch, detail: `${cr.type} ${b.decision}` };
     });

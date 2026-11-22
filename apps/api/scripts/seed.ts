@@ -6,7 +6,7 @@
  *   pnpm seed              (terminal 2)
  */
 import { PROJECT_WORKFLOW, PROPOSAL_WORKFLOW, PUBLICATION_WORKFLOW, normalizeDoi, normalizeTitle } from '@aisrm/shared';
-import { auth, config, firestore } from '../src/common/firebase';
+import { config, db, identity } from '../src/infra';
 import { CALL_FORM, DEMO_PASSWORD, STUDENT_CALL_FORM, TENANTS, type SeedTenant } from './seed-data';
 
 export type SeedResult = Record<string, Record<string, { uid: string; email: string }>>;
@@ -32,8 +32,8 @@ const iso = (offsetDays: number) => new Date(Date.now() + offsetDays * day).toIS
 const date = (offsetDays: number) => iso(offsetDays).slice(0, 10);
 
 export async function seedTenant(t: SeedTenant, passwordFor: (email: string) => string = () => DEMO_PASSWORD): Promise<Record<string, { uid: string; email: string }>> {
-  const db = firestore();
-  const tdoc = db.collection('tenants').doc(t.id);
+  const store = db();
+  const tdoc = store.collection('tenants').doc(t.id);
   const now = iso(0);
   await tdoc.set({ name: t.name, createdAt: now, seed: true });
 
@@ -47,7 +47,7 @@ export async function seedTenant(t: SeedTenant, passwordFor: (email: string) => 
     }
     return out;
   };
-  const batch = db.batch();
+  const batch = store.batch();
   for (const u of t.units) {
     batch.set(tdoc.collection('units').doc(u.id), { code: u.code, name: u.name, type: u.type, parentId: u.parentId, ancestorIds: ancestors(u.id), seed: true });
   }
@@ -55,10 +55,11 @@ export async function seedTenant(t: SeedTenant, passwordFor: (email: string) => 
 
   const users: Record<string, { uid: string; email: string }> = {};
   for (const u of t.users) {
-    const rec = await auth().createUser({ email: u.email, password: passwordFor(u.email), displayName: u.displayName, emailVerified: true });
-    users[u.key] = { uid: rec.uid, email: u.email };
-    const b = db.batch();
-    b.set(db.collection('userTenants').doc(rec.uid), { tenantIds: [t.id] });
+    const uid = await identity().upsertUser({ email: u.email, password: passwordFor(u.email), displayName: u.displayName });
+    const rec = { uid };
+    users[u.key] = { uid, email: u.email };
+    const b = store.batch();
+    b.set(store.collection('userTenants').doc(rec.uid), { tenantIds: [t.id] });
     b.set(tdoc.collection('people').doc(rec.uid), {
       displayName: u.displayName,
       email: u.email,
@@ -87,8 +88,8 @@ export async function seedTenant(t: SeedTenant, passwordFor: (email: string) => 
 
 /** Hồ sơ nghiệp vụ mẫu để có dữ liệu trên dashboard và trang làm việc. */
 export async function seedBusiness(tenantId: string, users: Record<string, { uid: string }>) {
-  const db = firestore();
-  const t = db.collection('tenants').doc(tenantId);
+  const store = db();
+  const t = store.collection('tenants').doc(tenantId);
   const tenant = TENANTS.find((x) => x.id === tenantId)!;
   const person = (key: string) => tenant.users.find((u) => u.key === key)!;
   const unitInfo = (unitId: string) => {
@@ -285,8 +286,8 @@ export async function seedBusiness(tenantId: string, users: Record<string, { uid
  * Tra uid theo email trong seed-data nên dùng được cho cả emulator và staging.
  */
 export async function seedStudentResearch(tenantId: string): Promise<boolean> {
-  const db = firestore();
-  const t = db.collection('tenants').doc(tenantId);
+  const store = db();
+  const t = store.collection('tenants').doc(tenantId);
   if ((await t.collection('proposals').doc('sv1').get()).exists) return false;
   const tenant = TENANTS.find((x) => x.id === tenantId)!;
   const uidOf = async (key: string) => {
@@ -341,7 +342,7 @@ export async function seedStudentResearch(tenantId: string): Promise<boolean> {
 
 /** Hồ sơ chuyên môn mẫu (để gợi ý phản biện). Idempotent: chỉ tạo khi người đó chưa có hồ sơ. */
 export async function seedProfiles(tenantId: string): Promise<number> {
-  const t = firestore().collection('tenants').doc(tenantId);
+  const t = db().collection('tenants').doc(tenantId);
   const tenant = TENANTS.find((x) => x.id === tenantId);
   if (!tenant) return 0;
   const data: Record<string, { degree: string; expertise: string[]; researchInterests: string }> = {
@@ -379,7 +380,7 @@ export async function seedRegulations(tenantId: string): Promise<boolean> {
   const fm = Object.fromEntries(
     (/^---\r?\n([\s\S]*?)\r?\n---/.exec(raw)?.[1] ?? '').split(/\r?\n/).map((l) => [l.slice(0, l.indexOf(':')).trim(), l.slice(l.indexOf(':') + 1).trim()]),
   );
-  const exists = await firestore().collection('tenants').doc(tenantId).collection('regulations').where('code', '==', fm.code).limit(1).get();
+  const exists = await db().collection('tenants').doc(tenantId).collection('regulations').where('code', '==', fm.code).limit(1).get();
   if (!exists.empty) return false;
   await saveRegulation(
     tenantId,
@@ -391,7 +392,7 @@ export async function seedRegulations(tenantId: string): Promise<boolean> {
 }
 
 export async function seedAiDefaults(tenantId: string, opts: { onlyIfMissing?: boolean } = {}) {
-  const t = firestore().collection('tenants').doc(tenantId);
+  const t = db().collection('tenants').doc(tenantId);
   if (opts.onlyIfMissing && (await t.collection('aiConfig').doc('settings').get()).exists) return false;
   // AI Center: cấu hình mẫu — chế độ giả lập, chưa có khóa API. Giá Claude theo bảng giá công bố của Anthropic
   // (tham khảo 03/11/2026); quản trị phải kiểm tra lại giá trước khi chạy thật. OpenAI/Gemini: quản trị tự thêm.

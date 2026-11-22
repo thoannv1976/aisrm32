@@ -21,7 +21,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   webServer: [
-    { command: 'pnpm --filter @aisrm/api dev', url: 'http://127.0.0.1:8080/api/v1/health', reuseExistingServer: true, timeout: 120_000 },
+    { command: 'pnpm --filter @aisrm/api dev', url: 'http://127.0.0.1:8090/api/v1/health', reuseExistingServer: true, timeout: 120_000 },
     { command: 'pnpm --filter @aisrm/web dev', url: 'http://localhost:5173', reuseExistingServer: true, timeout: 120_000 },
   ],
 });

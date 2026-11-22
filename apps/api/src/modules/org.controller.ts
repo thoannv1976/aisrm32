@@ -2,7 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { hasAnyRole, normalizeTitle, type Principal, type Unit } from '@aisrm/shared';
 import { CurrentPrincipal } from '../common/auth';
 import { forbidden } from '../common/errors';
-import { tcol } from '../common/firebase';
+import { tcol } from '../infra';
 
 @Controller()
 export class OrgController {

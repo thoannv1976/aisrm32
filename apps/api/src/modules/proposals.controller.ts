@@ -11,7 +11,7 @@ import {
 import { z } from 'zod';
 import { CurrentPrincipal, RequestId, unitPathOf } from '../common/auth';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../common/errors';
-import { firestore, nowIso, tcol } from '../common/firebase';
+import { db, nowIso, tcol } from '../infra';
 import { audit, canRead, hasReviewAccess, listVisible, reserveCode } from '../common/records';
 import { parseIdempotencyKey, runTransition, transitionBody } from '../common/transition';
 import { docData, parse, withActions } from '../common/util';
@@ -81,7 +81,7 @@ export class ProposalsController {
     if (!callIsOpen(call)) throw conflict('CALL_CLOSED', 'Đợt đăng ký chưa mở hoặc đã hết hạn nộp.');
     const { path, unit } = await unitPathOf(p.tenantId, p.unitId);
     const ref = tcol(p.tenantId, 'proposals').doc();
-    const code = await firestore().runTransaction(async (tx) => {
+    const code = await db().runTransaction(async (tx) => {
       const r = await reserveCode(tx, p.tenantId, 'DX');
       r.commit();
       const now = nowIso();
@@ -157,7 +157,7 @@ export class ProposalsController {
   async update(@CurrentPrincipal() p: Principal, @RequestId() rid: string, @Param('id') id: string, @Body() body: unknown) {
     const b = parse(patchSchema, body);
     const ref = tcol(p.tenantId, 'proposals').doc(id);
-    return firestore().runTransaction(async (tx) => {
+    return db().runTransaction(async (tx) => {
       const snap = await tx.get(ref);
       if (!snap.exists) throw notFound();
       const rec = docData<Proposal>(snap);

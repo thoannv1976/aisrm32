@@ -11,7 +11,7 @@ import type { Principal, RoleBinding, Unit } from '@aisrm/shared';
 import { randomUUID } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
 import { AppError, forbidden } from './errors';
-import { auth, firestore, tcol } from './firebase';
+import { db, identity, tcol } from '../infra';
 
 export interface AuthedRequest extends Request {
   requestId?: string;
@@ -42,7 +42,7 @@ export class RequestIdMiddleware implements NestMiddleware {
 }
 
 /**
- * Xác minh Firebase ID token, xác định tenant (kiểm tra membership — không tin tenantId từ client),
+ * Xác minh token đăng nhập (qua port Identity), xác định tenant (kiểm tra membership — không tin tenantId từ client),
  * nạp vai trò hiện hành từ dữ liệu quyền ở backend (không lấy vai trò do trình duyệt gửi).
  */
 @Injectable()
@@ -58,20 +58,20 @@ export class AuthGuard implements CanActivate {
     const token = header.startsWith('Bearer ') ? header.slice(7) : null;
     if (!token) throw new AppError(401, 'UNAUTHENTICATED', 'Chưa đăng nhập.');
 
-    let decoded;
+    let uid: string;
     try {
-      decoded = await auth().verifyIdToken(token, true);
+      uid = (await identity().verifyToken(token)).uid;
     } catch {
       throw new AppError(401, 'UNAUTHENTICATED', 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn.');
     }
 
-    req.principal = await loadPrincipal(decoded.uid, req.header('x-tenant-id') ?? null);
+    req.principal = await loadPrincipal(uid, req.header('x-tenant-id') ?? null);
     return true;
   }
 }
 
 export async function loadPrincipal(uid: string, requestedTenant: string | null): Promise<Principal> {
-  const membership = await firestore().collection('userTenants').doc(uid).get();
+  const membership = await db().collection('userTenants').doc(uid).get();
   const tenantIds: string[] = membership.exists ? (membership.get('tenantIds') ?? []) : [];
   if (tenantIds.length === 0) throw forbidden('Tài khoản chưa được cấp quyền truy cập trường nào.', 'NO_TENANT');
   const tenantId = requestedTenant ?? tenantIds[0];

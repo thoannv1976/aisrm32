@@ -5,11 +5,11 @@ import {
   type Role,
   type WorkflowDef,
 } from '@aisrm/shared';
-import type { DocumentData, Transaction } from 'firebase-admin/firestore';
+import { type DocData, type Tx } from '../infra';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { AppError, conflict, forbidden, notFound, unprocessable } from './errors';
-import { firestore, nowIso, tcol } from './firebase';
+import { db, nowIso, tcol } from '../infra';
 import { audit, canRead, holdersOf, notify, outbox, type ScopedRecord } from './records';
 
 export const transitionBody = z.object({
@@ -23,7 +23,7 @@ export interface HookResult {
   /** Trường cập nhật thêm vào hồ sơ. */
   patch?: Record<string, unknown>;
   /** Ghi thêm trong cùng transaction (chạy ở pha ghi). */
-  writes?: (tx: Transaction) => void;
+  writes?: (tx: Tx) => void;
   /** Thông báo thêm sau commit. */
   notifyExtra?: { uids: string[]; title: string; body: string; link?: string };
 }
@@ -41,7 +41,7 @@ export interface TransitionArgs<T extends ScopedRecord & { status: string; versi
   titleOf: (rec: T) => string;
   flags?: (rec: T) => Record<string, boolean>;
   /** Kiểm tra/ghi bổ sung theo nghiệp vụ. Chỉ được ĐỌC qua tx trong hook; ghi qua `writes`. */
-  hook?: (tx: Transaction, rec: T & { id: string }, to: string, action: string) => Promise<HookResult | void>;
+  hook?: (tx: Tx, rec: T & { id: string }, to: string, action: string) => Promise<HookResult | void>;
 }
 
 export interface TransitionResult {
@@ -70,7 +70,7 @@ export async function runTransition<T extends ScopedRecord & { status: string; v
   let deniedReason: string | null = null;
   let after: { rec: T & { id: string }; from: string; to: string; actionLabel: string; extra?: HookResult } | null = null;
 
-  const result = await firestore().runTransaction(async (tx) => {
+  const result = await db().runTransaction(async (tx) => {
     deniedReason = null;
     after = null;
     if (idemRef) {
@@ -84,7 +84,7 @@ export async function runTransition<T extends ScopedRecord & { status: string; v
     }
     const snap = await tx.get(ref);
     if (!snap.exists) throw notFound();
-    const rec = { id: snap.id, ...(snap.data() as DocumentData) } as T & {
+    const rec = { id: snap.id, ...(snap.data() as DocData) } as T & {
       id: string;
       returnTo?: string | null;
       actorsByAction?: Record<string, string>;

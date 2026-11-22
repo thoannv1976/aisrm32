@@ -12,11 +12,11 @@ for (const k of ['FIRESTORE_EMULATOR_HOST', 'FIREBASE_AUTH_EMULATOR_HOST', 'FIRE
 Object.assign(process.env, { APP_ENV: 'staging', FIREBASE_PROJECT_ID: project, GCP_PROJECT_ID: project, GOOGLE_CLOUD_PROJECT: project, GOOGLE_CLOUD_QUOTA_PROJECT: project });
 
 async function main() {
-  const { firestore } = await import('../src/common/firebase');
+  const { db } = await import('../src/infra');
   const { seedAiDefaults, seedStudentResearch, seedProfiles, seedRegulations } = await import('./seed');
   const { TENANTS } = await import('./seed-data');
   for (const t of TENANTS) {
-    const tdoc = firestore().collection('tenants').doc(t.id);
+    const tdoc = db().collection('tenants').doc(t.id);
     if (!(await tdoc.get()).exists) continue;
     if (t.id === 'ftu') {
       console.log(`[${t.id}] cấu hình AI mặc định: ${(await seedAiDefaults(t.id, { onlyIfMissing: true })) ? 'đã tạo' : 'đã có, giữ nguyên'}`);
