@@ -83,7 +83,7 @@ Chay 'pnpm install --frozen-lockfile'
 Chay 'pnpm --filter @aisrm/shared build'
 Chay 'pnpm --filter @aisrm/web build'
 $fbJson = Get-Content firebase.json -Raw
-if ($Region -ne 'asia-southeast1') { ($fbJson -replace '"region": "asia-southeast1"', """region"": ""$Region""") | Set-Content firebase.json -Encoding utf8 }
+if ($Region -ne 'asia-southeast1') { [IO.File]::WriteAllText((Join-Path $root 'firebase.json'), ($fbJson -replace '"region": "asia-southeast1"', """region"": ""$Region"""), (New-Object Text.UTF8Encoding $false)) }
 Chay "firebase deploy --only hosting,firestore:rules,firestore:indexes --project $ProjectId $fbAcc --non-interactive"
 
 Buoc '7. Khởi tạo trường và tài khoản quản trị'
