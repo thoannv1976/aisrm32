@@ -26,15 +26,31 @@ let passwordPolicy: string | null = null;
 let modePromise: Promise<AuthMode> | null = null;
 
 export function initAuth(): Promise<AuthMode> {
-  modePromise ??= fetch('/api/v1/auth/config')
-    .then((r) => (r.ok ? r.json() : { mode: 'firebase' }))
-    .catch(() => ({ mode: 'firebase' }))
+  modePromise ??= fetchAuthConfig()
     .then((c: { mode?: string; passwordPolicy?: string | null }) => {
       mode = c.mode === 'local' ? 'local' : 'firebase';
       passwordPolicy = c.passwordPolicy ?? null;
       return mode;
     });
   return modePromise;
+}
+
+/**
+ * Đọc chế độ đăng nhập từ API. Khi API chưa sẵn sàng (vd máy chủ vừa khởi động: lỗi mạng, 502/503/504)
+ * thì chờ và thử lại — không được đoán chế độ, vì đoán sai sẽ giữ trang ở chế độ đăng nhập sai cho tới khi tải lại.
+ * Chỉ coi là bản Online cũ (Firebase) khi API trả 404 (chưa có endpoint này).
+ */
+async function fetchAuthConfig(): Promise<{ mode?: string; passwordPolicy?: string | null }> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const r = await fetch('/api/v1/auth/config');
+      if (r.ok) return (await r.json()) as { mode?: string; passwordPolicy?: string | null };
+      if (r.status === 404) return { mode: 'firebase' };
+    } catch {
+      // lỗi mạng — thử lại
+    }
+    await new Promise((res) => setTimeout(res, Math.min(5000, 500 * 2 ** attempt)));
+  }
 }
 
 export const authMode = () => mode;

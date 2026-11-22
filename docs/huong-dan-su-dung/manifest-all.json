@@ -1,0 +1,663 @@
+[
+ {
+  "id": "01-01-dang-nhap",
+  "file": "01-01-dang-nhap.jpg",
+  "title": "Màn hình đăng nhập",
+  "notes": [
+   "Nhập email tài khoản do quản trị hệ thống cấp.",
+   "Nhập mật khẩu.",
+   "Bấm \"Đăng nhập\"."
+  ]
+ },
+ {
+  "id": "01-02-trang-lam-viec",
+  "file": "01-02-trang-lam-viec.jpg",
+  "title": "Trang làm việc",
+  "notes": [
+   "Menu chức năng — chỉ hiện các mục phù hợp vai trò đang chọn.",
+   "Chọn vai trò làm việc (khi tài khoản có nhiều vai trò).",
+   "Thông báo: hồ sơ cần xử lý, kết quả xét duyệt, nhắc hạn.",
+   "Đổi mật khẩu.",
+   "Đăng xuất khi dùng xong (nhất là máy dùng chung).",
+   "Danh sách việc đang chờ bạn — bấm mã hồ sơ để mở.",
+   "Các hạn sắp tới và hạn đã quá."
+  ]
+ },
+ {
+  "id": "01-03-thong-bao",
+  "file": "01-03-thong-bao.jpg",
+  "title": "Xem thông báo",
+  "notes": [
+   "Danh sách thông báo mới nhất; chấm xanh là thông báo chưa đọc."
+  ]
+ },
+ {
+  "id": "01-04-doi-mat-khau",
+  "file": "01-04-doi-mat-khau.jpg",
+  "title": "Đổi mật khẩu",
+  "notes": [
+   "Nhập mật khẩu hiện tại.",
+   "Nhập mật khẩu mới theo quy định độ mạnh hiển thị trên trang.",
+   "Nhập lại mật khẩu mới.",
+   "Bấm để lưu. Các phiên đăng nhập khác của bạn sẽ bị đăng xuất."
+  ]
+ },
+ {
+  "id": "01-05-hoi-dap-quy-che",
+  "file": "01-05-hoi-dap-quy-che.jpg",
+  "title": "Hỏi đáp quy chế",
+  "notes": [
+   "Bấm một câu gợi ý để hỏi nhanh.",
+   "Hoặc gõ câu hỏi bằng lời tự nhiên.",
+   "Bấm \"Hỏi\".",
+   "Các văn bản quy chế đang được dùng để tra cứu."
+  ]
+ },
+ {
+  "id": "01-06-cau-tra-loi",
+  "file": "01-06-cau-tra-loi.jpg",
+  "title": "Câu trả lời có dẫn căn cứ",
+  "notes": [
+   "Câu trả lời luôn ghi căn cứ (khoản, điều). Bấm vào căn cứ để xem nguyên văn điều khoản."
+  ]
+ },
+ {
+  "id": "01-07-van-ban-quy-che",
+  "file": "01-07-van-ban-quy-che.jpg",
+  "title": "Danh sách văn bản quy chế",
+  "notes": [
+   "Văn bản quy chế đang áp dụng; bấm tên văn bản để xem các điều, khoản."
+  ]
+ },
+ {
+  "id": "01-08-ho-so-khoa-hoc",
+  "file": "01-08-ho-so-khoa-hoc.jpg",
+  "title": "Lý lịch khoa học",
+  "notes": [
+   "Cập nhật học hàm, học vị, ORCID, chuyên môn, hướng nghiên cứu.",
+   "In hoặc lưu lý lịch khoa học ra PDF."
+  ]
+ },
+ {
+  "id": "01-09-cap-nhat-ho-so",
+  "file": "01-09-cap-nhat-ho-so.jpg",
+  "title": "Cập nhật lý lịch khoa học",
+  "notes": [
+   "Mã ORCID (nếu có) giúp đối chiếu công bố.",
+   "Chuyên môn — dùng để gợi ý mời phản biện đúng lĩnh vực.",
+   "Bấm \"Lưu\"."
+  ]
+ },
+ {
+  "id": "02-01-dot-dang-ky",
+  "file": "02-01-dot-dang-ky.jpg",
+  "title": "Danh sách đợt đăng ký",
+  "notes": [
+   "Đợt đang mở nhận hồ sơ: tên, cấp, thời hạn nộp.",
+   "Xem điều kiện tham gia, biểu mẫu và tài liệu yêu cầu.",
+   "Tạo hồ sơ đề xuất cho đợt này."
+  ]
+ },
+ {
+  "id": "02-02-chi-tiet-dot",
+  "file": "02-02-chi-tiet-dot.jpg",
+  "title": "Chi tiết đợt đăng ký",
+  "notes": [
+   "Thời gian nhận hồ sơ, mô tả, điều kiện tham gia.",
+   "Nội dung thuyết minh phải khai và tài liệu phải đính kèm."
+  ]
+ },
+ {
+  "id": "02-03-thuyet-minh",
+  "file": "02-03-thuyet-minh.jpg",
+  "title": "Khai thuyết minh đề tài",
+  "notes": [
+   "Khai các mục thuyết minh theo biểu mẫu của đợt (mục có dấu * là bắt buộc).",
+   "Tab \"Tài liệu\" để đính kèm tệp theo danh mục yêu cầu.",
+   "Bấm \"Lưu nháp\" thường xuyên; hồ sơ nháp chỉ bạn xem được."
+  ]
+ },
+ {
+  "id": "02-04-kiem-tra-truoc-khi-nop",
+  "file": "02-04-kiem-tra-truoc-khi-nop.jpg",
+  "title": "Kiểm tra trước khi nộp",
+  "notes": [
+   "Hệ thống liệt kê thông tin, tài liệu còn thiếu theo biểu mẫu.",
+   "Trợ lý AI: tóm tắt và góp ý thuyết minh (chỉ để tham khảo)."
+  ]
+ },
+ {
+  "id": "02-05-dinh-kem-tai-lieu",
+  "file": "02-05-dinh-kem-tai-lieu.jpg",
+  "title": "Đính kèm tài liệu",
+  "notes": [
+   "Mỗi dòng là một loại tài liệu yêu cầu; bấm nút tải lên để chọn tệp (PDF, Word…).",
+   "Khi đủ thông tin và tài liệu bắt buộc, khung kiểm tra chuyển sang màu xanh."
+  ]
+ },
+ {
+  "id": "02-06-ai-kiem-tra",
+  "file": "02-06-ai-kiem-tra.jpg",
+  "title": "AI góp ý thuyết minh",
+  "notes": [
+   "Bấm để AI rà soát thuyết minh theo biểu mẫu và quy chế.",
+   "Kết quả góp ý (Quy tắc / AI). AI chỉ gợi ý — người khai tự quyết định sửa."
+  ]
+ },
+ {
+  "id": "02-06b-ai-tom-tat",
+  "file": "02-06b-ai-tom-tat.jpg",
+  "title": "AI tóm tắt thuyết minh",
+  "notes": [
+   "Bấm để AI tóm tắt thuyết minh (dùng khi trình lãnh đạo, gửi hội đồng).",
+   "Bản tóm tắt kèm tên mô hình, thời điểm tạo; có cảnh báo khi hồ sơ đã thay đổi sau lần tạo."
+  ]
+ },
+ {
+  "id": "02-07-nop-ho-so",
+  "file": "02-07-nop-ho-so.jpg",
+  "title": "Nộp hồ sơ",
+  "notes": [
+   "Bấm \"Nộp hồ sơ\" rồi \"Xác nhận\". Sau khi nộp, hồ sơ được khóa và chuyển cho đơn vị xem xét."
+  ]
+ },
+ {
+  "id": "02-08-trang-thai",
+  "file": "02-08-trang-thai.jpg",
+  "title": "Theo dõi trạng thái hồ sơ",
+  "notes": [
+   "Trạng thái hiện tại của hồ sơ.",
+   "Lịch sử xử lý: ai làm gì, lúc nào, ý kiến kèm theo."
+  ]
+ },
+ {
+  "id": "02-09-danh-sach-de-xuat",
+  "file": "02-09-danh-sach-de-xuat.jpg",
+  "title": "Danh sách đề xuất của tôi",
+  "notes": [
+   "Các hồ sơ của bạn và trạng thái; bấm mã để mở.",
+   "Xuất danh sách ra Excel (CSV)."
+  ]
+ },
+ {
+  "id": "03-01-dot-sinh-vien",
+  "file": "03-01-dot-sinh-vien.jpg",
+  "title": "Đợt đăng ký NCKH sinh viên",
+  "notes": [
+   "Đợt dành cho sinh viên — khai thêm người hướng dẫn theo biểu mẫu của đợt.",
+   "Tạo hồ sơ; các bước khai, đính kèm, nộp giống Chương 2."
+  ]
+ },
+ {
+  "id": "03-02-de-tai-sinh-vien",
+  "file": "03-02-de-tai-sinh-vien.jpg",
+  "title": "Đề tài sinh viên đang thực hiện",
+  "notes": [
+   "Đề tài đã được phê duyệt của bạn; bấm mã để nộp sản phẩm theo mốc."
+  ]
+ },
+ {
+  "id": "04-01-viec-cho-xu-ly",
+  "file": "04-01-viec-cho-xu-ly.jpg",
+  "title": "Hồ sơ chờ đơn vị xem xét",
+  "notes": [
+   "Hồ sơ của đơn vị đang chờ bạn xác nhận; bấm mã hồ sơ để mở."
+  ]
+ },
+ {
+  "id": "04-02-xem-ho-so",
+  "file": "04-02-xem-ho-so.jpg",
+  "title": "Xem và xử lý hồ sơ",
+  "notes": [
+   "Đọc thuyết minh, tài liệu, lịch sử xử lý ở các tab.",
+   "\"Đơn vị xác nhận\": chuyển hồ sơ lên Phòng Quản lý khoa học.",
+   "\"Trả bổ sung\": trả lại chủ nhiệm kèm yêu cầu (bắt buộc ghi lý do)."
+  ]
+ },
+ {
+  "id": "04-03-xac-nhan",
+  "file": "04-03-xac-nhan.jpg",
+  "title": "Xác nhận cấp đơn vị",
+  "notes": [
+   "Bấm \"Xác nhận: Đơn vị xác nhận\"."
+  ]
+ },
+ {
+  "id": "04-04-bao-cao-don-vi",
+  "file": "04-04-bao-cao-don-vi.jpg",
+  "title": "Báo cáo của đơn vị",
+  "notes": [
+   "Số liệu đề xuất, đề tài, công bố trong phạm vi đơn vị.",
+   "Tải danh sách ra Excel."
+  ]
+ },
+ {
+  "id": "05-01-trang-lam-viec-qlkh",
+  "file": "05-01-trang-lam-viec-qlkh.jpg",
+  "title": "Trang làm việc của chuyên viên",
+  "notes": [
+   "Hồ sơ đến bước Phòng QLKH xử lý, công bố chờ xác minh, mốc chờ duyệt."
+  ]
+ },
+ {
+  "id": "05-02-thanh-lap-hoi-dong",
+  "file": "05-02-thanh-lap-hoi-dong.jpg",
+  "title": "Thành lập hội đồng",
+  "notes": [
+   "Tên hội đồng.",
+   "Loại: xét duyệt thuyết minh, nghiệm thu, đánh giá NCKH sinh viên.",
+   "Mẫu phiếu chấm (tiêu chí, thang điểm, ngưỡng đề nghị).",
+   "Chọn các hồ sơ đưa ra hội đồng.",
+   "Bấm để tạo hội đồng."
+  ]
+ },
+ {
+  "id": "05-03-moi-thanh-vien",
+  "file": "05-03-moi-thanh-vien.jpg",
+  "title": "Mời thành viên hội đồng",
+  "notes": [
+   "Chọn vai trò khi mời: Chủ tịch, Thư ký, Phản biện, Ủy viên.",
+   "Hệ thống gợi ý người phù hợp chuyên môn và cảnh báo xung đột lợi ích (⛔ không được mời).",
+   "Hoặc tìm theo tên rồi bấm \"Mời\"."
+  ]
+ },
+ {
+  "id": "06-01-danh-sach-hoi-dong",
+  "file": "06-01-danh-sach-hoi-dong.jpg",
+  "title": "Hội đồng tôi được mời",
+  "notes": [
+   "Các hội đồng bạn được mời, vai trò của bạn và hạn chấm. Bấm tên hội đồng để mở."
+  ]
+ },
+ {
+  "id": "06-02-nhan-loi",
+  "file": "06-02-nhan-loi.jpg",
+  "title": "Nhận lời mời",
+  "notes": [
+   "Bấm \"Nhận lời\" (hoặc \"Từ chối\") lời mời tham gia hội đồng."
+  ]
+ },
+ {
+  "id": "05-04-mo-cham",
+  "file": "05-04-mo-cham.jpg",
+  "title": "Mở chấm",
+  "notes": [
+   "Danh sách thành viên, trạng thái nhận lời và khai báo xung đột lợi ích.",
+   "Khi chủ tịch và thư ký đã nhận lời, bấm \"Mở chấm\" để thành viên bắt đầu chấm phiếu."
+  ]
+ },
+ {
+  "id": "06-03-xung-dot-loi-ich",
+  "file": "06-03-xung-dot-loi-ich.jpg",
+  "title": "Khai báo xung đột lợi ích",
+  "notes": [
+   "Bắt buộc khai báo trước khi xem hồ sơ. Không có xung đột: bấm nút này.",
+   "Có xung đột: mô tả rồi bấm \"Có xung đột — không chấm\"; bạn sẽ không xem, không chấm hồ sơ này."
+  ]
+ },
+ {
+  "id": "06-04-cham-diem",
+  "file": "06-04-cham-diem.jpg",
+  "title": "Chấm phiếu",
+  "notes": [
+   "Chấm từng tiêu chí (không vượt điểm tối đa ghi bên phải).",
+   "Ghi nhận xét, yêu cầu chỉnh sửa.",
+   "\"Lưu nháp\" để chấm tiếp sau.",
+   "\"Nộp phiếu\": phiếu đã nộp không sửa được."
+  ]
+ },
+ {
+  "id": "06-05-da-nop-phieu",
+  "file": "06-05-da-nop-phieu.jpg",
+  "title": "Phiếu đã nộp",
+  "notes": [
+   "Phiếu đã nộp được khóa; điểm của bạn hiển thị để đối chiếu."
+  ]
+ },
+ {
+  "id": "06-06-khoa-phieu",
+  "file": "06-06-khoa-phieu.jpg",
+  "title": "Khóa phiếu và tổng hợp (chủ tịch)",
+  "notes": [
+   "Khi các thành viên đã nộp phiếu, chủ tịch (hoặc Phòng QLKH) bấm để khóa phiếu và tổng hợp điểm."
+  ]
+ },
+ {
+  "id": "06-07-ket-qua-bien-ban",
+  "file": "06-07-ket-qua-bien-ban.jpg",
+  "title": "Kết quả và biên bản hội đồng",
+  "notes": [
+   "Điểm trung bình các phiếu, so với ngưỡng đề nghị của phiếu chấm.",
+   "Chọn kết luận của hội đồng cho từng hồ sơ.",
+   "AI dự thảo biên bản từ điểm và nhận xét; thư ký / chủ tịch sửa lại.",
+   "Nội dung biên bản (sửa trực tiếp).",
+   "Lưu; sau đó chủ tịch bấm \"Chủ tịch xác nhận biên bản\"."
+  ]
+ },
+ {
+  "id": "05-05-xu-ly-ho-so",
+  "file": "05-05-xu-ly-ho-so.jpg",
+  "title": "Xử lý hồ sơ ở Phòng QLKH",
+  "notes": [
+   "\"Trình phê duyệt\": chuyển lãnh đạo trường phê duyệt.",
+   "\"Trả bổ sung\": trả chủ nhiệm sửa; nộp lại sẽ quay về đúng bước này.",
+   "\"Không phê duyệt\": kết thúc hồ sơ (bắt buộc ghi lý do)."
+  ]
+ },
+ {
+  "id": "05-06-trinh-phe-duyet",
+  "file": "05-06-trinh-phe-duyet.jpg",
+  "title": "Trình phê duyệt",
+  "notes": [
+   "Ghi ý kiến trình (không bắt buộc).",
+   "Bấm \"Xác nhận: Trình phê duyệt\"."
+  ]
+ },
+ {
+  "id": "07-01-viec-cho-phe-duyet",
+  "file": "07-01-viec-cho-phe-duyet.jpg",
+  "title": "Hồ sơ chờ phê duyệt",
+  "notes": [
+   "Hồ sơ Phòng QLKH đã trình; bấm mã để mở."
+  ]
+ },
+ {
+  "id": "07-02-phe-duyet",
+  "file": "07-02-phe-duyet.jpg",
+  "title": "Phê duyệt đề xuất",
+  "notes": [
+   "Ghi ý kiến chỉ đạo.",
+   "Bấm \"Xác nhận: Phê duyệt\" — hệ thống tự lập đề tài."
+  ]
+ },
+ {
+  "id": "07-03-da-lap-de-tai",
+  "file": "07-03-da-lap-de-tai.jpg",
+  "title": "Đề tài được lập",
+  "notes": [
+   "Sau phê duyệt, đề tài được lập tự động; bấm \"Mở đề tài →\"."
+  ]
+ },
+ {
+  "id": "07-04-dieu-hanh",
+  "file": "07-04-dieu-hanh.jpg",
+  "title": "Điều hành & báo cáo toàn trường",
+  "notes": [
+   "Số liệu theo trạng thái: đề xuất, đề tài, công bố.",
+   "So sánh giữa các đơn vị.",
+   "Đề tài có mốc quá hạn cần đôn đốc."
+  ]
+ },
+ {
+  "id": "07-05-du-thao-bao-cao",
+  "file": "07-05-du-thao-bao-cao.jpg",
+  "title": "AI dự thảo báo cáo hoạt động khoa học",
+  "notes": [
+   "AI dự thảo báo cáo từ số liệu hiện có.",
+   "Bản dự thảo để biên tập — kiểm tra số liệu trước khi dùng."
+  ]
+ },
+ {
+  "id": "05-07-de-tai-moi",
+  "file": "05-07-de-tai-moi.jpg",
+  "title": "Đề tài mới lập — chờ giao nhiệm vụ",
+  "notes": [
+   "Nhập ngày bắt đầu, kết thúc theo hợp đồng / quyết định giao nhiệm vụ.",
+   "Bấm \"Cập nhật thời gian\".",
+   "Đề tài cần ít nhất một mốc tiến độ trước khi giao nhiệm vụ.",
+   "Bấm \"+ Thêm mốc\"."
+  ]
+ },
+ {
+  "id": "05-08-them-moc",
+  "file": "05-08-them-moc.jpg",
+  "title": "Thêm mốc tiến độ",
+  "notes": [
+   "Tên mốc (ví dụ: báo cáo giữa kỳ).",
+   "Hạn hoàn thành — hệ thống tự nhắc trước 7 ngày, 1 ngày và khi quá hạn.",
+   "Sản phẩm chủ nhiệm phải nộp ở mốc này.",
+   "Bấm \"Thêm\"."
+  ]
+ },
+ {
+  "id": "05-09-giao-nhiem-vu",
+  "file": "05-09-giao-nhiem-vu.jpg",
+  "title": "Giao nhiệm vụ",
+  "notes": [
+   "Sau khi ký hợp đồng / có quyết định giao nhiệm vụ, bấm \"Giao nhiệm vụ / bắt đầu\" rồi xác nhận."
+  ]
+ },
+ {
+  "id": "02-10-danh-sach-de-tai",
+  "file": "02-10-danh-sach-de-tai.jpg",
+  "title": "Đề tài của tôi",
+  "notes": [
+   "Đề tài bạn chủ nhiệm hoặc tham gia: tiến độ mốc, trạng thái; dấu đỏ là có mốc quá hạn."
+  ]
+ },
+ {
+  "id": "02-11-chi-tiet-de-tai",
+  "file": "02-11-chi-tiet-de-tai.jpg",
+  "title": "Chi tiết đề tài",
+  "notes": [
+   "Thông tin đề tài, thời gian thực hiện, thành viên.",
+   "Mốc tiến độ: hạn, sản phẩm cần nộp, trạng thái.",
+   "Tải tệp sản phẩm của mốc.",
+   "Bấm \"Nộp sản phẩm\", ghi chú khi nộp; Phòng QLKH sẽ xem và chấp nhận hoặc trả lại."
+  ]
+ },
+ {
+  "id": "02-12-yeu-cau-gia-han",
+  "file": "02-12-yeu-cau-gia-han.jpg",
+  "title": "Gửi yêu cầu thay đổi / gia hạn",
+  "notes": [
+   "Loại yêu cầu: gia hạn, thay đổi thành viên, điều chỉnh dự toán, khác.",
+   "Với gia hạn: ngày kết thúc mới đề nghị.",
+   "Lý do (bắt buộc).",
+   "Bấm \"Gửi\" — Phòng QLKH xem xét, chấp thuận."
+  ]
+ },
+ {
+  "id": "02-13-khai-bao-cong-bo",
+  "file": "02-13-khai-bao-cong-bo.jpg",
+  "title": "Khai báo công bố",
+  "notes": [
+   "Tiêu đề, loại, năm, chỉ mục (Scopus, WoS, HĐGSNN…).",
+   "DOI (nếu có) — hệ thống đối chiếu với Crossref (cần Internet).",
+   "Danh sách tác giả theo thứ tự; thêm tác giả trong trường hoặc ngoài trường.",
+   "Bấm \"Lưu nháp\"."
+  ]
+ },
+ {
+  "id": "02-14-minh-chung",
+  "file": "02-14-minh-chung.jpg",
+  "title": "Đính kèm minh chứng và nộp xác nhận",
+  "notes": [
+   "Tải minh chứng (bản in, trang bìa, thư chấp nhận…) — bắt buộc khi không có DOI.",
+   "Bấm \"Nộp xác nhận\" để Phòng QLKH xác minh."
+  ]
+ },
+ {
+  "id": "02-15-kiem-chung-doi",
+  "file": "02-15-kiem-chung-doi.jpg",
+  "title": "Kiểm chứng DOI với Crossref",
+  "notes": [
+   "Bấm \"Kiểm chứng DOI\": hệ thống tra Crossref theo DOI đã khai.",
+   "Đối chiếu từng trường (tiêu đề, tạp chí, năm, tác giả): khớp / lệch. Ví dụ này lệch tác giả vì người khai không có trong danh sách tác giả của bài."
+  ]
+ },
+ {
+  "id": "05-10-duyet-san-pham",
+  "file": "05-10-duyet-san-pham.jpg",
+  "title": "Duyệt sản phẩm mốc và yêu cầu gia hạn",
+  "notes": [
+   "Sản phẩm mốc đã nộp: \"Chấp nhận\" hoặc \"Trả lại\" (ghi lý do).",
+   "Yêu cầu thay đổi / gia hạn của chủ nhiệm.",
+   "\"Chấp thuận\" (hoặc từ chối) yêu cầu."
+  ]
+ },
+ {
+  "id": "05-11-danh-sach-cong-bo",
+  "file": "05-11-danh-sach-cong-bo.jpg",
+  "title": "Danh sách công bố",
+  "notes": [
+   "Công bố của toàn trường; lọc theo trạng thái; ⚠ cảnh báo bản ghi nghi trùng.",
+   "Xuất công bố đã xác nhận (phục vụ báo cáo, HEMIS)."
+  ]
+ },
+ {
+  "id": "05-12-xac-minh-cong-bo",
+  "file": "05-12-xac-minh-cong-bo.jpg",
+  "title": "Xác minh công bố",
+  "notes": [
+   "Kiểm tra minh chứng, kết quả đối chiếu DOI.",
+   "\"Xác minh minh chứng\" khi hợp lệ; \"Trả bổ sung\" / \"Không xác nhận\" kèm lý do."
+  ]
+ },
+ {
+  "id": "05-13-xac-nhan-cong-bo",
+  "file": "05-13-xac-nhan-cong-bo.jpg",
+  "title": "Trưởng phòng xác nhận công bố",
+  "notes": [
+   "Trưởng phòng QLKH bấm \"Xác nhận công bố\" (người xác minh và người xác nhận phải khác nhau)."
+  ]
+ },
+ {
+  "id": "05-14-mo-dot-moi",
+  "file": "05-14-mo-dot-moi.jpg",
+  "title": "Mở đợt đăng ký mới",
+  "notes": [
+   "Tên đợt, năm kế hoạch, cấp đề tài.",
+   "Thời gian nhận hồ sơ (ngày mở, hạn nộp).",
+   "Biểu mẫu thuyết minh (mặc định theo mẫu chuẩn; sửa khi cần — do quản trị / Phòng QLKH).",
+   "Danh mục tài liệu đính kèm, đánh dấu bắt buộc.",
+   "Bấm \"Tạo đợt\"; sau đó bấm \"Mở nhận hồ sơ\" để công bố đợt."
+  ]
+ },
+ {
+  "id": "05-15-mo-nhan-ho-so",
+  "file": "05-15-mo-nhan-ho-so.jpg",
+  "title": "Mở nhận hồ sơ",
+  "notes": [
+   "Bấm \"Mở nhận hồ sơ\" để đợt hiển thị cho giảng viên, sinh viên; \"Đóng đợt\" khi kết thúc."
+  ]
+ },
+ {
+  "id": "05-16-nap-quy-che",
+  "file": "05-16-nap-quy-che.jpg",
+  "title": "Nạp văn bản quy chế",
+  "notes": [
+   "Mã, tên, ngày hiệu lực của văn bản.",
+   "Chọn tệp văn bản (Word/PDF/TXT) — hệ thống tự tách Điều, khoản.",
+   "Bấm \"Xem trước\" để kiểm tra kết quả tách, rồi \"Xác nhận nạp\"."
+  ]
+ },
+ {
+  "id": "08-01-don-vi",
+  "file": "08-01-don-vi.jpg",
+  "title": "Cơ cấu tổ chức",
+  "notes": [
+   "Các tab quản trị: Đơn vị, Tài khoản, Phân quyền, Tác vụ nền, Nhật ký.",
+   "Cây đơn vị (khoa, viện, cơ sở, phòng) — dùng cho phạm vi quyền."
+  ]
+ },
+ {
+  "id": "08-02-nhap-tai-khoan",
+  "file": "08-02-nhap-tai-khoan.jpg",
+  "title": "Nhập tài khoản từ CSV",
+  "notes": [
+   "Tải tệp mẫu CSV, điền danh sách cán bộ.",
+   "Chọn tệp hoặc dán nội dung CSV. Vai trò cách nhau bằng dấu ;, phạm vi đơn vị viết VAI_TRO@maDonVi.",
+   "Bấm \"Kiểm tra\" để xem trước từng dòng (thêm mới / cập nhật / lỗi).",
+   "Bấm \"Nhập…\" — hệ thống tạo tài khoản và hiển thị mật khẩu tạm một lần để gửi người dùng."
+  ]
+ },
+ {
+  "id": "08-03-danh-sach-tai-khoan",
+  "file": "08-03-danh-sach-tai-khoan.jpg",
+  "title": "Danh sách tài khoản",
+  "notes": [
+   "Tài khoản, đơn vị, lần đăng nhập gần nhất, trạng thái.",
+   "\"Đặt lại mật khẩu\": cấp mật khẩu tạm (hiện một lần); người dùng phải đổi khi đăng nhập."
+  ]
+ },
+ {
+  "id": "08-04-phan-quyen",
+  "file": "08-04-phan-quyen.jpg",
+  "title": "Phân quyền",
+  "notes": [
+   "Vai trò của từng người, phạm vi (toàn trường hoặc một đơn vị), thời hạn hiệu lực."
+  ]
+ },
+ {
+  "id": "08-05-tac-vu-nen",
+  "file": "08-05-tac-vu-nen.jpg",
+  "title": "Tác vụ nền",
+  "notes": [
+   "Tác vụ tự động (nhắc hạn 7:00 hằng ngày…): lần chạy gần nhất, kết quả, lần chạy kế tiếp.",
+   "\"Chạy ngay\" khi cần chạy thủ công."
+  ]
+ },
+ {
+  "id": "08-06-nhat-ky",
+  "file": "08-06-nhat-ky.jpg",
+  "title": "Nhật ký kiểm toán",
+  "notes": [
+   "Mọi thao tác quan trọng: ai, lúc nào, làm gì, trên hồ sơ nào, kết quả."
+  ]
+ },
+ {
+  "id": "08-07-ai-nha-cung-cap",
+  "file": "08-07-ai-nha-cung-cap.jpg",
+  "title": "AI Center — nhà cung cấp",
+  "notes": [
+   "Máy chủ AI nội bộ (chạy trong trường, không gửi dữ liệu ra ngoài): trạng thái kết nối, hàng đợi GPU.",
+   "\"Kiểm tra kết nối\" tới máy chủ AI nội bộ.",
+   "\"Làm nóng\": nạp sẵn mô hình vào GPU sau khi khởi động máy (lần đầu mất 1–2 phút).",
+   "Nhà cung cấp thương mại (Claude, ChatGPT, Gemini): nhập khóa API — khóa được mã hóa, không hiển thị lại."
+  ]
+ },
+ {
+  "id": "08-08-ai-model",
+  "file": "08-08-ai-model.jpg",
+  "title": "AI Center — model và bảng giá",
+  "notes": [
+   "Danh sách model, đơn giá; bật / tắt từng model. Model nội bộ có chi phí 0 đ."
+  ]
+ },
+ {
+  "id": "08-09-ai-cau-hinh",
+  "file": "08-09-ai-cau-hinh.jpg",
+  "title": "AI Center — cấu hình và hạn mức",
+  "notes": [
+   "Bật / tắt AI cho toàn trường; chọn model mặc định.",
+   "Chọn model riêng cho từng chức năng (ví dụ: hỏi đáp quy chế dùng AI nội bộ).",
+   "Hạn mức chi phí tháng, giới hạn độ dài; bấm \"Lưu cấu hình\"."
+  ]
+ },
+ {
+  "id": "08-10-ai-su-dung",
+  "file": "08-10-ai-su-dung.jpg",
+  "title": "AI Center — sử dụng và chi phí",
+  "notes": [
+   "Lượt dùng theo chức năng, người dùng, model; token và chi phí."
+  ]
+ },
+ {
+  "id": "08-11-tich-hop",
+  "file": "08-11-tich-hop.jpg",
+  "title": "Integration Center",
+  "notes": [
+   "Đồng bộ với UNI-DATA360: gửi dữ liệu, đồng bộ ban đầu, nhận danh mục đơn vị / cán bộ, đối soát.",
+   "Xem trước dữ liệu theo chuẩn HEMIS (đề tài, công bố đã xác nhận)."
+  ]
+ },
+ {
+  "id": "08-12-hemis",
+  "file": "08-12-hemis.jpg",
+  "title": "Xem trước chuẩn HEMIS",
+  "notes": [
+   "Chọn nhóm dữ liệu để xem bản ghi theo chuẩn HEMIS trước khi gửi."
+  ]
+ }
+]

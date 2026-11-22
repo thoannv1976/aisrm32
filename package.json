@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.65.1",
+    "docx": "9.5.1",
     "typescript": "5.9.3"
   }
 }

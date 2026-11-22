@@ -14,6 +14,7 @@ import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createLocalProvider, resetLocalAiQueueForTest, stripReasoning, type LocalAiConfig } from '../src/ai/local-provider';
+import { toPlainText } from '../src/ai/features';
 import { DEMO_PASSWORD } from '../scripts/seed-data';
 import { seed } from '../scripts/seed';
 import { createApp } from '../src/main';
@@ -81,6 +82,13 @@ describe('nhà cung cấp AI nội bộ', () => {
     expect(last.body).toMatchObject({ model: 'granite-4.2-8b-q4', max_tokens: 300, think: false, chat_template_kwargs: { enable_thinking: false } });
     expect(last.auth).toBe('Bearer local-key-12345');
     expect(await p.listModels('')).toEqual(['granite-4.2-8b-q4', 'ornith-1.5-9b-q4']);
+  });
+
+  it('dự thảo AI (biên bản, báo cáo) bỏ ký hiệu Markdown để hiển thị trong ô văn bản thuần', () => {
+    const md = '# BIÊN BẢN\n\n**Số:** 01\n\n---\n\n| STT | Họ tên |\n|-----|--------|\n| 1 | TS. A |\n\n* ý *chính* a';
+    expect(toPlainText(md)).toBe('BIÊN BẢN\n\nSố: 01\n\nSTT — Họ tên\n1 — TS. A\n\n- ý chính a');
+    expect(toPlainText('Điểm 8,5 * 2 = 17; mục a_b_c')).toBe('Điểm 8,5 * 2 = 17; mục a_b_c');
+    expect(toPlainText('<biên_bản>\nBIÊN BẢN HỌP\n</biên_bản>')).toBe('BIÊN BẢN HỌP');
   });
 
   it('mô hình chỉ trả phần suy luận → báo lỗi rõ, không trả câu rỗng', async () => {

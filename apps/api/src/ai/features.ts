@@ -70,7 +70,7 @@ export async function summarizeProposal(principal: Principal, p: Proposal, form:
       `<ho_so>\n${proposalText(p, form)}\n</ho_so>`,
     maxOutputTokens: 1200,
   });
-  if (!r.usage.mock) return draftFrom('summary', r, r.text);
+  if (!r.usage.mock) return draftFrom('summary', r, toPlainText(r.text));
   const f = p.fields;
   const text = [
     '[GIẢ LẬP — trích từ hồ sơ, chưa dùng mô hình AI thật]',
@@ -123,6 +123,32 @@ export async function checkProposal(principal: Principal, p: Proposal, form: Cal
   return draftFrom('check', r, text, [...ruleFindings, ...aiFindings]);
 }
 
+/**
+ * Dự thảo hiển thị trong ô soạn thảo văn bản thuần: bỏ ký hiệu Markdown mà mô hình hay dùng
+ * (tiêu đề #, **đậm**, bảng |…|, đường kẻ ---) để người dùng không phải tự xóa.
+ */
+export function toPlainText(md: string): string {
+  return md
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .filter((l) => !/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/.test(l)) // dòng kẻ bảng
+    .filter((l) => !/^\s*([-*_])\1{2,}\s*$/.test(l)) // đường kẻ ngang
+    .filter((l) => !/^\s*<\/?[\p{L}_][\p{L}\p{N}_-]*>\s*$/u.test(l)) // thẻ bao do mô hình chép lại (vd <biên_bản>)
+    .map((l) => {
+      let x = l.replace(/^\s{0,3}#{1,6}\s+/, '');
+      if (/^\s*\|.*\|\s*$/.test(x)) x = x.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim()).join(' — ');
+      return x
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/__([^_]+)__/g, '$1')
+        .replace(/(^|[\s(])\*([^*\s][^*]*)\*(?=[\s).,;:]|$)/g, '$1$2')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/^(\s*)[*+]\s+/, '$1- ');
+    })
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 export interface ReportMetrics {
   metricsVersion: string;
   generatedAt: string;
@@ -146,7 +172,7 @@ export async function draftReport(principal: Principal, m: ReportMetrics, tenant
   const r = await runAi(principal, {
     feature: 'report_draft',
     system:
-      'Bạn là chuyên viên tổng hợp báo cáo của Phòng Quản lý khoa học. Viết dự thảo báo cáo hành chính bằng tiếng Việt. ' +
+      'Bạn là chuyên viên tổng hợp báo cáo của Phòng Quản lý khoa học. Viết dự thảo báo cáo hành chính bằng tiếng Việt, dạng văn bản thuần (không dùng Markdown: không #, **, bảng |). ' +
       'CHỈ dùng số liệu trong <so_lieu>; mỗi con số phải kèm mã chỉ số trong ngoặc vuông, ví dụ [projects_active]. Không suy diễn nguyên nhân khi không có dữ liệu; ghi rõ giới hạn. ' +
       GUARD,
     prompt:
@@ -154,7 +180,7 @@ export async function draftReport(principal: Principal, m: ReportMetrics, tenant
       `<so_lieu>\n${JSON.stringify(data, null, 1)}\n</so_lieu>`,
     maxOutputTokens: 2000,
   });
-  if (!r.usage.mock) return draftFrom('report', r, r.text);
+  if (!r.usage.mock) return draftFrom('report', r, toPlainText(r.text));
   const v = (k: string) => m.tiles.find((t) => t.key === k)?.value ?? 0;
   const at = new Date(m.generatedAt).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
   const units = m.byUnit
@@ -205,7 +231,7 @@ export async function draftMinutes(principal: Principal, m: MinutesInput): Promi
   const r = await runAi(principal, {
     feature: 'meeting_minutes',
     system:
-      'Bạn là thư ký hội đồng khoa học. Soạn dự thảo biên bản họp bằng tiếng Việt, văn phong hành chính. ' +
+      'Bạn là thư ký hội đồng khoa học. Soạn dự thảo biên bản họp bằng tiếng Việt, văn phong hành chính, dạng văn bản thuần (không dùng Markdown: không #, **, bảng |). ' +
       'Chỉ dùng điểm và nhận xét trong <so_lieu>. Không tự đưa ra kết luận thông qua/không thông qua — để trống mục "Kết luận của hội đồng" cho chủ tịch điền. ' +
       GUARD,
     prompt:
@@ -213,7 +239,7 @@ export async function draftMinutes(principal: Principal, m: MinutesInput): Promi
       `<so_lieu>\n${JSON.stringify(m, null, 1)}\n</so_lieu>`,
     maxOutputTokens: 2500,
   });
-  if (!r.usage.mock) return draftFrom('minutes', r, r.text);
+  if (!r.usage.mock) return draftFrom('minutes', r, toPlainText(r.text));
   const fmt = (n: number | null) => (n === null ? '—' : n.toLocaleString('vi-VN'));
   const sugg = (s: string) => (s === 'PASS' ? 'đạt ngưỡng đề nghị' : s === 'FAIL' ? 'dưới ngưỡng đề nghị' : 'chưa đủ phiếu để tổng hợp');
   const text = `[GIẢ LẬP — dựng theo mẫu từ kết quả chấm, chưa dùng mô hình AI thật]

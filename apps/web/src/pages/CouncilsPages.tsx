@@ -559,8 +559,8 @@ function ResultsTab({ d }: { d: Detail }) {
                 <th className="text-right">Trung bình</th>
                 <th className="text-right">Thấp – cao</th>
                 {d.item.rubric.criteria.map((c) => (
-                  <th key={c.key} className="text-right" title={c.label}>
-                    {c.key}
+                  <th key={c.key} className="max-w-28 text-right normal-case" title={`${c.label} (tối đa ${c.maxScore})`}>
+                    {c.label.split(/[,(]/)[0].trim()}
                   </th>
                 ))}
                 <th>Đề nghị theo ngưỡng</th>
