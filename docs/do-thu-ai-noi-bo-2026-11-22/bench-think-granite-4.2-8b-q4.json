@@ -1,0 +1,47 @@
+[
+ {
+  "model": "granite-4.2-8b-q4",
+  "nothink": false,
+  "q": 1,
+  "ms": 64125,
+  "inTok": 1094,
+  "outTok": 2037,
+  "tps": 31.8,
+  "cites": [
+   "15.1",
+   "15.2"
+  ],
+  "unknownCites": [],
+  "thinkChars": 4721,
+  "err": null,
+  "text": "(khoản 1 Điều 15): Đề tài được gia hạn tối đa 01 lần, thời gian gia hạn không quá 06 tháng.  \n(khoản 2 Điều 15): Đề nghị gia hạn phải nộp chậm nhất 30 ngày trước ngày kết thúc hợp đồng."
+ },
+ {
+  "model": "granite-4.2-8b-q4",
+  "nothink": false,
+  "q": 2,
+  "ms": 89033,
+  "inTok": 821,
+  "outTok": 3000,
+  "tps": 33.7,
+  "cites": [],
+  "unknownCites": [],
+  "thinkChars": 7990,
+  "err": null,
+  "text": ""
+ },
+ {
+  "model": "granite-4.2-8b-q4",
+  "nothink": false,
+  "q": 3,
+  "ms": 19264,
+  "inTok": 1035,
+  "outTok": 640,
+  "tps": 33.2,
+  "cites": [],
+  "unknownCites": [],
+  "thinkChars": 1835,
+  "err": null,
+  "text": "Quy chế đã nạp không quy định cụ thể nội dung này. Gợi ý liên hệ Phòng Quản lý khoa học."
+ }
+]

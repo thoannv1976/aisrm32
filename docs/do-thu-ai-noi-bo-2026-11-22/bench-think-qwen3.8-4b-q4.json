@@ -1,0 +1,38 @@
+[
+ {
+  "model": "qwen3.8-4b-q4",
+  "nothink": false,
+  "q": 1,
+  "ms": 299,
+  "tps": null,
+  "cites": [],
+  "unknownCites": [],
+  "thinkChars": 0,
+  "err": "{\"error\":{\"code\":503,\"message\":\"model \\\"qwen3.8-4b-q4\\\" load is in cooldown after a recent failure; retry after 9s\",\"type\":\"\"}}",
+  "text": ""
+ },
+ {
+  "model": "qwen3.8-4b-q4",
+  "nothink": false,
+  "q": 2,
+  "ms": 493,
+  "tps": null,
+  "cites": [],
+  "unknownCites": [],
+  "thinkChars": 0,
+  "err": "{\"error\":{\"code\":503,\"message\":\"model \\\"qwen3.8-4b-q4\\\" load is in cooldown after a recent failure; retry after 9s\",\"type\":\"\"}}",
+  "text": ""
+ },
+ {
+  "model": "qwen3.8-4b-q4",
+  "nothink": false,
+  "q": 3,
+  "ms": 266,
+  "tps": null,
+  "cites": [],
+  "unknownCites": [],
+  "thinkChars": 0,
+  "err": "{\"error\":{\"code\":503,\"message\":\"model \\\"qwen3.8-4b-q4\\\" load is in cooldown after a recent failure; retry after 8s\",\"type\":\"\"}}",
+  "text": ""
+ }
+]

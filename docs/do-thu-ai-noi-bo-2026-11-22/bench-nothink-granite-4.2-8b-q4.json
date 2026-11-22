@@ -1,0 +1,50 @@
+[
+ {
+  "model": "granite-4.2-8b-q4",
+  "nothink": true,
+  "q": 1,
+  "ms": 5188,
+  "inTok": 1094,
+  "outTok": 146,
+  "tps": 28.1,
+  "cites": [
+   "15.1",
+   "15.2"
+  ],
+  "unknownCites": [],
+  "thinkChars": 0,
+  "err": null,
+  "text": "(khoản 1 Điều 15 (Gia hạn)) Đề tài được gia hạn tối đa 01 lần, thời gian gia hạn không quá 06 tháng.  \n(khoản 2 Điều 15 (Gia hạn)) Đề nghị gia hạn phải nộp trên hệ thống AI-SRM chậm nhất 30 ngày trước ngày kết thúc hợp đồng, kèm báo cáo tiến độ và minh chứng lý do gia hạn."
+ },
+ {
+  "model": "granite-4.2-8b-q4",
+  "nothink": true,
+  "q": 2,
+  "ms": 6877,
+  "inTok": 821,
+  "outTok": 217,
+  "tps": 31.6,
+  "cites": [
+   "27.1",
+   "21.3"
+  ],
+  "unknownCites": [],
+  "thinkChars": 0,
+  "err": null,
+  "text": "(khoản 1 Điều 27) bài báo thuộc nhóm Q1 được thưởng 30.000.000 đồng.\n\n(khoản 3 Điều 21) số giờ được chia như sau: tác giả chính hưởng 1/3 số giờ; phần còn lại chia đều cho tất cả tác giả, kể cả tác giả chính.\n\nTức là bài báo Q1 được thưởng 30.000.000 đồng, và mức khen thưởng được chia theo tỷ lệ quy định tại khoản 3 Điều 21 (chia số giờ: tác giả chính 1/3, phần còn lại chia đều cho tất cả tác giả)."
+ },
+ {
+  "model": "granite-4.2-8b-q4",
+  "nothink": true,
+  "q": 3,
+  "ms": 1061,
+  "inTok": 1035,
+  "outTok": 24,
+  "tps": 22.6,
+  "cites": [],
+  "unknownCites": [],
+  "thinkChars": 0,
+  "err": null,
+  "text": "Quy chế đã nạp không quy định cụ thể nội dung này"
+ }
+]

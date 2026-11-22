@@ -1,0 +1,52 @@
+[
+ {
+  "model": "ornith-1.5-9b-q4",
+  "nothink": true,
+  "q": 1,
+  "ms": 119886,
+  "inTok": 692,
+  "outTok": 94,
+  "tps": 0.8,
+  "cites": [
+   "15.1",
+   "15.2"
+  ],
+  "unknownCites": [],
+  "thinkChars": 0,
+  "err": null,
+  "text": "Theo quy chế:\n\n- Đề tài được gia hạn **tối đa 01 lần**, thời gian gia hạn **không quá 06 tháng** (khoản 1 Điều 15).\n- Đề nghị gia hạn phải nộp trên hệ thống AI-SRM **chậm nhất 30 ngày trước ngày kết thúc hợp đồng**, kèm báo cáo tiến độ và minh chứng lý do gia hạn (khoản 2 Điều 15)."
+ },
+ {
+  "model": "ornith-1.5-9b-q4",
+  "nothink": true,
+  "q": 2,
+  "ms": 3210,
+  "inTok": 530,
+  "outTok": 104,
+  "tps": 32.4,
+  "cites": [
+   "27.1",
+   "21.3"
+  ],
+  "unknownCites": [],
+  "thinkChars": 0,
+  "err": null,
+  "text": "Bài báo Q1 được khen thưởng **30.000.000 đồng**.\n\nCách chia cho các tác giả:\n- **Tác giả chính** (đứng đầu hoặc liên hệ) hưởng **1/3** số giờ.\n- Phần còn lại **chia đều** cho tất cả tác giả, kể cả tác giả chính.\n\n*(Khoản 1 Điều 27 quy định mức thưởng; khoản 3 Điều 21 quy định cách chia số giờ.)*"
+ },
+ {
+  "model": "ornith-1.5-9b-q4",
+  "nothink": true,
+  "q": 3,
+  "ms": 3614,
+  "inTok": 639,
+  "outTok": 139,
+  "tps": 38.5,
+  "cites": [
+   "21.1"
+  ],
+  "unknownCites": [],
+  "thinkChars": 0,
+  "err": null,
+  "text": "Theo quy chế, giảng viên **không được miễn hoàn toàn** định mức nghiên cứu khoa học.\n\nCăn cứ:\n- \"(khoản 1 Điều 21)\": Giảng viên có nghĩa vụ hoàn thành tối thiểu 600 giờ nghiên cứu khoa học quy chuẩn mỗi năm học, **trừ trường hợp được giảm định mức theo quy định của Trường**.\n\nNhư vậy, định mức vẫn tồn tại và chỉ có thể được **giảm** trong một số trường hợp cụ thể, không phải miễn hoàn toàn.\n\nGợi ý liên hệ Phòng Quản lý khoa học để được tư vấn thêm về các trường hợp giảm định mức theo quy định của Trường."
+ }
+]
