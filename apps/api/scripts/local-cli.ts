@@ -6,13 +6,19 @@
  *          buộc đổi ở lần đăng nhập đầu), cấu hình AI mặc định. Từ chối nếu mã trường đã tồn tại.
  *   demo   Nạp dữ liệu mẫu (giả lập) để tập huấn — chỉ khi CSDL CHƯA có trường nào.
  *   status Liệt kê trường, số tài khoản.
+ *   ai     --model <mã model> [--label "<tên>"] [--warmup]   Bật AI thật qua máy chủ AI nội bộ (LOCAL_AI_BASE_URL: LocalAI / Ollama)
+ *          cho MỌI trường: thêm model (chi phí 0 ₫), đặt làm mặc định, chuyển chế độ "Chạy thật".
+ *   ai     --mock     Trở lại chế độ AI giả lập.
+ *   ai     --list     Liệt kê model máy chủ AI nội bộ đang có.
  *
  * units.csv (UTF-8, dòng đầu là tiêu đề): id,code,name,type,parentId — type: UNIVERSITY|CAMPUS|FACULTY|INSTITUTE|OFFICE|DEPARTMENT.
  */
 import { readFileSync } from 'node:fs';
 import { applyImport, parseCsv } from '../src/accounts/import';
 import { db, identity, nowIso } from '../src/infra';
-import { seedAiDefaults, seedBusiness, seedTenant } from './seed';
+import { localAiConfig, localProvider } from '../src/ai/local-provider';
+import { seedAiDefaults, seedBusiness, seedProfiles, seedRegulations, seedStudentResearch, seedTenant } from './seed';
+import { seedExtended } from './seed-extended';
 import { DEMO_PASSWORD, TENANTS } from './seed-data';
 
 const args = process.argv.slice(2);
@@ -85,6 +91,14 @@ async function demo() {
   for (const t of TENANTS) {
     const users = await seedTenant(t);
     if (t.id === 'ftu') await seedBusiness(t.id, users);
+    await seedAiDefaults(t.id, { onlyIfMissing: true });
+  }
+  // Đủ dữ liệu cho tài liệu bài tập (giống bản Online): NCKH sinh viên, hồ sơ chuyên môn, quy chế, HEMIS / kinh phí / danh mục.
+  if (TENANTS.some((t) => t.id === 'ftu')) {
+    await seedStudentResearch('ftu');
+    await seedProfiles('ftu');
+    await seedRegulations('ftu');
+    await seedExtended('ftu');
   }
   console.log(`\nĐã nạp dữ liệu mẫu (giả lập). Mật khẩu chung của tài khoản mẫu: ${DEMO_PASSWORD}`);
   for (const t of TENANTS) for (const u of t.users) console.log(`  [${t.id}] ${u.email.padEnd(28)} ${u.displayName}`);
@@ -101,9 +115,56 @@ async function status() {
   console.log(`Đăng nhập: ${identity().kind}`);
 }
 
-const run = cmd === 'init' ? init : cmd === 'demo' ? demo : cmd === 'status' ? status : null;
+/** Mô hình KHÔNG dùng để trò chuyện (nhúng, xếp hạng, giọng nói, ảnh) — bỏ khi liệt kê / tự chọn. */
+const NON_CHAT = /embed|rerank|whisper|wav2vec|piper|vits|tts|stable-?diffusion|sdxl|flux|bark|clip|asr/i;
+
+async function ai() {
+  const tenants = (await db().collection('tenants').get()).docs.map((d) => d.id);
+  if (tenants.length === 0) throw new Error('Chưa có trường nào. Chạy "init" hoặc "demo" trước.');
+  if (args.includes('--mock')) {
+    for (const id of tenants) await db().collection('tenants').doc(id).collection('aiConfig').doc('settings').set({ mode: 'mock', updatedAt: nowIso() }, { merge: true });
+    console.log(`Đã chuyển ${tenants.length} trường về chế độ AI giả lập.`);
+    return;
+  }
+  const cfg = localAiConfig();
+  if (!cfg.baseUrl) throw new Error('Chưa cấu hình LOCAL_AI_BASE_URL trong .env (vd http://host.docker.internal:8080).');
+  const available = await localProvider.listModels('');
+  if (args.includes('--list')) {
+    for (const m of available) console.log(`${m}${NON_CHAT.test(m) ? '	(không phải mô hình hội thoại)' : ''}`);
+    return;
+  }
+  const model = opt('model');
+  if (!model || !/^[\w.:/-]{1,120}$/.test(model)) throw new Error('--model <mã model> (xem "ai --list").');
+  if (!available.includes(model)) throw new Error(`Máy chủ AI nội bộ (${new URL(cfg.baseUrl).host}) không có model "${model}". Có: ${available.filter((m) => !NON_CHAT.test(m)).join(', ') || '(trống)'}`);
+  const docId = `local__${model.replace(/[^\w.-]/g, '_')}`;
+  for (const id of tenants) {
+    const t = db().collection('tenants').doc(id);
+    if (!(await t.collection('aiConfig').doc('settings').get()).exists) await seedAiDefaults(id);
+    await t.collection('aiModels').doc(docId).set({
+      provider: 'local',
+      modelId: model,
+      label: opt('label') ?? `${model} (máy chủ AI nội bộ)`,
+      inputPriceMicrosPerMTok: 0,
+      outputPriceMicrosPerMTok: 0,
+      priceEffectiveDate: nowIso().slice(0, 10),
+      priceSource: 'Máy chủ AI nội bộ — không tính phí theo token',
+      enabled: true,
+      updatedAt: nowIso(),
+    });
+    await t.collection('aiProviders').doc('local').set({ enabled: true, availableModels: available.slice(0, 300) }, { merge: true });
+    await t.collection('aiConfig').doc('settings').set({ mode: 'live', killSwitch: false, defaultModelId: docId, featureModels: {}, updatedAt: nowIso() }, { merge: true });
+  }
+  console.log(`Đã bật AI thật cho ${tenants.length} trường: model mặc định "${model}" trên ${new URL(cfg.baseUrl).host}.`);
+  if (args.includes('--warmup')) {
+    console.log('Đang nạp sẵn model vào GPU (lần đầu có thể 1–2 phút)…');
+    const r = await localProvider.warmUp(model);
+    console.log(`Đã nạp sẵn (${(r.ms / 1000).toFixed(1)} giây).`);
+  }
+}
+
+const run = cmd === 'init' ? init : cmd === 'demo' ? demo : cmd === 'status' ? status : cmd === 'ai' ? ai : null;
 if (!run) {
-  console.log('Dùng: local-cli.js init|demo|status  (xem chú thích đầu tệp)');
+  console.log('Dùng: local-cli.js init|demo|status|ai  (xem chú thích đầu tệp)');
   process.exit(cmd ? 1 : 0);
 }
 run!().then(

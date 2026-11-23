@@ -66,7 +66,8 @@ Tùy chọn: `-Cong 8088` (Linux: `HTTP_PORT=8088 ./cai-dat.sh …`) đổi cổ
 |---|---|
 | `HTTP_PORT` | Cổng web |
 | `POSTGRES_PASSWORD`, `LOCAL_SECRET_KEY` | Sinh tự động. **Không đổi** sau khi có dữ liệu (khóa AI đã lưu được mã hóa bằng `LOCAL_SECRET_KEY`). Sao lưu `.env` ở nơi an toàn. |
-| `LOCAL_AI_BASE_URL` | Máy chủ AI nội bộ: `http://ollama:11434` (container đi kèm) hoặc máy chủ AI riêng của trường |
+| `HTTP_BIND` | `0.0.0.0` (mặc định): mọi máy trong mạng truy cập; `127.0.0.1`: chỉ máy chủ (khi đặt sau reverse proxy cùng máy) |
+| `LOCAL_AI_BASE_URL`, `LOCAL_AI_API_KEY` | Máy chủ AI nội bộ, xem mục "AI nội bộ" |
 | `SMTP_URL`, `MAIL_FROM` | Máy chủ thư của trường để gửi thông báo, nhắc hạn |
 | `PUBLIC_BASE_URL` | Địa chỉ web dùng trong liên kết trong thư |
 
@@ -74,12 +75,27 @@ Sau khi sửa `.env`: `docker compose up -d`. Bật gửi thư tại Quản tr�
 
 ### AI nội bộ (tùy chọn)
 
+AI-SRM gọi máy chủ AI theo chuẩn API tương thích OpenAI: LocalAI, Ollama, vLLM. Ba cách:
+
+| Máy chủ AI | `LOCAL_AI_BASE_URL` |
+|---|---|
+| LocalAI / Ollama đã chạy trên chính máy cài AI-SRM | `http://host.docker.internal:8080` (Ollama: `:11434`) |
+| Máy chủ AI riêng trong mạng trường | `http://<địa chỉ>:<cổng>`, ví dụ `http://10.0.0.5:8080` |
+| Container Ollama đi kèm bộ cài (cần GPU NVIDIA + NVIDIA Container Toolkit) | `http://ollama:11434` — cài với `-AI` (Linux: `AI=1`) |
+
+Sửa `.env` (nếu LocalAI có khóa truy cập: thêm `LOCAL_AI_API_KEY`), rồi:
+
 ```
-docker compose --profile ai up -d
-docker compose exec ollama ollama pull qwen3:8b
+docker compose up -d
+docker compose exec api node dist-cli/scripts/local-cli.js ai --list
+docker compose exec api node dist-cli/scripts/local-cli.js ai --model <mã model> --warmup
 ```
 
-Rồi vào **AI Center**: thêm model nhà cung cấp "Máy chủ AI nội bộ" với mã model vừa tải, bấm **Làm nóng**, chọn làm model mặc định, chuyển chế độ **Chạy thật**. Tải model lần đầu cần Internet; sau đó chạy không cần Internet.
+Lệnh `ai --model` khai báo model (chi phí 0 đ), đặt làm model mặc định, chuyển chế độ **Chạy thật** cho mọi trường trong bản cài và nạp sẵn model vào GPU. Trở lại giả lập: `ai --mock`. Có thể làm các bước này trên giao diện tại **AI Center**.
+
+Dùng container Ollama đi kèm: tải model trước, ví dụ `docker compose exec ollama ollama pull qwen3:8b` (cần Internet lần đầu).
+
+Tham khảo GPU 8 GB (RTX 4060): qwen3.8-4b-q4 trả lời khoảng 10 giây mỗi câu hỏi quy chế, 30–35 giây mỗi dự thảo báo cáo; một GPU xử lý lần lượt từng yêu cầu (tối đa 10 yêu cầu chờ). Trường có nhiều người dùng AI đồng thời nên dùng máy chủ AI riêng có GPU mạnh hơn.
 
 ### HTTPS
 
@@ -93,7 +109,7 @@ Rồi vào **AI Center**: thêm model nhà cung cấp "Máy chủ AI nội bộ"
 | Nhật ký | `docker compose logs -f api` | như bên trái |
 | Sao lưu (CSDL + tệp + .env) | `.\sao-luu.ps1` | `./sao-luu.sh` |
 | Khôi phục | `.\khoi-phuc.ps1 sao-luu\<thời điểm>` | `./khoi-phuc.sh sao-luu/<thời điểm>` |
-| Nâng cấp | chép bộ cài mới (giữ `.env`), `.\nang-cap.ps1` | `./nang-cap.sh` |
+| Nâng cấp | chép bộ cài mới đè lên (giữ `.env`), `.\nang-cap.ps1` — tự sao lưu, nạp image, đổi phiên bản | `./nang-cap.sh` |
 | Dừng / chạy lại | `docker compose stop` / `docker compose up -d` | như bên trái |
 
 - Nên đặt sao lưu tự động hằng ngày (Task Scheduler / cron) và chép thư mục `sao-luu` sang máy khác hoặc ổ lưu trữ của trường.

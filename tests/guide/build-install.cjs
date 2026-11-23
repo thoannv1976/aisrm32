@@ -1,5 +1,6 @@
 /**
- * Chuyển hướng dẫn cài đặt (Markdown) sang Word: deploy/local/HUONG_DAN_CAI_DAT.md, deploy/online/HUONG_DAN_CAI_DAT_ONLINE.md.
+ * Chuyển hướng dẫn cài đặt (Markdown) sang Word: deploy/local/HUONG_DAN_CAI_DAT.md, deploy/online/HUONG_DAN_CAI_DAT_ONLINE.md,
+ * deploy/pc/HUONG_DAN_CAI_TREN_PC.md.
  *   node tests/guide/build-install.cjs
  */
 const fs = require('node:fs');
@@ -7,14 +8,14 @@ const path = require('node:path');
 const { Paragraph, TextRun, ShadingType } = require('docx');
 const { createKit } = require('./docx-kit.cjs');
 
-async function convert(mdFile, fileName, title) {
+async function convert(mdFile, fileName, title, version = '1.0.1') {
   const k = createKit({ manifests: [] });
   const { p, h1, h2, h3, bullet, steps, table, centered, pageBreak, toc } = k;
   const lines = fs.readFileSync(mdFile, 'utf8').replace(/\r/g, '').split('\n');
   const body = [
     centered('AI-SRM', { bold: true, size: 40, color: '1F3A5F' }, { spacing: { before: 2000 } }),
     centered(title.toUpperCase(), { bold: true, size: 44, color: '1F3A5F' }, { spacing: { before: 400, after: 600 } }),
-    centered('Phiên bản 1.0 · 11/2026', { size: 22, color: '555555' }),
+    centered(`Phiên bản ${version} · 11/2026`, { size: 22, color: '555555' }),
     pageBreak(),
     ...toc(),
   ];
@@ -57,7 +58,8 @@ async function convert(mdFile, fileName, title) {
 (async () => {
   const root = path.join(__dirname, '..', '..', 'deploy');
   await convert(path.join(root, 'local', 'HUONG_DAN_CAI_DAT.md'), 'HUONG_DAN_CAI_DAT_LOCAL.docx', 'Hướng dẫn cài đặt bản Local');
-  await convert(path.join(root, 'online', 'HUONG_DAN_CAI_DAT_ONLINE.md'), 'HUONG_DAN_CAI_DAT_ONLINE.docx', 'Hướng dẫn cài đặt bản Online');
+  await convert(path.join(root, 'online', 'HUONG_DAN_CAI_DAT_ONLINE.md'), 'HUONG_DAN_CAI_DAT_ONLINE.docx', 'Hướng dẫn cài đặt bản Online', '1.0');
+  await convert(path.join(root, 'pc', 'HUONG_DAN_CAI_TREN_PC.md'), 'HUONG_DAN_CAI_TREN_PC.docx', 'Hướng dẫn cài AI-SRM trên PC');
 })().catch((e) => {
   console.error(e);
   process.exit(1);
