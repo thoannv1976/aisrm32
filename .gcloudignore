@@ -11,5 +11,5 @@ playwright-report
 test-results
 *.log
 docs
-data
+/data
 apps/api/data

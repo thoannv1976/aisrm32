@@ -88,7 +88,7 @@ function Gate() {
         <Route path="ai" element={<AiCenterPage />} />
         <Route path="integrations" element={<IntegrationCenterPage />} />
         <Route path="admin" element={<AdminPage />} />
-        {mode === 'local' && <Route path="account/password" element={<ChangePasswordPage />} />}
+        <Route path="account/password" element={<ChangePasswordPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

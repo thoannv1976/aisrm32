@@ -4,7 +4,7 @@ import { Card, ErrorBox, PageHeader } from '../components/ui';
 import { changePassword, getPasswordPolicy } from '../lib/auth';
 import { useSession } from '../lib/session';
 
-/** Đổi mật khẩu (bản Local). forced: đang dùng mật khẩu tạm do quản trị cấp — chưa vào được hệ thống. */
+/** Đổi mật khẩu (Local và Online). forced (chỉ Local): đang dùng mật khẩu tạm do quản trị cấp — chưa vào được hệ thống. */
 export function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
   const { logout } = useSession();
   const nav = useNavigate();
@@ -56,7 +56,7 @@ export function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
       </label>
       {getPasswordPolicy() && <p className="text-xs text-slate-500">Yêu cầu: {getPasswordPolicy()}</p>}
       {error ? <ErrorBox error={error} /> : null}
-      {done && !forced && <p className="text-sm text-emerald-700">Đã đổi mật khẩu. Các phiên đăng nhập khác đã bị đăng xuất.</p>}
+      {done && !forced && <p className="text-sm text-emerald-700">Đã đổi mật khẩu.</p>}
       <div className="flex gap-2">
         <button className="btn btn-primary" disabled={busy}>
           {busy ? 'Đang lưu…' : 'Đổi mật khẩu'}

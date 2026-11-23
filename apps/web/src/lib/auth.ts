@@ -172,8 +172,25 @@ export async function signOutUser(): Promise<void> {
   await signOut(auth);
 }
 
-/** Chỉ bản Local. Thành công → phiên mới (mọi phiên cũ bị thu hồi ở máy chủ). */
+/** Local: phiên mới (mọi phiên cũ bị thu hồi ở máy chủ). Online (Firebase): xác thực lại bằng mật khẩu hiện tại rồi đổi. */
 export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  if ((await initAuth()) === 'firebase') {
+    if (newPassword.length < 8) throw new Error('Mật khẩu mới cần ít nhất 8 ký tự.');
+    const [{ auth }, { EmailAuthProvider, reauthenticateWithCredential, updatePassword }] = await Promise.all([import('./firebase'), import('firebase/auth')]);
+    const u = auth.currentUser;
+    if (!u?.email) throw new Error('Phiên đăng nhập đã hết hạn.');
+    try {
+      await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email, currentPassword));
+    } catch {
+      throw new Error('Mật khẩu hiện tại không đúng.');
+    }
+    try {
+      await updatePassword(u, newPassword);
+    } catch {
+      throw new Error('Không đổi được mật khẩu: mật khẩu mới quá yếu hoặc phiên đăng nhập đã hết hạn.');
+    }
+    return;
+  }
   const s = readLocal();
   if (!s) throw new Error('Phiên đăng nhập đã hết hạn.');
   writeLocal(await postJson<LocalSession>('/auth/change-password', { currentPassword, newPassword }, s.token));

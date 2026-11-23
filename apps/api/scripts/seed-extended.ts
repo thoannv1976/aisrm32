@@ -17,7 +17,7 @@ export async function seedExtended(tenantId: string): Promise<boolean> {
   const marker = t.collection('settings').doc('seedExtended');
   if ((await marker.get()).exists) return false;
   const tenant = TENANTS.find((x) => x.id === tenantId);
-  if (!tenant || tenantId !== 'ftu') return false;
+  if (!tenant || !tenant.users.some((u) => u.key === 'pi')) return false;
   const person = async (key: string) => {
     const u = tenant.users.find((x) => x.key === key)!;
     const s = await t.collection('people').where('email', '==', u.email).limit(1).get();

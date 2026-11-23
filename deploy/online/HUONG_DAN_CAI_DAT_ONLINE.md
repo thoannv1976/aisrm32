@@ -29,14 +29,14 @@ Mở PowerShell tại thư mục `deploy\online` của bộ cài:
 powershell -ExecutionPolicy Bypass -File .\cai-dat-online.ps1 -ProjectId <id-project> -MaTruong abc -TenTruong "Trường Đại học ABC" -EmailQuanTri admin@abc.edu.vn -TepDonVi ..\local\don-vi.mau.csv
 ```
 
-Tham số tùy chọn: `-Region` (mặc định `asia-southeast1`, Singapore), `-TaiKhoan` (tài khoản gcloud/firebase dùng để cài), `-TenQuanTri`.
+Tham số tùy chọn: `-Region` (mặc định `asia-southeast1`, Singapore), `-TaiKhoan` (tài khoản gcloud/firebase dùng để cài), `-TenQuanTri`, `-BoQuaKhoiTao` (chỉ dựng hạ tầng và triển khai, không khởi tạo trường). `-MaTruong` nhận danh sách `ftu,ump` để tạo secret khóa AI cho nhiều trường.
 
 Script thực hiện (chạy lại được, bước nào đã có thì bỏ qua):
 
 1. Bật dịch vụ: Cloud Run, Cloud Build, Artifact Registry, Firestore, Firebase, Identity Toolkit, Secret Manager, Cloud Storage.
 2. Tạo Firestore (Native), bucket tài liệu riêng tư (`<project>-documents`), tài khoản dịch vụ `aisrm-api` với quyền tối thiểu; tạo 3 secret cho khóa OpenAI / Claude / Gemini của trường.
 3. Bật Firebase, tạo ứng dụng web, bật đăng nhập Email/Mật khẩu (nếu không bật tự động được, script nhắc làm trong Firebase Console).
-4. Triển khai API lên Cloud Run (`aisrm-api`, scale về 0 khi không dùng).
+4. Cấp quyền build cho tài khoản dịch vụ Compute mặc định (project mới bắt buộc), triển khai API lên Cloud Run (`aisrm-api`, scale về 0 khi không dùng).
 5. Build giao diện với cấu hình Firebase của project, triển khai Hosting, Firestore rules / indexes.
 6. Khởi tạo trường, đơn vị, tài khoản quản trị. **Mật khẩu tạm của quản trị in ra một lần.**
 
@@ -57,6 +57,25 @@ gcloud firestore backups schedules create --database="(default)" --recurrence=da
 - **Thư điện tử**: đặt biến `SMTP_URL`, `MAIL_FROM` cho dịch vụ Cloud Run (nên lưu mật khẩu SMTP trong Secret Manager rồi gắn bằng `--set-secrets`), rồi bật tại Quản trị → Thư điện tử.
 - **Tên miền riêng**: Firebase Console → Hosting → Add custom domain.
 - **Đăng nhập một lần (SSO) của trường**: cần thông tin máy chủ định danh của trường — liên hệ đơn vị triển khai.
+
+## 4a. Bản dùng cho khóa tập huấn (nhiều trường, dữ liệu mẫu)
+
+Sau khi chạy script với `-BoQuaKhoiTao`, khởi tạo "Trường mẫu" và mỗi trường tham dự một không gian riêng có đủ dữ liệu mẫu:
+
+```
+gcloud auth application-default login
+cd appspi
+npx tsx scripts/bootstrap-training.ts --project <id-project> --schools <truong.json> --out <thư mục ngoài mã nguồn> --confirm
+node ..\..	ests\guideuild-handover.cjs <thư mục>	ai-khoan-tap-huan.local.json <thư mục> https://<id-project>.web.app
+```
+
+`truong.json`: `[{"id":"ump","name":"Đại học Y Dược TP. Hồ Chí Minh","code":"UMP","units":{...},"titles":{...}}]`. Mật khẩu ghi vào `tai-khoan-tap-huan.local.json` và phiếu bàn giao của từng trường — lưu ngoài mã nguồn, gửi qua kênh an toàn. Trong những ngày học nên giữ API ít nhất 2 máy chạy:
+
+```
+gcloud run services update aisrm-api --region asia-southeast1 --cpu 2 --memory 2Gi --min-instances 2 --max-instances 10 --concurrency 40 --cpu-boost
+```
+
+Sau khóa học trả về `--min-instances 0` để giảm chi phí.
 
 ## 5. Nâng cấp
 

@@ -142,7 +142,7 @@ function createKit({ manifests = ['all'] } = {}) {
   ];
   const centered = (text, run = {}, para = {}) => new Paragraph({ alignment: AlignmentType.CENTER, ...para, children: [new TextRun({ text, ...run })] });
 
-  async function save(body, { fileName, title, header }) {
+  async function save(body, { fileName, title, header, outDir }) {
     const doc = new Document({
       creator: 'AI-SRM',
       title,
@@ -171,7 +171,7 @@ function createKit({ manifests = ['all'] } = {}) {
       ],
     });
     const buf = await Packer.toBuffer(doc);
-    const file = path.join(OUT, fileName);
+    const file = path.join(outDir ?? OUT, fileName);
     fs.writeFileSync(file, buf);
     console.log(`Đã ghi ${file} (${(buf.length / 1024 / 1024).toFixed(1)} MB, ${figNo - 1} hình)`);
   }

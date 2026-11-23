@@ -151,11 +151,9 @@ export function Layout() {
               <div className="truncate text-sm font-medium">{me?.displayName}</div>
               <div className="text-[11px] text-white/70">{activeRole ? ROLE_LABELS[activeRole] : ''}</div>
             </div>
-            {mode === 'local' && (
-              <Link to="/account/password" className="hidden whitespace-nowrap rounded px-2 py-1 text-sm text-white/90 hover:bg-white/10 md:inline">
-                Đổi mật khẩu
-              </Link>
-            )}
+            <Link to="/account/password" className="hidden whitespace-nowrap rounded px-2 py-1 text-sm text-white/90 hover:bg-white/10 md:inline">
+              Đổi mật khẩu
+            </Link>
             <button className="whitespace-nowrap rounded px-2 py-1 text-sm text-white/90 hover:bg-white/10" onClick={() => logout()}>
               Đăng xuất
             </button>
