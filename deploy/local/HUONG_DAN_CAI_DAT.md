@@ -2,6 +2,8 @@
 
 Bản Local cài trên máy chủ của trường; dữ liệu (CSDL, tệp tài liệu, khóa AI) lưu hoàn toàn tại trường. Hệ thống chạy được không cần Internet (trừ kiểm chứng DOI/ORCID và AI thương mại).
 
+Bộ cài: `Bo_cai_AI-SRM_Local_v1.0.1.zip`. Học viên cài trên PC cá nhân để tập huấn: dùng bộ cài riêng `Bo_cai_AI-SRM_PC_v1.0.1.zip` (hướng dẫn cài trên PC).
+
 ## 1. Yêu cầu
 
 - Máy chủ: 4 vCPU, 8 GB RAM, 50 GB ổ đĩa trở lên (chưa tính AI nội bộ). AI nội bộ: thêm GPU NVIDIA ≥ 12 GB VRAM.
@@ -11,7 +13,7 @@ Bản Local cài trên máy chủ của trường; dữ liệu (CSDL, tệp tài
 
 ## 2. Nội dung bộ cài
 
-- `images/aisrm-images.tar.gz` — image đã đóng gói: aisrm-api, aisrm-web, postgres (cài được không cần Internet).
+- `images/aisrm-images-1.0.1.tar.gz` — image đã đóng gói: aisrm-api, aisrm-web, postgres (cài được không cần Internet).
 - `docker-compose.yml`, `.env.example` — cấu hình dịch vụ.
 - `cai-dat.ps1` / `cai-dat.sh` — cài đặt (Windows / Linux).
 - `sao-luu`, `khoi-phuc`, `nang-cap` (.ps1 / .sh) — vận hành.
@@ -19,6 +21,8 @@ Bản Local cài trên máy chủ của trường; dữ liệu (CSDL, tệp tài
 - Tài liệu: hướng dẫn cài đặt (tệp này), hướng dẫn sử dụng, bài tập thực hành.
 
 ## 3. Cài đặt
+
+Giải nén `Bo_cai_AI-SRM_Local_v1.0.1.zip` vào thư mục cài đặt (Windows: ví dụ `D:\AI-SRM`; Linux: ví dụ `/opt/aisrm`). Các lệnh dưới đây chạy trong thư mục đó.
 
 ### 3.1. Dùng thử / tập huấn với dữ liệu mẫu
 
@@ -100,6 +104,12 @@ Tham khảo GPU 8 GB (RTX 4060): qwen3.8-4b-q4 trả lời khoảng 10 giây m�
 ### HTTPS
 
 Đặt AI-SRM sau reverse proxy của trường (nginx, Apache, F5…) có chứng chỉ HTTPS, chuyển tiếp tới `http://<máy chủ>:<HTTP_PORT>`; tăng thời gian chờ đọc lên 300 giây cho chức năng AI.
+
+### Nâng cấp từ bản 1.0
+
+1. Sao lưu: `.\sao-luu.ps1` (Linux: `./sao-luu.sh`).
+2. Giải nén bộ cài 1.0.1 đè lên thư mục đang cài. Giữ nguyên tệp `.env`.
+3. Chạy `.\nang-cap.ps1` (Linux: `./nang-cap.sh`): tự sao lưu, nạp image mới, đổi `AISRM_VERSION=1.0.1`, khởi động lại. Dữ liệu giữ nguyên.
 
 ## 5. Vận hành
 
