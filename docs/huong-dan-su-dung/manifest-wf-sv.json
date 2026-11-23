@@ -1,0 +1,249 @@
+[
+ {
+  "id": "WS-01-mo-dot",
+  "file": "WS-01-mo-dot.jpg",
+  "title": "Mở đợt NCKH sinh viên",
+  "notes": [
+   "Tên đợt, năm kế hoạch.",
+   "Cấp: chọn \"Sinh viên\" — hồ sơ của đợt sẽ có phần người hướng dẫn.",
+   "Thời gian nhận hồ sơ.",
+   "Biểu mẫu thuyết minh rút gọn cho sinh viên.",
+   "Tài liệu đính kèm: đề cương (bắt buộc)."
+  ]
+ },
+ {
+  "id": "WS-02-dot-da-mo",
+  "file": "WS-02-dot-da-mo.jpg",
+  "title": "Đợt đã mở nhận hồ sơ",
+  "notes": [
+   "Đợt đã mở: sinh viên thấy đợt và tạo hồ sơ. Hết hạn thì bấm \"Đóng đợt\"."
+  ]
+ },
+ {
+  "id": "WS-03-sv-chon-dot",
+  "file": "WS-03-sv-chon-dot.jpg",
+  "title": "Sinh viên chọn đợt",
+  "notes": [
+   "Sinh viên đăng nhập, vào \"Đợt đăng ký\", bấm \"+ Tạo hồ sơ đề xuất\" ở đợt NCKH sinh viên."
+  ]
+ },
+ {
+  "id": "WS-04-sv-khai-ho-so",
+  "file": "WS-04-sv-khai-ho-so.jpg",
+  "title": "Sinh viên khai thuyết minh và chọn giảng viên hướng dẫn",
+  "notes": [
+   "Khai các mục thuyết minh theo biểu mẫu của đợt.",
+   "Chọn giảng viên hướng dẫn (gõ tên để tìm); khai ngành, khóa.",
+   "Bấm \"Lưu thông tin\" — giảng viên nhận thông báo đề nghị xác nhận hướng dẫn."
+  ]
+ },
+ {
+  "id": "WS-05-sv-ai-gop-y",
+  "file": "WS-05-sv-ai-gop-y.jpg",
+  "title": "AI góp ý đề cương trước khi nộp",
+  "notes": [
+   "AI (chạy trên máy chủ AI nội bộ) rà soát đề cương theo biểu mẫu, quy chế.",
+   "Góp ý để sinh viên tự sửa — AI không quyết định thay hội đồng."
+  ]
+ },
+ {
+  "id": "WS-06-cho-gvhd",
+  "file": "WS-06-cho-gvhd.jpg",
+  "title": "Chờ giảng viên xác nhận hướng dẫn",
+  "notes": [
+   "Điểm kiểm soát: chưa có xác nhận của giảng viên hướng dẫn thì hệ thống chưa cho nộp hồ sơ."
+  ]
+ },
+ {
+  "id": "WS-07-gvhd-thong-bao",
+  "file": "WS-07-gvhd-thong-bao.jpg",
+  "title": "Giảng viên nhận thông báo",
+  "notes": [
+   "Giảng viên nhận thông báo đề nghị xác nhận hướng dẫn; bấm để mở hồ sơ."
+  ]
+ },
+ {
+  "id": "WS-08-gvhd-xac-nhan",
+  "file": "WS-08-gvhd-xac-nhan.jpg",
+  "title": "Giảng viên xác nhận hướng dẫn",
+  "notes": [
+   "Đọc đề cương; đồng ý hướng dẫn: bấm \"✓ Xác nhận hướng dẫn\".",
+   "Không nhận: \"Từ chối\" kèm lý do — sinh viên chọn người khác."
+  ]
+ },
+ {
+  "id": "WS-09-sv-nop",
+  "file": "WS-09-sv-nop.jpg",
+  "title": "Sinh viên nộp hồ sơ",
+  "notes": [
+   "Giảng viên đã xác nhận → bấm \"Nộp hồ sơ\", xác nhận. Hồ sơ khóa lại, chuyển về khoa."
+  ]
+ },
+ {
+  "id": "WS-10-khoa-viec-cho",
+  "file": "WS-10-khoa-viec-cho.jpg",
+  "title": "Khoa: hồ sơ chờ xác nhận",
+  "notes": [
+   "Đầu mối KH của khoa thấy hồ sơ sinh viên của khoa trong \"Việc cần tôi xử lý\"."
+  ]
+ },
+ {
+  "id": "WS-11-khoa-xac-nhan",
+  "file": "WS-11-khoa-xac-nhan.jpg",
+  "title": "Khoa xác nhận hồ sơ",
+  "notes": [
+   "Khoa xem xét, bấm \"Đơn vị xác nhận\" để chuyển Phòng QLKH (hoặc \"Trả bổ sung\" kèm yêu cầu)."
+  ]
+ },
+ {
+  "id": "WS-12-lap-hoi-dong",
+  "file": "WS-12-lap-hoi-dong.jpg",
+  "title": "Thành lập hội đồng đánh giá NCKH sinh viên",
+  "notes": [
+   "Loại: \"Đánh giá NCKH sinh viên\" — phiếu chấm dành cho sinh viên.",
+   "Mẫu phiếu chấm (tiêu chí, thang điểm).",
+   "Chọn các đề tài sinh viên đưa ra hội đồng."
+  ]
+ },
+ {
+  "id": "WS-13-xung-dot",
+  "file": "WS-13-xung-dot.jpg",
+  "title": "Cảnh báo xung đột lợi ích khi mời",
+  "notes": [
+   "Điểm kiểm soát: giảng viên hướng dẫn của đề tài bị cảnh báo xung đột lợi ích, không được mời chấm."
+  ]
+ },
+ {
+  "id": "WS-14-thanh-vien",
+  "file": "WS-14-thanh-vien.jpg",
+  "title": "Thành viên đã nhận lời — mở chấm",
+  "notes": [
+   "Chủ tịch, thư ký, phản biện đã nhận lời.",
+   "Bấm \"Mở chấm\" để hội đồng chấm phiếu."
+  ]
+ },
+ {
+  "id": "WS-15-cham-phieu",
+  "file": "WS-15-cham-phieu.jpg",
+  "title": "Thành viên hội đồng chấm phiếu",
+  "notes": [
+   "Sau khi khai báo không có xung đột lợi ích, chấm từng tiêu chí.",
+   "Nhận xét, yêu cầu chỉnh sửa.",
+   "\"Nộp phiếu\" — phiếu đã nộp bị khóa."
+  ]
+ },
+ {
+  "id": "WS-16-bien-ban",
+  "file": "WS-16-bien-ban.jpg",
+  "title": "Tổng hợp điểm, AI dự thảo biên bản",
+  "notes": [
+   "Hệ thống tự tính điểm trung bình — không cộng tay.",
+   "Chủ tịch chọn kết luận cho từng đề tài.",
+   "AI dự thảo biên bản từ điểm và nhận xét; thư ký, chủ tịch sửa lại."
+  ]
+ },
+ {
+  "id": "WS-17-trinh-phe-duyet",
+  "file": "WS-17-trinh-phe-duyet.jpg",
+  "title": "Phòng QLKH trình phê duyệt",
+  "notes": [
+   "Ý kiến trình.",
+   "Bấm \"Xác nhận: Trình phê duyệt\"."
+  ]
+ },
+ {
+  "id": "WS-18-phe-duyet",
+  "file": "WS-18-phe-duyet.jpg",
+  "title": "Lãnh đạo phê duyệt",
+  "notes": [
+   "Ý kiến chỉ đạo.",
+   "Bấm \"Xác nhận: Phê duyệt\" — hệ thống tự lập đề tài."
+  ]
+ },
+ {
+  "id": "WS-19-lap-moc",
+  "file": "WS-19-lap-moc.jpg",
+  "title": "Lập thời gian, mốc tiến độ",
+  "notes": [
+   "Thời gian thực hiện và các mốc sản phẩm — hệ thống tự nhắc hạn.",
+   "Bấm \"Giao nhiệm vụ / bắt đầu\"."
+  ]
+ },
+ {
+  "id": "WS-20-nhat-ky-huong-dan",
+  "file": "WS-20-nhat-ky-huong-dan.jpg",
+  "title": "Giảng viên ghi nhật ký hướng dẫn",
+  "notes": [
+   "Sau mỗi buổi hướng dẫn: ghi nội dung trao đổi.",
+   "Việc sinh viên cần làm tiếp.",
+   "Bấm \"Lưu\" — nhật ký là minh chứng quá trình hướng dẫn."
+  ]
+ },
+ {
+  "id": "WS-21-sv-nop-san-pham",
+  "file": "WS-21-sv-nop-san-pham.jpg",
+  "title": "Sinh viên nộp sản phẩm theo mốc",
+  "notes": [
+   "Bấm \"⬆ Tải sản phẩm\" để chọn tệp sản phẩm của mốc.",
+   "Bấm \"Nộp sản phẩm\" — Phòng QLKH xem và chấp nhận."
+  ]
+ },
+ {
+  "id": "WS-22-duyet-san-pham",
+  "file": "WS-22-duyet-san-pham.jpg",
+  "title": "Phòng QLKH chấp nhận sản phẩm",
+  "notes": [
+   "Các mốc đã được chấp nhận — tiến độ hiển thị cho khoa, lãnh đạo."
+  ]
+ },
+ {
+  "id": "WS-23-de-nghi-nghiem-thu",
+  "file": "WS-23-de-nghi-nghiem-thu.jpg",
+  "title": "Sinh viên đề nghị nghiệm thu",
+  "notes": [
+   "Các mốc đã nộp → bấm \"Đề nghị nghiệm thu\"."
+  ]
+ },
+ {
+  "id": "WS-24-nghiem-thu",
+  "file": "WS-24-nghiem-thu.jpg",
+  "title": "Hội đồng nghiệm thu: kết quả, biên bản",
+  "notes": [
+   "Hội đồng nghiệm thu chấm, chủ tịch xác nhận biên bản (các bước như hội đồng xét chọn)."
+  ]
+ },
+ {
+  "id": "WS-25-hoan-thanh",
+  "file": "WS-25-hoan-thanh.jpg",
+  "title": "Trưởng phòng QLKH xác nhận hoàn thành",
+  "notes": [
+   "Trưởng phòng bấm \"Xác nhận hoàn thành\" — người tiếp nhận nghiệm thu không được tự xác nhận."
+  ]
+ },
+ {
+  "id": "WS-26-xep-giai",
+  "file": "WS-26-xep-giai.jpg",
+  "title": "Phòng QLKH xếp giải theo điểm hội đồng",
+  "notes": [
+   "Đề tài xếp theo điểm trung bình hội đồng — minh bạch, không chấm lại.",
+   "Ghi mức giải theo quyết định; sinh viên nhận thông báo."
+  ]
+ },
+ {
+  "id": "WS-27-thong-ke",
+  "file": "WS-27-thong-ke.jpg",
+  "title": "Lãnh đạo xem thống kê NCKH sinh viên",
+  "notes": [
+   "Số đề tài theo khoa, ngành, khóa; cơ cấu giải — số liệu tức thì, không phải tổng hợp tay.",
+   "Xuất Excel phục vụ báo cáo."
+  ]
+ },
+ {
+  "id": "WS-28-truy-vet",
+  "file": "WS-28-truy-vet.jpg",
+  "title": "Lịch sử xử lý — truy vết toàn bộ quy trình",
+  "notes": [
+   "Mỗi bước: ai làm, lúc nào, ý kiến gì — phục vụ kiểm tra, thanh tra."
+  ]
+ }
+]

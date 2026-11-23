@@ -9,9 +9,9 @@ TRƯỚC KHI CÀI, máy cần có:
 
 QUÁ TRÌNH CÀI (3–5 phút):
   1. Chép tệp vào thư mục cài.
-  2. Một cửa sổ đen hiện tiến trình: nạp phần mềm, nạp dữ liệu mẫu, nối LocalAI, nạp sẵn model AI.
-     Cuối cửa sổ có danh sách tài khoản mẫu — đọc xong nhấn phím bất kỳ để đóng.
-  3. Nếu chọn "Cho máy khác trong mạng LAN truy cập", Windows hỏi quyền quản trị để mở cổng tường lửa.
+  2. Một cửa sổ đen hiện tiến trình (tự đóng khi xong): nạp phần mềm, nạp dữ liệu mẫu, nối LocalAI, nạp sẵn model AI.
+  3. Trang cuối: chọn "Mở AI-SRM" và "Xem danh sách tài khoản mẫu", bấm Xong.
+  4. Nếu chọn "Cho máy khác trong mạng LAN truy cập", Windows hỏi quyền quản trị để mở cổng tường lửa.
 
 LƯU Ý: chỉ chứa dữ liệu mẫu; không nhập dữ liệu thật.
 Gỡ AI-SRM (Settings → Apps) sẽ xóa dữ liệu trong bản cài.

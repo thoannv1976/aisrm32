@@ -1,0 +1,256 @@
+[
+ {
+  "id": "WD-01-mo-dot",
+  "file": "WD-01-mo-dot.jpg",
+  "title": "Mở đợt đăng ký đề tài cấp trường",
+  "notes": [
+   "Tên đợt, năm kế hoạch.",
+   "Cấp: \"Cấp trường\".",
+   "Bật bước thẩm định: hồ sơ qua hội đồng / phản biện trước khi trình duyệt.",
+   "Thời gian nhận hồ sơ.",
+   "Biểu mẫu thuyết minh chuẩn (sửa khi cần)."
+  ]
+ },
+ {
+  "id": "WD-02-ho-so-day-du",
+  "file": "WD-02-ho-so-day-du.jpg",
+  "title": "Thuyết minh, tài liệu đủ — kiểm tra tự động",
+  "notes": [
+   "Đính kèm tài liệu theo danh mục của đợt.",
+   "Hệ thống tự kiểm tra đủ mục, đủ tài liệu — thiếu thì chưa cho nộp."
+  ]
+ },
+ {
+  "id": "WD-03-ai-tom-tat",
+  "file": "WD-03-ai-tom-tat.jpg",
+  "title": "AI tóm tắt thuyết minh",
+  "notes": [
+   "AI nội bộ tóm tắt thuyết minh — dùng khi trình lãnh đạo, gửi hội đồng. Dữ liệu không ra khỏi trường."
+  ]
+ },
+ {
+  "id": "WD-04-nop",
+  "file": "WD-04-nop.jpg",
+  "title": "Chủ nhiệm nộp hồ sơ",
+  "notes": [
+   "Bấm \"Nộp hồ sơ\", xác nhận — hồ sơ khóa lại, chuyển về khoa."
+  ]
+ },
+ {
+  "id": "WD-05-tra-bo-sung",
+  "file": "WD-05-tra-bo-sung.jpg",
+  "title": "Khoa trả hồ sơ để bổ sung",
+  "notes": [
+   "Ghi rõ yêu cầu bổ sung (bắt buộc).",
+   "Bấm \"Xác nhận: Trả bổ sung\" — chủ nhiệm nhận thông báo."
+  ]
+ },
+ {
+  "id": "WD-06-nop-lai",
+  "file": "WD-06-nop-lai.jpg",
+  "title": "Chủ nhiệm sửa và nộp lại",
+  "notes": [
+   "Sửa theo yêu cầu, bấm \"Nộp lại\" — hồ sơ quay về đúng bước đã trả."
+  ]
+ },
+ {
+  "id": "WD-07-chuyen-tham-dinh",
+  "file": "WD-07-chuyen-tham-dinh.jpg",
+  "title": "Phòng QLKH chuyển thẩm định",
+  "notes": [
+   "Hồ sơ hợp lệ → \"Chuyển thẩm định\" để đưa ra hội đồng xét chọn."
+  ]
+ },
+ {
+  "id": "WD-08-goi-y-phan-bien",
+  "file": "WD-08-goi-y-phan-bien.jpg",
+  "title": "Gợi ý thành viên hội đồng theo chuyên môn",
+  "notes": [
+   "Hệ thống gợi ý người phù hợp chuyên môn, cảnh báo xung đột lợi ích (cùng đơn vị, là thành viên đề tài).",
+   "Chọn vai trò: Chủ tịch, Thư ký, Phản biện, Ủy viên.",
+   "Mời chuyên gia ngoài trường: tạo tài khoản phản biện có thời hạn."
+  ]
+ },
+ {
+  "id": "WD-09-phan-bien-cham",
+  "file": "WD-09-phan-bien-cham.jpg",
+  "title": "Phản biện chấm phiếu trực tuyến",
+  "notes": [
+   "Khai báo không xung đột lợi ích rồi chấm từng tiêu chí.",
+   "Nhận xét, yêu cầu chỉnh sửa.",
+   "Nộp phiếu — không cần họp, không cần phiếu giấy."
+  ]
+ },
+ {
+  "id": "WD-10-ket-qua-hoi-dong",
+  "file": "WD-10-ket-qua-hoi-dong.jpg",
+  "title": "Kết quả hội đồng xét chọn, biên bản đã xác nhận",
+  "notes": [
+   "Điểm tổng hợp tự động, so ngưỡng đề nghị.",
+   "Biên bản (AI dự thảo, chủ tịch chỉnh và xác nhận) — tải Word để lưu hồ sơ."
+  ]
+ },
+ {
+  "id": "WD-11-ghi-nhan-tham-dinh",
+  "file": "WD-11-ghi-nhan-tham-dinh.jpg",
+  "title": "Ghi nhận kết quả thẩm định, trình phê duyệt",
+  "notes": [
+   "Tóm tắt kết quả hội đồng (bắt buộc).",
+   "Bấm \"Xác nhận: Ghi nhận kết quả thẩm định\" — hồ sơ chuyển lãnh đạo."
+  ]
+ },
+ {
+  "id": "WD-12-lanh-dao-viec-cho",
+  "file": "WD-12-lanh-dao-viec-cho.jpg",
+  "title": "Lãnh đạo: hồ sơ chờ phê duyệt",
+  "notes": [
+   "Phó Hiệu trưởng thấy ngay hồ sơ chờ phê duyệt trên trang làm việc."
+  ]
+ },
+ {
+  "id": "WD-13-lanh-dao-xem-lich-su",
+  "file": "WD-13-lanh-dao-xem-lich-su.jpg",
+  "title": "Lãnh đạo xem toàn bộ quá trình trước khi duyệt",
+  "notes": [
+   "Đủ căn cứ để quyết định: ai đã xét, ý kiến gì, hội đồng kết luận ra sao."
+  ]
+ },
+ {
+  "id": "WD-14-phe-duyet",
+  "file": "WD-14-phe-duyet.jpg",
+  "title": "Phê duyệt",
+  "notes": [
+   "Ý kiến chỉ đạo.",
+   "Bấm \"Xác nhận: Phê duyệt\" — đề tài được lập tự động."
+  ]
+ },
+ {
+  "id": "WD-15-hop-dong",
+  "file": "WD-15-hop-dong.jpg",
+  "title": "Nhập hợp đồng thực hiện đề tài",
+  "notes": [
+   "Số, ngày ký, giá trị hợp đồng.",
+   "Nguồn kinh phí — dùng cho báo cáo HEMIS, quyết toán.",
+   "Bấm \"Lưu\"."
+  ]
+ },
+ {
+  "id": "WD-16-giao-nhiem-vu",
+  "file": "WD-16-giao-nhiem-vu.jpg",
+  "title": "Giao nhiệm vụ",
+  "notes": [
+   "Đủ thời gian và mốc tiến độ → \"Giao nhiệm vụ / bắt đầu\". Thiếu thì hệ thống chặn."
+  ]
+ },
+ {
+  "id": "WD-17-nop-san-pham",
+  "file": "WD-17-nop-san-pham.jpg",
+  "title": "Chủ nhiệm nộp sản phẩm theo mốc",
+  "notes": [
+   "Tải tệp sản phẩm của mốc.",
+   "\"Nộp sản phẩm\" — hệ thống nhắc hạn trước 7 ngày, 1 ngày, khi quá hạn."
+  ]
+ },
+ {
+  "id": "WD-18-xin-gia-han",
+  "file": "WD-18-xin-gia-han.jpg",
+  "title": "Chủ nhiệm gửi yêu cầu gia hạn",
+  "notes": [
+   "Gia hạn, đổi thành viên, điều chỉnh dự toán…",
+   "Lý do (bắt buộc) — lưu vào hồ sơ đề tài."
+  ]
+ },
+ {
+  "id": "WD-19-duyet-san-pham-gia-han",
+  "file": "WD-19-duyet-san-pham-gia-han.jpg",
+  "title": "Phòng QLKH duyệt sản phẩm và yêu cầu gia hạn",
+  "notes": [
+   "Sản phẩm mốc: \"Chấp nhận\" hoặc \"Trả lại\" kèm lý do.",
+   "Yêu cầu gia hạn: \"Chấp thuận\" / từ chối — ngày kết thúc tự cập nhật."
+  ]
+ },
+ {
+  "id": "WD-20-de-nghi-nghiem-thu",
+  "file": "WD-20-de-nghi-nghiem-thu.jpg",
+  "title": "Chủ nhiệm đề nghị nghiệm thu",
+  "notes": [
+   "Đã nộp đủ sản phẩm → \"Đề nghị nghiệm thu\"."
+  ]
+ },
+ {
+  "id": "WD-21-nghiem-thu",
+  "file": "WD-21-nghiem-thu.jpg",
+  "title": "Hội đồng nghiệm thu: điểm, kết luận, biên bản",
+  "notes": [
+   "Hội đồng nghiệm thu chấm theo phiếu nghiệm thu; chủ tịch xác nhận biên bản."
+  ]
+ },
+ {
+  "id": "WD-22-yeu-cau-hoan-thien",
+  "file": "WD-22-yeu-cau-hoan-thien.jpg",
+  "title": "Yêu cầu hoàn thiện sau nghiệm thu",
+  "notes": [
+   "Nội dung cần hoàn thiện (bắt buộc).",
+   "Bấm \"Xác nhận: Yêu cầu hoàn thiện\"."
+  ]
+ },
+ {
+  "id": "WD-23-hoan-thanh",
+  "file": "WD-23-hoan-thanh.jpg",
+  "title": "Trưởng phòng xác nhận hoàn thành",
+  "notes": [
+   "\"Xác nhận hoàn thành\" — người tiếp nhận nghiệm thu không được tự xác nhận (phân tách nhiệm vụ)."
+  ]
+ },
+ {
+  "id": "WD-24-luu-tru",
+  "file": "WD-24-luu-tru.jpg",
+  "title": "Lưu trữ hồ sơ đề tài",
+  "notes": [
+   "\"Lưu trữ\" — toàn bộ hồ sơ số, biên bản, sản phẩm giữ lại để tra cứu, thanh tra."
+  ]
+ },
+ {
+  "id": "WD-25-lich-su-de-tai",
+  "file": "WD-25-lich-su-de-tai.jpg",
+  "title": "Lịch sử đề tài — truy vết toàn bộ vòng đời",
+  "notes": [
+   "Từ giao nhiệm vụ đến lưu trữ: mỗi bước có người làm, thời gian, ý kiến."
+  ]
+ },
+ {
+  "id": "WD-26-hemis",
+  "file": "WD-26-hemis.jpg",
+  "title": "Dữ liệu đề tài theo chuẩn HEMIS",
+  "notes": [
+   "Quản trị tích hợp xem trước: đề tài tự động có trong dữ liệu chuẩn HEMIS — không nhập lại.",
+   "Hệ thống kiểm tra đủ trường bắt buộc trước khi gửi qua UNI-DATA360."
+  ]
+ },
+ {
+  "id": "WD-27-dieu-hanh",
+  "file": "WD-27-dieu-hanh.jpg",
+  "title": "Hiệu trưởng xem điều hành & báo cáo",
+  "notes": [
+   "Số liệu tức thì: đề xuất, đề tài, công bố theo trạng thái.",
+   "So sánh giữa các khoa, viện."
+  ]
+ },
+ {
+  "id": "WD-28a-hoi-dap-so-lieu",
+  "file": "WD-28a-hoi-dap-so-lieu.jpg",
+  "title": "Lãnh đạo hỏi số liệu bằng lời",
+  "notes": [
+   "Gõ câu hỏi bằng lời tự nhiên hoặc bấm một câu gợi ý.",
+   "AI chỉ chọn truy vấn có sẵn; hệ thống tự tính số từ dữ liệu thật — AI không tự bịa số."
+  ]
+ },
+ {
+  "id": "WD-28-ai-bao-cao",
+  "file": "WD-28-ai-bao-cao.jpg",
+  "title": "AI dự thảo báo cáo hoạt động KH&CN",
+  "notes": [
+   "AI viết dự thảo báo cáo từ số liệu đã tính — lãnh đạo, Phòng QLKH chỉnh sửa trước khi dùng."
+  ]
+ }
+]

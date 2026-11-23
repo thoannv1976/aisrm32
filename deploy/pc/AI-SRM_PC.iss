@@ -87,10 +87,12 @@ ConfirmUninstall=Gỡ %1 sẽ XÓA toàn bộ dữ liệu trong bản cài (đ�
 UninstallStatusLabel=Đang gỡ %1, vui lòng chờ...
 UninstalledAll=Đã gỡ %1. Thư mục sao lưu (nếu có) được giữ lại.
 UninstalledMost=Đã gỡ %1. Một số tệp không xóa được, có thể xóa bằng tay.
-AdditionalIcons=Biểu tượng:
-CreateDesktopIcon=Tạo biểu tượng trên &màn hình
 
 [CustomMessages]
+AdditionalIcons=Biểu tượng:
+CreateDesktopIcon=Tạo biểu tượng trên &màn hình
+MoAISRM=Mở AI-SRM trên trình duyệt
+XemTaiKhoan=Xem danh sách tài khoản mẫu
 TaskLan=Cho máy khác trong mạng LAN truy cập (mở cổng tường lửa, cần quyền quản trị)
 NhomMang=Mạng:
 DangCai=Đang cài AI-SRM: nạp phần mềm, dữ liệu mẫu, nối LocalAI (3–5 phút; xem cửa sổ đen)...
@@ -119,6 +121,10 @@ Name: "{autoprograms}\AI-SRM\Tài liệu tập huấn"; Filename: "{app}\tai-lie
 Name: "{autoprograms}\AI-SRM\Gỡ AI-SRM"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\AI-SRM"; Filename: "{app}\MO_AI-SRM.bat"; WorkingDir: "{app}"; IconFilename: "{app}\he-thong\aisrm.ico"; Tasks: desktopicon
 
+[Run]
+Filename: "{app}\MO_AI-SRM.bat"; WorkingDir: "{app}"; Description: "{cm:MoAISRM}"; Flags: postinstall shellexec nowait skipifsilent
+Filename: "{app}\TAI_KHOAN_MAU.txt"; Description: "{cm:XemTaiKhoan}"; Flags: postinstall shellexec nowait skipifsilent skipifdoesntexist
+
 [UninstallRun]
 Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\he-thong\go-cai-dat.ps1"" -DongY"; WorkingDir: "{app}\he-thong"; RunOnceId: "GoAISRM"; Flags: runhidden waituntilterminated
 
@@ -126,6 +132,7 @@ Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Fil
 Type: files; Name: "{app}\he-thong\.env"
 Type: files; Name: "{app}\he-thong\lan.on"
 Type: files; Name: "{app}\he-thong\cai-dat.log"
+Type: files; Name: "{app}\TAI_KHOAN_MAU.txt"
 
 [Code]
 function UrlOk(const Url: string): Boolean;
@@ -172,7 +179,7 @@ var Rc: Integer;
 begin
   if CurStep <> ssPostInstall then exit;
   WizardForm.StatusLabel.Caption := CustomMessage('DangCai');
-  if not Exec(ExpandConstant('{cmd}'), '/c ""' + ExpandConstant('{app}\CAI_DAT.bat') + '" -KhongTaoLoiTat"',
+  if not Exec(ExpandConstant('{cmd}'), '/c "set AISRM_KHONG_DUNG=1&& "' + ExpandConstant('{app}\CAI_DAT.bat') + '" -KhongTaoLoiTat -KhongMoTrinhDuyet"',
       ExpandConstant('{app}'), SW_SHOW, ewWaitUntilTerminated, Rc) or (Rc <> 0) then begin
     SuppressibleMsgBox(CustomMessage('CaiLoi') + #13#10#13#10 + ExpandConstant('{app}\he-thong\cai-dat.log'), mbError, MB_OK, IDOK);
     exit;

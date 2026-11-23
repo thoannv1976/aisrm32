@@ -10,7 +10,7 @@ const headless = process.env.GUIDE_HEADLESS === '1';
 
 export default defineConfig({
   testDir: '.',
-  testMatch: /capture(-new)?\.spec\.ts/,
+  testMatch: /capture(-new|-wf-[a-z]+)?\.spec\.ts/,
   timeout: 15 * 60_000,
   expect: { timeout: 20_000 },
   fullyParallel: false,

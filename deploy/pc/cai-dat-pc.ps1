@@ -105,6 +105,9 @@ if ($st -match 'Chưa có trường nào') {
   $out = GoiCliMa demo
   $out | Select-Object -SkipLast 1 | ForEach-Object { Write-Host $_ }
   if ($out[-1] -ne 0) { throw 'Nạp dữ liệu mẫu thất bại.' }
+  # Lưu danh sách tài khoản mẫu (mật khẩu chung công bố trong tài liệu tập huấn) để xem lại sau.
+  $tk = @('AI-SRM — TÀI KHOẢN MẪU (dữ liệu giả lập, chỉ dùng tập huấn)', "Địa chỉ: http://localhost:$port", '') + ($out | Select-Object -SkipLast 1 | Where-Object { $_ -match 'Mật khẩu chung|^\s+\[' })
+  [IO.File]::WriteAllLines((Join-Path (Split-Path $PSScriptRoot -Parent) 'TAI_KHOAN_MAU.txt'), [string[]]$tk, (New-Object Text.UTF8Encoding $true))
 } else {
   Write-Host 'Đã có dữ liệu — giữ nguyên:'; $st | ForEach-Object { Write-Host "  $_" }
 }

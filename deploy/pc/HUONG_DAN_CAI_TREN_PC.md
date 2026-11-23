@@ -30,10 +30,9 @@ Bộ cài đã thử trên máy: Core i9-14900HX, RAM 32 GB, RTX 4060 Laptop 8 G
    - Thông tin: đọc yêu cầu trước khi cài.
    - Thư mục cài: giữ mặc định (`C:\Users\<tên>\AppData\Local\Programs\AI-SRM`) hoặc chọn thư mục khác.
    - Tùy chọn: **Tạo biểu tượng trên màn hình**; **Cho máy khác trong mạng LAN truy cập** (bỏ chọn nếu chỉ dùng trên máy mình).
-4. Bấm **Cài đặt**. Một cửa sổ đen hiện tiến trình (3–5 phút): kiểm tra Docker Desktop (tự mở nếu đang tắt), tìm LocalAI và chọn model, nạp phần mềm, nạp dữ liệu mẫu, bật AI nội bộ và nạp sẵn model vào GPU.
-5. Cuối cửa sổ đen có **danh sách tài khoản mẫu** (giống tài liệu Bài tập thực hành, ví dụ gv.binh@demo.aisrm.test). Đọc xong nhấn phím bất kỳ; trình duyệt tự mở AI-SRM.
-6. Nếu đã chọn mở LAN: Windows hỏi quyền quản trị, bấm **Yes**.
-7. Bấm **Xong**.
+4. Bấm **Cài đặt**. Một cửa sổ đen hiện tiến trình (1–5 phút) rồi tự đóng: kiểm tra Docker Desktop (tự mở nếu đang tắt), tìm LocalAI và chọn model, nạp phần mềm, nạp dữ liệu mẫu, bật AI nội bộ và nạp sẵn model vào GPU.
+5. Nếu đã chọn mở LAN: Windows hỏi quyền quản trị, bấm **Yes**.
+6. Trang cuối: để chọn **Mở AI-SRM trên trình duyệt** và **Xem danh sách tài khoản mẫu** (tệp `TAI_KHOAN_MAU.txt` trong thư mục cài — giống tài liệu Bài tập thực hành, ví dụ gv.binh@demo.aisrm.test), bấm **Xong**.
 
 Bộ cài không cần quyền quản trị (trừ bước mở LAN). Bộ cài tự kiểm tra trước: chưa có Docker Desktop thì dừng và báo cách cài; không thấy LocalAI thì hỏi có cài với AI giả lập không.
 
@@ -118,6 +117,7 @@ Chỉ muốn dùng trên chính máy mình (không mở cho LAN): cài bằng Po
 | Máy khác trong LAN không vào được | Bấm MO_MANG_LAN.bat; đặt mạng Private; kiểm tra hai máy cùng mạng (ping địa chỉ LAN) |
 | Quên mật khẩu tài khoản mẫu | Xem tài liệu Bài tập thực hành hoặc màn hình cài đặt; tài khoản admin cấp mật khẩu tạm tại Quản trị → Tài khoản |
 | Bộ cài .exe báo "bước cài đặt chưa thành công" | Đọc thông báo đỏ trong cửa sổ đen hoặc tệp he-thong\cai-dat.log; sửa (mở Docker Desktop, gỡ bản cài cũ…) rồi chạy lại tệp .exe |
+| AI-SRM đột ngột không vào được (Docker Desktop tự dừng khi máy thiếu RAM lúc LocalAI nạp mô hình) | Đóng bớt ứng dụng nặng; bấm "Mở AI-SRM" (tự mở lại Docker Desktop và hệ thống, dữ liệu giữ nguyên) |
 | Windows chặn tệp .exe | More info → Run anyway; nếu phần mềm diệt virus vẫn chặn: cài từ zip (mục 3.2) |
 | Muốn cài lại từ đầu | Gỡ (Settings → Apps, hoặc GO_CAI_DAT.bat) rồi cài lại |
 
