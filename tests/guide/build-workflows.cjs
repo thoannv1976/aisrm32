@@ -8,9 +8,19 @@
 const { BorderStyle, Paragraph, ShadingType, TextRun } = require('docx');
 const { createKit } = require('./docx-kit.cjs');
 
-const outDir = process.argv[2];
+const PDF = process.argv.includes('--pdf'); // in PDF bằng Chrome (html-kit) thay vì Word
+const outDir = process.argv.slice(2).find((a) => !a.startsWith('--'));
 
 function kitFor(manifest) {
+  if (PDF) {
+    const k = require('./html-kit.cjs').createHtmlKit({ manifests: [manifest] });
+    return {
+      ...k,
+      control: (t) => k.box('🔒 Điểm kiểm soát:', t, 'FDECEA', 'C62828'),
+      value: (t) => k.box('★ Giá trị cho lãnh đạo:', t, 'E8F5E9', '2E7D32'),
+      ai: (t) => k.box('✨ AI hỗ trợ:', t, 'EDE7F6', '5E35B1'),
+    };
+  }
   const k = createKit({ manifests: [manifest] });
   const box = (title, t, fill, line) =>
     new Paragraph({
@@ -110,7 +120,7 @@ async function buildSV() {
   add(
     cover(k, {
       title: 'QUY TRÌNH ĐỀ TÀI NGHIÊN CỨU KHOA HỌC SINH VIÊN',
-      subtitle: 'Từ mở đợt đăng ký đến xếp giải và báo cáo — 11 bước, 8 vai trò',
+      subtitle: 'Từ mở đợt đăng ký đến xếp giải và báo cáo — 11 bước, 10 vai trò',
       lines: ['Hệ thống quản lý khoa học tích hợp AI — AI-SRM', 'Tháng 11/2026'],
     }),
     howTo(k, [
@@ -341,7 +351,7 @@ async function buildDT() {
   add(
     cover(k, {
       title: 'QUY TRÌNH ĐỀ TÀI KH&CN CẤP TRƯỜNG',
-      subtitle: 'Cán bộ, giảng viên — từ mở đợt đến nghiệm thu, lưu trữ, báo cáo — 9 bước, 9 vai trò',
+      subtitle: 'Cán bộ, giảng viên — từ mở đợt đến nghiệm thu, lưu trữ, báo cáo — 9 bước, 10 vai trò',
       lines: ['Hệ thống quản lý khoa học tích hợp AI — AI-SRM', 'Tháng 11/2026'],
     }),
     howTo(k, [

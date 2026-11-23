@@ -71,6 +71,8 @@ export async function shot(page: Page, id: string, title: string, marks: Mark[] 
     });
   }, boxes);
   const file = `${id}.jpg`;
+  // Chụp cả trang: về đầu trang để thanh tiêu đề cố định không bị vẽ lọt vào giữa ảnh
+  if (opts.fullPage) await page.evaluate(() => window.scrollTo(0, 0));
   if (opts.clip) await opts.clip.screenshot({ path: join(IMG, file), type: 'jpeg', quality: 85 });
   else await page.screenshot({ path: join(IMG, file), type: 'jpeg', quality: 85, fullPage: !!opts.fullPage });
   if (PAUSE) await page.waitForTimeout(PAUSE);
