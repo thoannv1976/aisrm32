@@ -8,4 +8,4 @@ if errorlevel 1 (
 )
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0he-thong\mo-mang-lan.ps1" %*
 echo.
-pause
+if not defined AISRM_KHONG_DUNG pause

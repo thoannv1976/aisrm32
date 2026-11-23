@@ -8,6 +8,7 @@
     -KhongAI            không nối AI nội bộ (AI giả lập)
     -ChiMayNay          chỉ truy cập trên chính máy này (không mở cho máy khác trong LAN)
     -KhongMoTrinhDuyet  không tự mở trình duyệt khi xong
+    -KhongTaoLoiTat     không tạo biểu tượng trên màn hình (bộ cài .exe tự tạo)
 #>
 param(
   [int]$Cong = 8088,
@@ -16,9 +17,11 @@ param(
   [string]$KhoaAI,
   [switch]$KhongAI,
   [switch]$ChiMayNay,
-  [switch]$KhongMoTrinhDuyet
+  [switch]$KhongMoTrinhDuyet,
+  [switch]$KhongTaoLoiTat
 )
 . (Join-Path $PSScriptRoot 'chung.ps1')
+try { Start-Transcript -Path (Join-Path $PSScriptRoot 'cai-dat.log') -Force | Out-Null } catch { }
 Write-Host "AI-SRM $PhienBan — cài đặt trên PC" -ForegroundColor White
 
 Buoc '1. Kiểm tra máy'
@@ -52,6 +55,14 @@ Buoc '4. Tạo cấu hình .env'
 if (Test-Path .env) {
   Write-Host '.env đã có — giữ nguyên mật khẩu CSDL và khóa mã hóa.'
 } else {
+  # Bản cài khác (thư mục khác) đang giữ dữ liệu: không tạo .env mới (mật khẩu CSDL sẽ không khớp).
+  $khac = ThuMucBanCai
+  if ($khac -and $khac -ne $PSScriptRoot) {
+    throw "Máy đã có AI-SRM cài ở thư mục khác: $(Split-Path $khac -Parent). Gỡ bản đó trước (GO_CAI_DAT.bat trong thư mục đó, hoặc Settings → Apps), rồi cài lại."
+  }
+  if (Thu { docker volume ls -q --filter name=^aisrm_db$ }) {
+    throw 'Máy còn dữ liệu AI-SRM của một bản cài trước (volume aisrm_db). Gỡ bản cũ bằng GO_CAI_DAT.bat của bản đó; hoặc nếu không cần dữ liệu cũ: docker volume rm aisrm_db aisrm_files'
+  }
   # Chọn cổng trống
   $dangDung = @(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty LocalPort)
   $p = $Cong
@@ -112,7 +123,7 @@ else {
   if ($luat) { Write-Host 'Tường lửa Windows đã mở cổng cho LAN.' }
   else { CanhBao "Để máy khác trong LAN truy cập: bấm đúp MO_MANG_LAN.bat (cần quyền quản trị) để mở cổng $port trên tường lửa." }
 }
-TaoLoiTat $port
+if (-not $KhongTaoLoiTat) { TaoLoiTat $port }
 
 Buoc 'Hoàn tất'
 Tot "Trên máy này:     http://localhost:$port"

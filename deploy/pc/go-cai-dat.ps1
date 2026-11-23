@@ -8,7 +8,18 @@ if (-not $DongY) {
   $sl = Read-Host 'Sao lưu trước khi gỡ? (C = có / K = không)'
   if ($sl -match '^[cC]') { & (Join-Path $PSScriptRoot 'sao-luu.ps1') }
 }
-if (DockerChay) {
+# Chỉ xóa dữ liệu Docker của CHÍNH bản cài này (có .env ở đây và dự án "aisrm" đăng ký tại thư mục này).
+$xoaDocker = $false
+if (-not (Test-Path .env)) { Write-Host 'Bản cài này chưa chạy (không có .env) — không đụng tới dữ liệu Docker.' }
+else {
+  try { DamBaoDocker } catch { CanhBao "Docker Desktop không chạy — chưa xóa được dữ liệu AI-SRM trong Docker. Mở Docker Desktop rồi chạy lại GO_CAI_DAT.bat." }
+  if (DockerChay) {
+    $chu = ThuMucBanCai
+    if ($chu -and $chu -ne $PSScriptRoot) { CanhBao "Dữ liệu AI-SRM trên máy thuộc bản cài khác ($(Split-Path $chu -Parent)) — giữ nguyên." }
+    else { $xoaDocker = $true }
+  }
+}
+if ($xoaDocker) {
   $old = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
   docker compose down -v --remove-orphans 2>&1 | Out-Host
   docker image rm "aisrm-api:$PhienBan" "aisrm-web:$PhienBan" 2>&1 | Out-Null

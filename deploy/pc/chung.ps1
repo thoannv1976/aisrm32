@@ -119,6 +119,14 @@ function BatAI($ai, [string]$model, [string]$khoa) {
   if ($ma -ne 0) { throw 'Không bật được AI nội bộ (xem thông báo ở trên).' }
 }
 
+# Thư mục (he-thong) của bản cài đang đăng ký dự án Docker "aisrm" trên máy; $null nếu chưa có.
+function ThuMucBanCai {
+  $j = Thu { docker compose ls -a --filter name=aisrm --format json } | Out-String
+  try { $f = (($j | ConvertFrom-Json) | Where-Object { $_.Name -eq 'aisrm' } | Select-Object -First 1).ConfigFiles } catch { $f = $null }
+  if ($f) { return (Split-Path ($f -split ',')[0] -Parent) }
+  return $null
+}
+
 function DiaChiLAN {
   try {
     Get-NetIPAddress -AddressFamily IPv4 -ErrorAction Stop |

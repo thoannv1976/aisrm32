@@ -18,24 +18,52 @@ Bộ cài đã thử trên máy: Core i9-14900HX, RAM 32 GB, RTX 4060 Laptop 8 G
 
 1. Docker Desktop: nếu máy đã chạy LocalAI bằng Docker thì đã có, bỏ qua bước này. Nếu chưa: tải tại docker.com/products/docker-desktop, cài với tùy chọn mặc định (WSL 2), khởi động lại máy, mở Docker Desktop và chờ báo "Engine running".
 2. LocalAI: kiểm tra bằng cách mở http://localhost:8080 trên trình duyệt. Trang LocalAI hiện ra là được.
-3. Giải nén bộ cài `Bo_cai_AI-SRM_PC_v1.0.1.zip` vào một thư mục, ví dụ `D:\AI-SRM`. Đường dẫn nên ngắn, không nằm trong OneDrive.
+3. Chuẩn bị bộ cài: tệp `AI-SRM_PC_Setup_v1.0.1.exe` (cách cài chính, mục 3.1) hoặc `Bo_cai_AI-SRM_PC_v1.0.1.zip` (dự phòng, mục 3.2).
 
 ## 3. Cài đặt
 
-1. Mở thư mục bộ cài, bấm đúp `CAI_DAT.bat`.
-2. Chờ 3–5 phút. Script tự làm:
-   - kiểm tra máy và Docker Desktop (tự mở nếu đang tắt);
-   - tìm LocalAI trên máy, chọn model hội thoại phù hợp;
-   - nạp phần mềm AI-SRM, khởi động, nạp dữ liệu mẫu tập huấn;
-   - bật AI nội bộ và nạp sẵn model vào GPU (lần đầu khoảng 1–2 phút);
-   - tạo biểu tượng `AI-SRM` trên màn hình, mở trình duyệt.
-3. Đăng nhập bằng tài khoản mẫu in ở cuối màn hình cài đặt (giống tài liệu Bài tập thực hành, ví dụ gv.binh@demo.aisrm.test).
+### 3.1. Cài bằng tệp .exe (khuyến nghị)
 
-Địa chỉ mặc định: http://localhost:8088. Nếu cổng 8088 đang bận, script tự chọn cổng kế tiếp và in ra.
+1. Bấm đúp `AI-SRM_PC_Setup_v1.0.1.exe`.
+2. Nếu Windows báo "Windows protected your PC" (tệp chưa có chữ ký số): bấm **More info** → **Run anyway**.
+3. Bấm **Tiếp** qua các bước:
+   - Thông tin: đọc yêu cầu trước khi cài.
+   - Thư mục cài: giữ mặc định (`C:\Users\<tên>\AppData\Local\Programs\AI-SRM`) hoặc chọn thư mục khác.
+   - Tùy chọn: **Tạo biểu tượng trên màn hình**; **Cho máy khác trong mạng LAN truy cập** (bỏ chọn nếu chỉ dùng trên máy mình).
+4. Bấm **Cài đặt**. Một cửa sổ đen hiện tiến trình (3–5 phút): kiểm tra Docker Desktop (tự mở nếu đang tắt), tìm LocalAI và chọn model, nạp phần mềm, nạp dữ liệu mẫu, bật AI nội bộ và nạp sẵn model vào GPU.
+5. Cuối cửa sổ đen có **danh sách tài khoản mẫu** (giống tài liệu Bài tập thực hành, ví dụ gv.binh@demo.aisrm.test). Đọc xong nhấn phím bất kỳ; trình duyệt tự mở AI-SRM.
+6. Nếu đã chọn mở LAN: Windows hỏi quyền quản trị, bấm **Yes**.
+7. Bấm **Xong**.
 
-Không thấy LocalAI (chưa chạy) thì AI-SRM vẫn cài, dùng AI giả lập. Khi LocalAI chạy, bấm đúp `CAU_HINH_AI.bat` để bật AI nội bộ.
+Bộ cài không cần quyền quản trị (trừ bước mở LAN). Bộ cài tự kiểm tra trước: chưa có Docker Desktop thì dừng và báo cách cài; không thấy LocalAI thì hỏi có cài với AI giả lập không.
+
+Sau khi cài: biểu tượng **AI-SRM** trên màn hình (mở hệ thống); nhóm **AI-SRM** trong Start menu gồm Mở, Tắt, Kiểm tra, Cấu hình AI nội bộ, Sao lưu, Mở cổng mạng LAN, Hướng dẫn, Tài liệu tập huấn, Gỡ AI-SRM.
+
+Gỡ: Settings → Apps → **AI-SRM 1.0.1 (bản tập huấn trên PC)** → Uninstall (hoặc Start menu → AI-SRM → Gỡ AI-SRM). Gỡ sẽ xóa dữ liệu trong bản cài; thư mục sao lưu được giữ lại.
+
+Chạy lại tệp .exe lên bản đang cài: dữ liệu và mật khẩu được giữ nguyên.
+
+### 3.2. Cài từ tệp zip (dự phòng)
+
+Dùng khi máy chặn tệp .exe.
+
+1. Giải nén `Bo_cai_AI-SRM_PC_v1.0.1.zip` vào một thư mục, ví dụ `D:\AI-SRM` (đường dẫn ngắn, không nằm trong OneDrive).
+2. Bấm đúp `CAI_DAT.bat`, chờ 3–5 phút (các bước như mục 3.1).
+3. Đăng nhập bằng tài khoản mẫu in ở cuối cửa sổ cài đặt.
+
+Mỗi máy chỉ cài **một** bản AI-SRM: đã cài bằng .exe thì không cài thêm từ zip (và ngược lại). Bộ cài phát hiện và báo nếu máy đã có bản cài ở thư mục khác.
+
+### 3.3. Lưu ý chung
+
+Địa chỉ mặc định: http://localhost:8088. Nếu cổng 8088 đang bận, bộ cài tự chọn cổng kế tiếp và in ra.
+
+Không thấy LocalAI (chưa chạy) thì AI-SRM vẫn cài, dùng AI giả lập. Khi LocalAI chạy: Start menu → AI-SRM → Cấu hình AI nội bộ (bản zip: `CAU_HINH_AI.bat`).
+
+Nhật ký cài đặt: `he-thong\cai-dat.log` trong thư mục cài — gửi kèm khi báo lỗi.
 
 ## 4. Dùng hằng ngày
+
+Cài bằng .exe: dùng các mục trong Start menu → AI-SRM (cùng chức năng). Cài từ zip: bấm đúp các tệp trong thư mục cài.
 
 | Tệp (bấm đúp) | Việc |
 |---|---|
@@ -89,6 +117,8 @@ Chỉ muốn dùng trên chính máy mình (không mở cho LAN): cài bằng Po
 | AI trả lời chậm / báo hết thời gian chờ | Lần đầu nạp model mất 1–2 phút: bấm Làm nóng trong AI Center; đóng các phần mềm dùng GPU khác |
 | Máy khác trong LAN không vào được | Bấm MO_MANG_LAN.bat; đặt mạng Private; kiểm tra hai máy cùng mạng (ping địa chỉ LAN) |
 | Quên mật khẩu tài khoản mẫu | Xem tài liệu Bài tập thực hành hoặc màn hình cài đặt; tài khoản admin cấp mật khẩu tạm tại Quản trị → Tài khoản |
-| Muốn cài lại từ đầu | GO_CAI_DAT.bat rồi CAI_DAT.bat |
+| Bộ cài .exe báo "bước cài đặt chưa thành công" | Đọc thông báo đỏ trong cửa sổ đen hoặc tệp he-thong\cai-dat.log; sửa (mở Docker Desktop, gỡ bản cài cũ…) rồi chạy lại tệp .exe |
+| Windows chặn tệp .exe | More info → Run anyway; nếu phần mềm diệt virus vẫn chặn: cài từ zip (mục 3.2) |
+| Muốn cài lại từ đầu | Gỡ (Settings → Apps, hoặc GO_CAI_DAT.bat) rồi cài lại |
 
 Khi báo lỗi cho Ban tổ chức: chụp màn hình KIEM_TRA.bat.

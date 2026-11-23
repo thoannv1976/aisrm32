@@ -1,0 +1,17 @@
+﻿AI-SRM — BỘ CÀI TRÊN PC (phiên bản 1.0.1)
+
+Bộ cài này cài AI-SRM với DỮ LIỆU MẪU tập huấn lên máy, dùng LocalAI có sẵn trên máy để chạy các chức năng AI.
+
+TRƯỚC KHI CÀI, máy cần có:
+  • Windows 10/11 64-bit, RAM từ 16 GB, ổ đĩa còn trống từ 10 GB.
+  • Docker Desktop đã cài và đang chạy (biểu tượng cá voi ở góc màn hình).
+  • LocalAI đang chạy (mở http://localhost:8080 trên trình duyệt thấy trang LocalAI).
+
+QUÁ TRÌNH CÀI (3–5 phút):
+  1. Chép tệp vào thư mục cài.
+  2. Một cửa sổ đen hiện tiến trình: nạp phần mềm, nạp dữ liệu mẫu, nối LocalAI, nạp sẵn model AI.
+     Cuối cửa sổ có danh sách tài khoản mẫu — đọc xong nhấn phím bất kỳ để đóng.
+  3. Nếu chọn "Cho máy khác trong mạng LAN truy cập", Windows hỏi quyền quản trị để mở cổng tường lửa.
+
+LƯU Ý: chỉ chứa dữ liệu mẫu; không nhập dữ liệu thật.
+Gỡ AI-SRM (Settings → Apps) sẽ xóa dữ liệu trong bản cài.
